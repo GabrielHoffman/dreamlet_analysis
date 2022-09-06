@@ -22,7 +22,9 @@ system(cmd2)
 # Read data
 #----------
 
-setwd("/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021")
+# set working directory for input and output files
+wd = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021"
+setwd(wd)
 
 # read metadata
 df_meta = as.data.frame(fread('GSE158769_meta_data.txt.gz'))
@@ -45,6 +47,5 @@ sce = SingleCellExperiment( assays = list(counts = counts),
                             colData = df_meta[colnames(counts),])
 
 # write to h5ad
-outpath = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021/"
-outfile = paste0(outpath, '/Nathan_NatImm_2021.h5ad')
+outfile = paste0(wd, '/Nathan_NatImm_2021.h5ad')
 writeH5AD(sce, outfile, compression="lzf", verbose=TRUE)
