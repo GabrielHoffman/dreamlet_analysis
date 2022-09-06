@@ -31,13 +31,15 @@ read.sparseMatrix = function(file, batchSize=100){
       # else set values and rownames   
       # using fixed() is faster, but assumes only ASCII    
       res = str_split(pl, fixed("\t"))
+      rm(pl)
 
       mat = lapply(res, function(x){
         values = as(as.integer(x[-1]), "sparseMatrix")
         colnames(values) = x[1]
         values
-        })
-      mat = t(do.call(cbind, mat))
+        })  
+      rm(res)
+      mat = t(do.call(cbind, mat))    
       lst[[i]] = mat
       cat("\r", i*batchSize, "    ")
     }
@@ -46,6 +48,7 @@ read.sparseMatrix = function(file, batchSize=100){
   close(myCon)
 
   counts = do.call(rbind, lst)
+  rm(lst)
   colnames(counts) = colNames
   counts
 }
