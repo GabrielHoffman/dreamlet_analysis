@@ -43,7 +43,7 @@ read.sparseMatrix = function(file, batchSize=100){
   }
   close(myCon)
 
-  counts = bind_rows(lst)
+  counts = do.call(rbind, lst)
   colnames(counts) = colNames
   counts
 }
