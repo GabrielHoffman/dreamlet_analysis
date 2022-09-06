@@ -10,6 +10,10 @@ library(zellkonverter)
 library(stringr)
 source("read.sparseMatrix.R")
 
+# set working directory for input and output files
+wd = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021"
+setwd(wd)
+
 # Download data from GEO
 #-----------------------
 cmd1 = "wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE158nnn/GSE158769/suppl/GSE158769%5Fmeta%5Fdata%2Etxt%2Egz"
@@ -22,10 +26,6 @@ system(cmd2)
 # Read data
 #----------
 
-# set working directory for input and output files
-wd = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021"
-setwd(wd)
-
 # read metadata
 df_meta = as.data.frame(fread('GSE158769_meta_data.txt.gz'))
 rownames(df_meta) = df_meta$cell_id
@@ -33,11 +33,9 @@ rownames(df_meta) = df_meta$cell_id
 # read counts as sparseMatrix
 # This uses > 50Gb memory. A more efficient implemenation
 #    can dramatically reduce this
-counts = read.sparseMatrix("GSE158769_exprs_raw.tsv.gz", 500)
+counts = read.sparseMatrix("GSE158769_exprs_raw.tsv.gz", 1000)
 
-
-# free memory
-gc() 
+gc() # free memory
 
 # Convert to SingleCellExperiment and save as H5AD
 #-------------------------------------------------
