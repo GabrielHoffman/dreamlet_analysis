@@ -14,103 +14,6 @@ output:
 
 <!--- 
 
-cd /sc/arion/projects/CommonMind/hoffman/eval_methods/dreamlet
-ml python git
-R
-
-system("git pull"); rmarkdown::render("Nathan_NatImm_2021.Rmd");
-
-
-# https://hoffmg01.u.hpc.mssm.edu/eval_methods/dreamlet/Nathan_NatImm_2021.html
-
-
-# get data
-cd /sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021 
-
-wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE158nnn/GSE158769/suppl/GSE158769%5Fmeta%5Fdata%2Etxt%2Egz
-wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE158nnn/GSE158769/suppl/GSE158769%5Fexprs%5Fraw%2Etsv%2Egz
-
-# get himem instance
-bsub -Is -q premium -R span[hosts=1] -R rusage[mem=8000] -W 12:00 -P acc_CommonMind -n 24 bash
-
-
-library(data.table)
-library(SingleCellExperiment)
-library(zellkonverter)
-library(stringr)
-
-# read metadata
-df_meta = as.data.frame(fread('GSE158769_meta_data.txt.gz'))
-rownames(df_meta) = df_meta$cell_id
-
-# read raw counts
-# df_counts = fread('ml pigz; pigz -dc GSE158769_exprs_raw.tsv.gz | head -n 20')
-
-# # convert counts to sparseMatrix
-# counts = as(as.matrix(df_counts[,-1]), "sparseMatrix")
-# rownames(counts) = df_counts$gene
-# colnames(counts) = colnames(df_counts)[-1]
-# counts[1:3, 1:4]
-
-# Reading a big matrix requires too much memory
-# If matrix is sparse, read it line-by-line and convert to sparseMatrix
-# assume first row and first column are labels
-read.sparseMatrix = function(file, batchSize=100){
-
-  myCon = gzfile(file, open="r")
-
-  lst = list()
-  i = 1
-  repeat{
-
-    if( i == 1){
-      # read 1 line
-      pl = readLines(myCon, n = 1)
-      # if first line, set colnames
-      colNames = str_split(pl, "\t")[[1]][-1]
-    }else{
-      pl = readLines(myCon, n = batchSize)
-
-      # If the line is empty, exit.
-      if(identical(pl, character(0))){break} 
-
-      # else set values and rownames
-      res = str_split(pl, "\t")
-      mat = lapply(res, function(x){
-        values = as(as.integer(x[-1]), "sparseMatrix")
-        colnames(values) = x[1]
-        values
-        })
-      mat = t(do.call(cbind, mat))
-      lst[[i]] = mat
-      cat("\r", i*batchSize, "    ")
-    }
-    i = i + 1
-  }
-  close(myCon)
-
-  counts = do.call(rbind, lst)
-  colnames(counts) = colNames
-  counts
-}
-
-counts = read.sparseMatrix("GSE158769_exprs_raw.tsv.gz", 100)
-
-# system("ml pigz; pigz -dc GSE158769_exprs_raw.tsv.gz | head -n 1000 | gzip > tmp.tsv.gz")
-# counts = read.sparseMatrix("tmp.tsv.gz", 1000)
-
-gc()
-
-# create SingleCellExperiment
-sce = SingleCellExperiment( assays = list(counts = counts),
-                            colData = df_meta[colnames(counts),])
-
-# write to h5ad
-outfile = '/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021/Nathan_NatImm_2021.h5ad'
-writeH5AD(sce, outfile, compression="gzip", verbose=TRUE)
-
-
-
 --->
 
 ```{r setup, include=FALSE}
@@ -140,9 +43,6 @@ library(kableExtra)
 library(DelayedArray)
 setAutoBlockSize(1e9)
 ```
-
-Check batch?
-
 
 ```{r load.data}
 # read H5AD file

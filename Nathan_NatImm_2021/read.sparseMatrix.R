@@ -2,7 +2,6 @@
 library(dplyr)
 library(stringr)
 
-
 #' Read sparseMatrix efficiently
 #'
 #' Reading a big matrix requires too much memory. If matrix is sparse, read it line-by-line and convert to sparseMatrix. Assume first row and first column are labels

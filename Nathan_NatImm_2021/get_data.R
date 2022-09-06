@@ -31,7 +31,8 @@ rownames(df_meta) = df_meta$cell_id
 # read counts as sparseMatrix
 # This uses > 50Gb memory. A more efficient implemenation
 #    can dramatically reduce this
-counts = read.sparseMatrix("GSE158769_exprs_raw.tsv.gz", 100)
+counts = read.sparseMatrix("GSE158769_exprs_raw.tsv.gz", 500)
+
 
 # free memory
 gc() 
