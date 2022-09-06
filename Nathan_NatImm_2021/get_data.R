@@ -22,11 +22,15 @@ system(cmd2)
 # Read data
 #----------
 
+setwd("/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021")
+
 # read metadata
 df_meta = as.data.frame(fread('GSE158769_meta_data.txt.gz'))
 rownames(df_meta) = df_meta$cell_id
 
 # read counts as sparseMatrix
+# This uses > 50Gb memory. A more efficient implemenation
+#    can dramatically reduce this
 counts = read.sparseMatrix("GSE158769_exprs_raw.tsv.gz", 100)
 
 # free memory

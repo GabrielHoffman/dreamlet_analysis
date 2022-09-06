@@ -28,8 +28,10 @@ read.sparseMatrix = function(file, batchSize=100){
       # If the line is empty, exit.
       if(identical(pl, character(0))){break} 
 
-      # else set values and rownames
-      res = str_split(pl, "\t")
+      # else set values and rownames   
+      # using fixed() is faster, but assumes only ASCII    
+      res = str_split(pl, fixed("\t"))
+
       mat = lapply(res, function(x){
         values = as(as.integer(x[-1]), "sparseMatrix")
         colnames(values) = x[1]
