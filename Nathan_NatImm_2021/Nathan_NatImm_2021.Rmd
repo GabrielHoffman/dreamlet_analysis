@@ -121,7 +121,7 @@ table(df$TB_status)
 
 ```{r cca}
 form = ~ TB_status + donor + batch + season + prop_NAT
-C = canCorPairs(C, colData(pb))
+C = canCorPairs(form, colData(pb))
 
 plotCorrMatrix(C)
 ```
