@@ -291,8 +291,10 @@ plotVarPart(vp_res)
 E_vst = vst(cobj)
 dcmp = prcomp(t(E_vst))
 
-ggplot(dcmp$x, aes(PC1, PC2)) +
-  geom_point()
+dcmp$x %>%
+  as.data.frame %>%
+  ggplot(aes(PC1, PC2)) +
+    geom_point()
 
 # differential abundance analysis
 fit = dream(cobj, ~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
