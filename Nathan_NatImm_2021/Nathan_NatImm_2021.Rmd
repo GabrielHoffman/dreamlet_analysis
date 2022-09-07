@@ -146,7 +146,7 @@ vp.lst = fitVarPart( res.proc, ~ (1|TB_status) + (1|donor) + (1|batch) + (1|seas
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
-```{r plot.vp, fig.width=8, fig.height=20}
+```{r plot.vp, fig.width=8, fig.height=16}
 plotVarPart(vp.lst, label.angle=60, ncol=4)  
 ```
 
@@ -175,7 +175,7 @@ go.gs = get_GeneOntology(to="SYMBOL")
 res.zenith = zenith_gsa( res.dl, go.gs, 'TB_statusCASE')
 ```
 
-```{r plot.zenith, fig.width=7, fig.height=16}
+```{r plot.zenith, fig.width=15, fig.height=16}
 plotZenithResults(res.zenith, 3, 1)
 ```
 
@@ -256,6 +256,7 @@ fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) +
 fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) + theme(aspect.ratio=4)
 
 fig = plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1))
+fig
 
 ggsave(file="~/www/test.pdf", fig, height=4, width=4)
 
@@ -274,7 +275,7 @@ fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[
 
 fig = plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct, fig.strat2, fig.vol, fz2, fig.heat1, fig.heat2), 
   nrow=2, ncol=5, labels=LETTERS[1:10], align="hv", axis="t")
-
+fig
 ggsave(file="~/www/test.pdf", fig, height=7, width=15)
 
 
