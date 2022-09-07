@@ -280,19 +280,21 @@ topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
 ```{r crumblr}
 library(crumblr)
 
+# run crumblr transformation
 cobj = crumblr(cellCounts(pb))
 
+# variance partitioning analysis
 vp_res = fitExtractVarPartModel(cobj, ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
 plotVarPart(vp_res)
 
-
+# PCA
 E_vst = vst(cobj)
 dcmp = prcomp(t(E_vst))
 
 ggplot(dcmp$x, aes(PC1, PC2)) +
   geom_point()
 
-
+# differential abundance analysis
 fit = dream(cobj, ~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
 fit = eBayes(fit)
 topTable(fit, coef='TB_statusCASE') %>%   
