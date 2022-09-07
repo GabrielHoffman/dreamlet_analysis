@@ -182,7 +182,7 @@ plotZenithResults(res.zenith, 3, 1)
 
 ```{r plot.zenith.subset, fig.width=8, fig.height=2.5}
 idx = grep( "GO0050852|GO0002431|GO0002456|GO0001909", res.zenith$Geneset)
-fig.zenith = plotZenithResults_gg(res.zenith[idx,], 3, 1, transpose=TRUE)
+fig.zenith = plotZenithResults(res.zenith[idx,], 3, 1, transpose=TRUE)
 ```
 
 
