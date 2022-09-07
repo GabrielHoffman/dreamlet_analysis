@@ -261,6 +261,7 @@ fig.heat2
 
 
 ```{r plot.pi}
+library(qvalue)
 topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
   as_tibble %>% 
   group_by(assay) %>%
@@ -274,6 +275,35 @@ topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
     scale_x_continuous(limits=c(0,1), expand=c(0,0))
 ```    
 
+
+
+```{r crumblr}
+library(crumblr)
+
+cobj = crumblr(cellCounts(pb))
+
+vp_res = fitExtractVarPartModel(cobj, ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
+plotVarPart(vp_res)
+
+
+E_vst = vst(cobj)
+dcmp = prcomp(t(E_vst))
+
+ggplot(dcmp$x, aes(PC1, PC2)) +
+  geom_point()
+
+
+fit = dream(cobj, ~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
+fit = eBayes(fit)
+topTable(fit, coef='TB_statusCASE') %>%   
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+```
+
+
+Show
+ - batch correlates with GC content
+ - Donor correlations with read count per gene
 
 ```{r exit123, cache=FALSE, echo=FALSE}
 knitr::knit_exit()
@@ -341,15 +371,14 @@ plotVolcano(res_mash, ncol=4)
 
 
 
-```{r crumblr}
-library(crumblr)
 
-cobj = crumblr(cellCounts(pb))
 
-fit = dream(cobj,~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
-fit = eBayes(fit)
-topTable(fit, coef='TB_statusCASE')
-```
+
+
+
+
+
+
 
 
 
