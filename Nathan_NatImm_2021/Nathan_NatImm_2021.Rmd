@@ -119,7 +119,7 @@ df = unique(data.frame(donor = sce$donor, TB_status = sce$TB_status))
 table(df$TB_status)
 ```
 
-```{r cca}
+```{r cca, fig.height=6, fig.width=6}
 form = ~ TB_status + donor + batch + season + prop_NAT
 C = canCorPairs(form, colData(pb))
 
