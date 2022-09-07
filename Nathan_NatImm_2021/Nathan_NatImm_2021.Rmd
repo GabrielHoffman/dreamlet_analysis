@@ -205,7 +205,7 @@ fig.percent
 ```
 
 # Figure Panels
-```{r panels}
+```{r panels, fig.height=5, fig.width=12}
 library(cowplot)
 
 fig.umap = colData(sce) %>%
@@ -231,8 +231,9 @@ fz2 = fig.zenith + theme(axis.text.x=element_text(size=2),
 fig.pct = fig.percent + theme(aspect.ratio=1, legend.position="bottom")
 
 plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct), nrow=1, labels=LETTERS[1:4], align="hv", axis="t")
+```
 
-
+```{r panels2}
 data = extractData(res.proc, CT)
 
 fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + theme(aspect.ratio=1.2)
@@ -240,8 +241,9 @@ fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) +
 fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) + theme(aspect.ratio=4)
 
 plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
+```
 
-
+```{r panels3, fig.height=8, fig.width=5}
 zmax = 3.5
 gs1 = "GO0001909: leukocyte mediated cytotoxicity"
 fig.heat1 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, zmax=zmax) + ggtitle(gs1) + theme(legend.key.size = unit(.3, 'cm'), 
@@ -303,7 +305,7 @@ dcmp$x %>%
 # differential abundance analysis
 fit = dream(cobj, ~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
 fit = eBayes(fit)
-topTable(fit, coef='TB_statusCASE') %>%   
+topTable(fit, coef='TB_statusCASE', number=Inf) %>%   
   kbl() %>% 
   kable_classic(full_width = FALSE) 
 ```
