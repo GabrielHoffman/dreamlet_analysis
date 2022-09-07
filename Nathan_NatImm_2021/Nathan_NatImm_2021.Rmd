@@ -205,7 +205,7 @@ fig.percent
 ```
 
 # Figure Panels
-```{r panels, fig.height=5, fig.width=12}
+```{r panels, fig.height=4, fig.width=12}
 library(cowplot)
 
 fig.umap = colData(sce) %>%
@@ -233,12 +233,12 @@ fig.pct = fig.percent + theme(aspect.ratio=1, legend.position="bottom")
 plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct), nrow=1, labels=LETTERS[1:4], align="hv", axis="t")
 ```
 
-```{r panels2}
+```{r panels2, fig.height=4}
 data = extractData(res.proc, CT)
 
 fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + theme(aspect.ratio=1.2)
 
-fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) + theme(aspect.ratio=4)
+fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) + theme(aspect.ratio=4, legend.position="none")
 
 plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
 ```
