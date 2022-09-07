@@ -272,7 +272,7 @@ fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[
   axis.text.x=element_text(size=5, angle=20),
   axis.text.y=element_text(size=5))
 
-fig = plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct, fig.strat, fig.vol, fz2, fig.heat1, fig.heat2), 
+fig = plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct, fig.strat2, fig.vol, fz2, fig.heat1, fig.heat2), 
   nrow=2, ncol=5, labels=LETTERS[1:10], align="hv", axis="t")
 
 ggsave(file="~/www/test.pdf", fig, height=7, width=15)
