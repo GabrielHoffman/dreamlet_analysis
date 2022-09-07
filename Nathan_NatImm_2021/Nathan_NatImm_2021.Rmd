@@ -285,7 +285,7 @@ cobj = crumblr(cellCounts(pb))
 
 # variance partitioning analysis
 vp_res = fitExtractVarPartModel(cobj, ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
-plotVarPart(vp_res)
+plotVarPart(sortCols(vp_res))
 
 # PCA
 E_vst = vst(cobj)
@@ -300,7 +300,7 @@ dcmp$x %>%
 fit = dream(cobj, ~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
 fit = eBayes(fit)
 topTable(fit, coef='TB_statusCASE') %>%   
-  kbl(row.names=FALSE) %>% 
+  kbl() %>% 
   kable_classic(full_width = FALSE) 
 ```
 
