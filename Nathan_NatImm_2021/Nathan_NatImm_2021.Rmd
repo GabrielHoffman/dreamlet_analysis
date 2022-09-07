@@ -292,8 +292,9 @@ E_vst = vst(cobj)
 dcmp = prcomp(t(E_vst))
 
 dcmp$x %>%
+  merge(colData(pb), by="row.names") %>%
   as.data.frame %>%
-  ggplot(aes(PC1, PC2)) +
+  ggplot(aes(PC1, PC2, color=TB_status)) +
     geom_point()
 
 # differential abundance analysis
