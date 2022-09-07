@@ -176,13 +176,14 @@ res.zenith = zenith_gsa( res.dl, go.gs, 'TB_statusCASE')
 ```
 
 ```{r plot.zenith, fig.width=15, fig.height=16}
+res.zenith$assay = factor(res.zenith$assay, names(res.dl))
 plotZenithResults(res.zenith, 3, 1)
 ```
 
 
 ```{r plot.zenith.subset, fig.width=8, fig.height=2.5}
 idx = grep( "GO0050852|GO0002431|GO0002456|GO0001909", res.zenith$Geneset)
-fig.zenith = plotZenithResults(res.zenith[idx,], 3, 1, transpose=TRUE)
+fig.zenith = plotZenithResults(res.zenith[idx,], 3, 1, transpose=FALSE)
 ```
 
 
@@ -225,8 +226,12 @@ fig.vp = plotVarPart(vp.lst, assays = CT, label.angle=20) + thm +   theme(axis.t
 fig.vol = plotVolcano( res.dl[[CT]], coef = 'TB_statusCASE')
 
 
-fz2 = fig.zenith + theme(axis.text.x=element_text(size=2),
-  axis.text.y=element_text(size=3), legend.position="right",legend.key.size = unit(.3, 'cm'))
+fz2 = fig.zenith + 
+  theme(axis.text.x=element_text(size=10, angle = 90),
+    axis.text.y=element_text(size=10), 
+    legend.position="right",
+    legend.key.size = unit(.3, 'cm') ) 
+
 
 fig.pct = fig.percent + theme(aspect.ratio=1, legend.position="bottom")
 
@@ -236,9 +241,11 @@ plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct), nrow=1, labels=L
 ```{r panels2, fig.height=4}
 data = extractData(res.proc, CT)
 
-fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + theme(aspect.ratio=1.2)
+fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + 
+  theme(aspect.ratio=1.2)
 
-fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) + theme(aspect.ratio=4, legend.position="none")
+fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) +
+  theme(aspect.ratio=4, legend.position="none")
 
 plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
 ```
@@ -246,14 +253,18 @@ plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), la
 ```{r panels3, fig.height=8, fig.width=5}
 zmax = 3.5
 gs1 = "GO0001909: leukocyte mediated cytotoxicity"
-fig.heat1 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, zmax=zmax) + ggtitle(gs1) + theme(legend.key.size = unit(.3, 'cm'), 
-  axis.text.x=element_text(size=5, angle=20),
-  axis.text.y=element_text(size=5))
+fig.heat1 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, zmax=zmax) + 
+  ggtitle(gs1) + 
+  theme(legend.key.size = unit(.3, 'cm'), 
+    axis.text.x=element_text(size=5, angle=20),
+    axis.text.y=element_text(size=5))
 
 gs2 = 'GO0002431: Fc receptor mediated stimulatory signaling pathway'
-fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs2]]), assays=CT, zmax=zmax) + ggtitle(gs2) + theme(legend.key.size = unit(.3, 'cm'),
-  axis.text.x=element_text(size=5, angle=20),
-  axis.text.y=element_text(size=5))
+fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs2]]), assays=CT, zmax=zmax) + 
+  ggtitle(gs2) + 
+  theme(legend.key.size = unit(.3, 'cm'),
+    axis.text.x=element_text(size=5, angle=20),
+    axis.text.y=element_text(size=5))
 
 fz2
 fig.heat1
