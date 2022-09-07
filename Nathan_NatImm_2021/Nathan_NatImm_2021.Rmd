@@ -243,22 +243,17 @@ fz2 = fig.zenith + theme(axis.text.x=element_text(size=2),
 
 fig.pct = fig.percent + theme(aspect.ratio=1, legend.position="bottom")
 
+fig = plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct), nrow=2, labels=LETTERS[1:4], align="hv", axis="t")
+
 
 data = extractData(res.proc, CT)
-
-# vp.lst %>%
-#   as_tibble %>%
-#   filter(assay == CT) %>%
-#   arrange(desc(TB_status))
 
 fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + theme(aspect.ratio=1.2)
 
 fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) + theme(aspect.ratio=4)
 
-fig = plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1))
+fig = plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
 fig
-
-ggsave(file="~/www/test.pdf", fig, height=4, width=4)
 
 
 
@@ -273,12 +268,8 @@ fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[
   axis.text.x=element_text(size=5, angle=20),
   axis.text.y=element_text(size=5))
 
-fig = plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct, fig.strat2, fig.vol, fz2, fig.heat1, fig.heat2), 
-  nrow=2, ncol=5, labels=LETTERS[1:10], align="hv", axis="t")
-fig
-ggsave(file="~/www/test.pdf", fig, height=7, width=15)
-
-
+plot_grid(plotlist = list(fz2, fig.heat1, fig.heat2), 
+  nrow=2, ncol=5, labels=LETTERS[7:10], align="hv", axis="t")
 ```
 
 
