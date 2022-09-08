@@ -302,7 +302,6 @@ go.gs = get_GeneOntology(to="SYMBOL")
 res.zenith = zenith_gsa( res.dl, go.gs, 
               coef = 'TB_statusCASE', 
               n_genes_min=20)
-
 ```
 
 ```{r plot.zenith, fig.width=15, fig.height=16}
