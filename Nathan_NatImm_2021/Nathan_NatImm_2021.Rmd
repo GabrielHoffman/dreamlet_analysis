@@ -175,7 +175,7 @@ plotVolcano( res.dl, coef = 'TB_statusCASE', ncol=4)
 ### Interpreting variance partitioning analysis
 Show that fraction of variation across batches, correlates with GC content
 
-```{r gc.content}
+```{r gc.content, fig.height=5, fig.width=12}
 # read GC content
 file = paste0(path, '/../misc/GRCh38.104_gc_content.tsv.gz')
 df_GC = read.table(file, header=TRUE)
@@ -349,7 +349,7 @@ fig.heat2
 
 
 
-```{r plot.pi, fig.height=5, fig.width=16}
+```{r plot.pi, fig.height=5, fig.width=12}
 tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
   as_tibble %>% 
   group_by(assay) %>%
@@ -370,7 +370,7 @@ fig2 = ggplot(tab, aes(nDE, assay)) +
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
-    scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
+    scale_x_continuous(limits=c(0,1000), expand=c(0,0)) +
     xlab("# genes with FDR < 5%") +
     ylab("Cell type")
 
