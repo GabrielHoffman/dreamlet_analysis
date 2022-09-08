@@ -150,17 +150,6 @@ vp.lst = fitVarPart( res.proc, ~ (1|TB_status) + (1|donor) + (1|batch) + (1|seas
 plotVarPart(vp.lst, label.angle=60, ncol=4)  
 ```
 
-### Correlation with GC content
-
-Show: 1) batch correlates with GC content, 2) Donor correlations with read count per gene
-
-```{r gc.content}
-
-
-```
-
-
-
 ```{r summary}
 df = vp.lst %>%
   as_tibble %>%
@@ -179,6 +168,87 @@ res.dl = dreamlet( res.proc, ~ TB_status + (1|donor) + (1|batch) + (1|season) + 
 ```{r volcano, fig.width=9, fig.height=15}
 plotVolcano( res.dl, coef = 'TB_statusCASE', ncol=4)
 ```
+
+
+### Interpreting variance partitioning analysis
+Show that fraction of variation across batches, correlates with GC content
+
+```{r gc.content}
+# read GC content
+file = paste0(path, '/../misc/GRCh38.104_gc_content.tsv.gz')
+df_GC = read.table(file, header=TRUE)
+
+df_vp = merge(as.data.frame(vp.lst), df_GC, by.x="gene", by.y="SYMBOL")
+
+ggplot(df_vp, aes(batch, GC)) +  
+  geom_scattermore() + 
+  facet_wrap(~assay) +
+  theme_classic() +
+  theme(aspect.ratio=1) +
+  geom_smooth(method = "lm")
+
+# Compute correlation and standard error for Pearson and Spearman
+cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
+
+  method = match.arg(method)
+
+  library(tidyverse)
+  library(broom)
+
+  if( method == "pearson"){
+    df <- cor.test(x,y, method=method,...) %>%
+      tidy %>%
+      mutate(se = sqrt((1 - estimate^2)/parameter))
+    res = data.frame(cor = df$estimate,
+      cor.se = df$se)
+  }else if(method == "spearman"){
+    # https://stats.stackexchange.com/questions/18887/how-to-calculate-a-confidence-interval-for-spearmans-rank-correlation
+    rho <- cor(x,y, method=method,...)
+    n <- sum(complete.cases(x, y))
+    rho.se <- sqrt((1+rho^2/2)/(n-3))
+
+    res <- data.frame(rho = rho,
+      rho.se = rho.se)
+
+  }
+
+  return(res) 
+}
+
+df_vp %>%
+  group_by(assay) %>%
+  summarize(cor.se(batch, GC, method="spearman")) %>%
+  ggplot(aes(assay, rho)) +
+    geom_bar(stat="identity") + 
+    geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    xlab("Cell type") +
+    ylab("Spearman correlation between batch % and GC content") +
+    coord_flip() 
+```
+
+
+```{r vp.cpm}
+tab = topTable(res.dl, 'TB_statusCASE', number=Inf)
+
+df_vp = merge(as.data.frame(vp.lst), tab, by.x=c("assay", "gene"), by.y=c("assay", "ID") )
+
+df_vp %>%
+  as_tibble %>%
+  group_by(assay) %>%
+  summarize(cor.se(donor, AveExpr, method="spearman")) %>%
+  ggplot(aes(assay, rho)) +
+    geom_bar(stat="identity") + 
+    geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    xlab("Cell type") +
+    ylab("Spearman correlation between Donor % and CPM") +
+    coord_flip() 
+```
+
+
 
 ```{r zenith}
 go.gs = get_GeneOntology(to="SYMBOL")
