@@ -357,7 +357,7 @@ fig.zenith2 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) +
     legend.position="right",
     legend.key.size = unit(.4, 'cm'))
 
-plot_grid(fig.zenith1, fig.zenith2)
+plot_grid(fig.zenith1, fig.zenith2, nrow=1)
 
 # # , assays = c("CTL-1", "CTL-2")
 # zmax = NULL
