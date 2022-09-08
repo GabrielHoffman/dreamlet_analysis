@@ -347,6 +347,13 @@ ggsave(file="~/www/test.pdf", fig, height=7, width=10)
 ```
 
 
+# Session info
+<details>
+```{r sessionInfo}
+sessionInfo()
+```
+</details>
+
 ```{r exit123, cache=FALSE, echo=FALSE}
 knitr::knit_exit()
 ```
