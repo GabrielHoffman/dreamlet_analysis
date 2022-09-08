@@ -165,6 +165,7 @@ plotVoom( res.proc, ncol=4)
 ```
 
 # Variance partitioning analysis
+Note that variation across donors here indicates technical variation since the multiple samples from the same donor are technical replicates.
 ```{r run.vp}
 form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
 vp.lst = fitVarPart( res.proc, form, 
@@ -413,7 +414,7 @@ library(crumblr)
 cobj = crumblr(cellCounts(pb))
 
 # variance partitioning analysis
-form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop
+form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
 vp_res = fitExtractVarPartModel(cobj, form, colData(pb))
 plotVarPart(sortCols(vp_res))
 
@@ -430,7 +431,7 @@ dcmp$x %>%
     theme(aspect.ratio=1)
 
 # differential abundance analysis
-fit = dream(cobj, ~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, colData(pb))
+fit = dream(cobj, ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT, colData(pb))
 fit = eBayes(fit)
 topTable(fit, coef='TB_statusCASE', number=Inf) %>%   
   kbl() %>% 
