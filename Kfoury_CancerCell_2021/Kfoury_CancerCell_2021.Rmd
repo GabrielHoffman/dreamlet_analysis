@@ -333,10 +333,8 @@ res_zenith$assay = factor(res_zenith$assay)
 
 fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
 
-# ggsave(file="~/www/test.pdf", fig.zenith, height=7, width=15)
-
-plot_grid(plotlist = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.strat2, fig.vol, fig.zenith), 
-  nrow=2, ncol=5, labels=LETTERS[1:10], align="hv", axis="t")
+lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.strat2, fig.vol, fig.zenith)
+plot_grid(lst, nrow=2, ncol=5, labels=LETTERS[1:10], align="hv", axis="t")
 ```
 
 
