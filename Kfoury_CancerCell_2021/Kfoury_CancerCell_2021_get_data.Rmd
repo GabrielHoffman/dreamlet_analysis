@@ -132,7 +132,8 @@ colData(sce)$Coord1[idx] = df_embeding$Coord1
 colData(sce)$Coord2[idx] = df_embeding$Coord2
 
 # save to H5AD file
-writeH5AD(sce, file="../Kfoury_CancerCell_2021.h5ad", compression="lzf")
+file = paste0(path,"../Kfoury_CancerCell_2021.h5ad")
+writeH5AD(sce, file, compression="lzf")
 ```
 
 
