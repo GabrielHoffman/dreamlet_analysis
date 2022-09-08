@@ -217,7 +217,7 @@ cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
   return(res) 
 }
 
-df_vp %>%
+fig1 = df_vp %>%
   group_by(assay) %>%
   summarize(cor.se(batch, GC, method="spearman")) %>%
   ggplot(aes(assay, rho)) +
@@ -228,15 +228,12 @@ df_vp %>%
     xlab("Cell type") +
     ylab("Spearman correlation between batch % and GC content") +
     coord_flip() 
-```
 
-
-```{r vp.cpm}
 tab = topTable(res.dl, 'TB_statusCASE', number=Inf)
 
 df_vp = merge(as.data.frame(vp.lst), tab, by.x=c("assay", "gene"), by.y=c("assay", "ID") )
 
-df_vp %>%
+fig2 = df_vp %>%
   as_tibble %>%
   group_by(assay) %>%
   summarize(cor.se(donor, AveExpr, method="spearman")) %>%
@@ -244,10 +241,12 @@ df_vp %>%
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
     theme_classic() +
-    theme(aspect.ratio=1) +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y=element_blank()) +
     xlab("Cell type") +
     ylab("Spearman correlation between Donor % and CPM") +
     coord_flip() 
+
+plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")    
 ```
 
 
