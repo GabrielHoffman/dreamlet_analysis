@@ -307,7 +307,7 @@ data = extractData(res.proc, CT)
 fig.strat0 = plotStratify( CCNL1 ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
   theme(aspect.ratio=2, 
     plot.title = element_text(hjust = 0.5),
-    axis.text.x=element_text(hjust=.5, vjust=1, angle=70)) +
+    axis.text.x=element_text(hjust=1, vjust=1, angle=70)) +
   ggtitle('CCNL1') +
   ylab(bquote(log[2]~CPM)) +
   xlab('')
@@ -315,7 +315,7 @@ fig.strat0 = plotStratify( CCNL1 ~ Status, data, legend=FALSE, x.labels=TRUE, so
 fig.strat1 = plotStratify( VIM ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
   theme(aspect.ratio=2, 
     plot.title = element_text(hjust = 0.5),
-    axis.text.x=element_text(hjust=.5, vjust=1, angle=70)) +
+    axis.text.x=element_text(hjust=1, vjust=1, angle=70)) +
   ggtitle('VIM') +
   ylab(bquote(log[2]~CPM)) +
   xlab('')
@@ -382,7 +382,7 @@ res_zenith$assay = factor(res_zenith$assay)
 
 fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
  
-lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.vol)
+lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.vol) 
 plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="t")
 ```
 
