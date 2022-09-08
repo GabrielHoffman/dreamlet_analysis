@@ -136,7 +136,7 @@ vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
 
 ```{r vp.plot, fig.height=20, fig.width=12}
 # Summarize variance fractions genome-wide for each cell type
-plotVarPart(vp.lst, label.angle=60, ncol=4) 
+plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4) 
 ```
 
 # dreamlet analysis
@@ -274,7 +274,12 @@ fig.embed = colData(sce) %>%
   geom_scattermore() +
   theme_classic() + 
   scale_color_manual(name='', values=c("grey", "orange")) +
-  theme(aspect.ratio=1, axis.text=element_blank(), legend.position="bottom")
+  theme(aspect.ratio=1, 
+    axis.text=element_blank(),
+    axis.ticks=element_blank() 
+    legend.position="bottom") +
+  xlab("Coord 1")+
+  xlab("Coord 2")
 
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
 
