@@ -49,8 +49,7 @@ setAutoBlockSize(1e9)
 
 ```{r load.data}
 # read H5AD file
-# file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021.h5ad"
-file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021_v2.h5ad"
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE)   
 
 sce$cells = factor(sce$cells, sort(levels(sce$cells)))
@@ -403,9 +402,6 @@ fig2 = run_pca( cobj$E ) + ggtitle("CLR")
 fig3 = run_pca( vst(cobj) ) + ggtitle("VST")
 
 plot_grid(fig1, fig2, fig3, nrow=1)
-
-# file = "/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/test.png"
-# ggsave(file, fig, width=12)
 
 heatmap(frac, main="Fractions" )
 heatmap(cobj$E, main="CLR" )
