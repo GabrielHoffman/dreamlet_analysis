@@ -309,21 +309,24 @@ fig.strat0 = plotStratify( CCNL1 ~ Status, data, legend=FALSE, x.labels=TRUE, so
     plot.title = element_text(hjust = 0.5),
     axis.text.x=element_text(hjust=.5, vjust=1, angle=90)) +
   ggtitle('CCNL1') +
-  xlab(bquote(log[2]~CPM))
+  ylab(bquote(log[2]~CPM)) +
+  xlab('')
 
 fig.strat1 = plotStratify( VIM ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
   theme(aspect.ratio=2, 
     plot.title = element_text(hjust = 0.5),
     axis.text.x=element_text(hjust=.5, vjust=1, angle=90)) +
   ggtitle('VIM') +
-  xlab(bquote(log[2]~CPM))
+  ylab(bquote(log[2]~CPM)) +
+  xlab('')
 
 fig.strat2 = plotStratify( CD52 ~ subject.id, data, legend=FALSE, x.labels=TRUE) + 
   theme(aspect.ratio=1, 
     plot.title = element_text(hjust = 0.5),
     axis.text.x=element_text(hjust=1, vjust=1, angle=70)) +
   ggtitle('CD52') +
-  xlab(bquote(log[2]~CPM))
+  ylab(bquote(log[2]~CPM)) +
+  xlab('')
 
 plot_grid(fig.strat0, fig.strat1, fig.strat2, 
   nrow=1, ncol=3, labels=LETTERS[1:10], align="hv", axis="t")
