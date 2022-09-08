@@ -350,7 +350,9 @@ res_zenith$assay = factor(res_zenith$assay)
 fig.zenith1 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) + 
   theme(axis.text.x=element_text(size=7, angle=90),
     legend.position="right",
-    legend.key.size = unit(.4, 'cm'))
+    plot.title = element_text(hjust = 0.5),
+    legend.key.size = unit(.4, 'cm'))+
+  ggtitle('Tumor_Involved')
 
 res_zenith = res_zenith.Tumor_Distal
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
@@ -360,7 +362,9 @@ res_zenith$assay = factor(res_zenith$assay)
 fig.zenith2 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) + 
   theme(axis.text.x=element_text(size=7, angle=90),
     legend.position="right",
-    legend.key.size = unit(.4, 'cm'))
+    plot.title = element_text(hjust = 0.5),
+    legend.key.size = unit(.4, 'cm')) +
+  ggtitle('Tumor_Distal')
 
 plot_grid(fig.zenith1, fig.zenith2, ncol=1)
 
