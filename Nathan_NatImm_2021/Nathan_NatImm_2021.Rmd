@@ -416,7 +416,7 @@ library(crumblr)
 cobj = crumblr(cellCounts(pb))
 
 # variance partitioning analysis
-form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + prop_NAT
+form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop
 vp_res = fitExtractVarPartModel(cobj, form, colData(pb))
 plotVarPart(sortCols(vp_res))
 
