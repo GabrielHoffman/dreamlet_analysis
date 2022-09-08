@@ -34,7 +34,7 @@ setwd(path)
 system("wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143791/suppl/GSE143791_RAW.tar")
 system("wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143791/suppl/GSE143791_cell.annotation.csv.gz")
 system("wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143791/suppl/GSE143791_cell.annotation.human.csv.gz")
-system("tar xvf GSE143791_RAW.tar"
+system("tar xvf GSE143791_RAW.tar")
 system("wget http://pklab.med.harvard.edu/bonemet/data/all.embedding.csv")
 ```
 
