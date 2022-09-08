@@ -177,15 +177,6 @@ vp.lst = fitVarPart( res.proc, form,
 plotVarPart(vp.lst, label.angle=60, ncol=4)  
 ```
 
-```{r summary, eval=FALSE}
-df = vp.lst %>%
-  as_tibble %>%
-  filter(assay == 'CD4/8+ PD-1+TIGIT+') 
-
-sum(df$batch > 0.10) / length(df$batch)
-sum(df$TB_status > 0.01) / length(df$batch)
-```
-
 # dreamlet analysis
 ```{r dreamlet}
 form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
@@ -209,7 +200,7 @@ tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
             nGenes = length(adj.P.Val)) %>%
   mutate(assay = factor(assay, assayNames(pb)))
 
-fig1 = ggplot(tab, aes(nGenes, assay)) + 
+fig1 = ggplot(tab, aes(nGenes, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1) +
@@ -217,7 +208,7 @@ fig1 = ggplot(tab, aes(nGenes, assay)) +
     xlab("# genes expressed") +
     ylab("Cell type")
 
-fig2 = ggplot(tab, aes(nDE, assay)) + 
+fig2 = ggplot(tab, aes(nDE, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
@@ -225,7 +216,7 @@ fig2 = ggplot(tab, aes(nDE, assay)) +
     xlab("# genes with FDR < 5%") +
     ylab("Cell type")
 
-fig3 = ggplot(tab, aes(pi1, assay)) + 
+fig3 = ggplot(tab, aes(pi1, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
@@ -258,17 +249,14 @@ cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
     df <- cor.test(x,y, method=method,...) %>%
       tidy %>%
       mutate(se = sqrt((1 - estimate^2)/parameter))
-    res = data.frame(cor = df$estimate,
-      cor.se = df$se)
+    res = data.frame(rho = df$estimate, rho.se = df$se)
   }else if(method == "spearman"){
     # https://stats.stackexchange.com/questions/18887/how-to-calculate-a-confidence-interval-for-spearmans-rank-correlation
     rho <- cor(x,y, method=method,...)
     n <- sum(complete.cases(x, y))
     rho.se <- sqrt((1+rho^2/2)/(n-3))
 
-    res <- data.frame(rho = rho,
-      rho.se = rho.se)
-
+    res <- data.frame(rho = rho, rho.se = rho.se)
   }
 
   return(res) 
@@ -277,7 +265,7 @@ cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
 fig1 = df_vp %>%
   group_by(assay) %>%
   summarize(cor.se(batch, GC, method="spearman")) %>%
-  ggplot(aes(assay, rho)) +
+  ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
     theme_classic() +
@@ -294,7 +282,7 @@ fig2 = df_vp %>%
   as_tibble %>%
   group_by(assay) %>%
   summarize(cor.se(donor, AveExpr, method="spearman")) %>%
-  ggplot(aes(assay, rho)) +
+  ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
     theme_classic() +
@@ -311,7 +299,10 @@ plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")
 ```{r zenith}
 go.gs = get_GeneOntology(to="SYMBOL")
 
-res.zenith = zenith_gsa( res.dl, go.gs, 'TB_statusCASE')
+res.zenith = zenith_gsa( res.dl, go.gs, 
+              coef = 'TB_statusCASE', 
+              n_genes_min=20)
+
 ```
 
 ```{r plot.zenith, fig.width=15, fig.height=16}
@@ -346,7 +337,6 @@ genes = vp.lst %>%
 genes = c("MALAT1", 'HIST1H1E', "CXCR4", 'DUSP2', 'LTB', 'HELZ', 'ITGB1', 'PARK7')  
 
 fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes)
-fig.percent
 ```
 
 ### Combine figure Panels
@@ -357,7 +347,11 @@ fig.umap = colData(sce) %>%
     geom_scattermore() +
     theme_classic() +
     scale_color_manual(name='', values=c("grey", "orange")) +
-    theme(aspect.ratio=1, axis.text.x=element_blank(), axis.text.y=element_blank(), legend.position="bottom") +
+    theme(aspect.ratio=1, 
+      axis.text.x=element_blank(), 
+      axis.text.y=element_blank(), 
+      axis.ticks=element_blank(),
+      legend.position="bottom") +
     xlab('UMAP 1') +
     ylab('UMAP 2')
 
@@ -380,7 +374,9 @@ fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) +
   theme(aspect.ratio=1)
 
 fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) +
-  theme(aspect.ratio=4, legend.position="none")
+  theme(aspect.ratio=4, legend.position="none") +
+  scale_fill_manual(values=c("blue", "red")) +
+  scale_color_manual(values=c("blue", "red"))
 
 plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
 ```
@@ -425,10 +421,12 @@ plotVarPart(sortCols(vp_res))
 E_vst = vst(cobj)
 dcmp = prcomp(t(E_vst))
 
+biplot(dcmp)
+
 dcmp$x %>%
   merge(colData(pb), by="row.names") %>%
   as.data.frame %>%
-  ggplot(aes(PC1, PC2, color=batch)) +
+  ggplot(aes(PC1, PC2, color=season)) +
     geom_point() +
     theme_classic() +
     theme(aspect.ratio=1)
@@ -441,7 +439,11 @@ topTable(fit, coef='TB_statusCASE', number=Inf) %>%
   kable_classic(full_width = FALSE) 
 ```
 
-
+`sessionInfo()`
+<details>
+```{r sessionInfo}
+sessionInfo()
+</details>
 
 ```{r exit123, cache=FALSE, echo=FALSE}
 knitr::knit_exit()
