@@ -40,6 +40,7 @@ library(scattermore)
 library(tidyverse)
 library(knitr)
 library(qvalue)
+library(cowplot)
 library(kableExtra)
 library(DelayedArray)
 
@@ -294,8 +295,6 @@ fig.percent
 
 # Figure Panels
 ```{r panels, fig.height=4, fig.width=12}
-library(cowplot)
-
 fig.umap = colData(sce) %>%
   data.frame %>%
   ggplot(aes(UMAP_1, UMAP_2, color=ifelse(cluster_name==CT, CT, ''))) +
@@ -351,7 +350,7 @@ fig.heat2
 
 
 
-```{r plot.pi, fig.height=4, fig.width=8}
+```{r plot.pi, fig.height=4, fig.width=12}
 tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
   as_tibble %>% 
   group_by(assay) %>%
@@ -361,24 +360,24 @@ tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
 
 fig1 = ggplot(tab, aes(nGenes, assay)) + 
     geom_bar(stat="identity") + 
-    theme(aspect.ratio=1) +
     theme_classic() +
+    theme(aspect.ratio=1) +
     scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
     xlab("# genes expressed") +
     ylab("Cell type")
 
 fig2 = ggplot(tab, aes(nDE, assay)) + 
     geom_bar(stat="identity") + 
-    theme(aspect.ratio=1) +
     theme_classic() +
+    theme(aspect.ratio=1) +
     scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
     xlab("# genes with FDR < 5%") +
     ylab("Cell type")
 
 fig3 = ggplot(tab, aes(pi1, assay)) + 
     geom_bar(stat="identity") + 
-    theme(aspect.ratio=1) +
     theme_classic() +
+    theme(aspect.ratio=1) +
     scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
     xlab(bquote(pi[1])) +
     ylab("Cell type")
@@ -389,7 +388,7 @@ plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", aling="hv"
 
 
 
-
+# Cell type composition
 
 ```{r crumblr}
 library(crumblr)
