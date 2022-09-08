@@ -39,6 +39,7 @@ library(zenith)
 library(scattermore)
 library(tidyverse)
 library(knitr)
+library(qvalue)
 library(kableExtra)
 library(DelayedArray)
 
@@ -180,12 +181,12 @@ df_GC = read.table(file, header=TRUE)
 
 df_vp = merge(as.data.frame(vp.lst), df_GC, by.x="gene", by.y="SYMBOL")
 
-ggplot(df_vp, aes(batch, GC)) +  
-  geom_scattermore() + 
-  facet_wrap(~assay) +
-  theme_classic() +
-  theme(aspect.ratio=1) +
-  geom_smooth(method = "lm")
+# ggplot(df_vp, aes(batch, GC)) +  
+#   geom_scattermore() + 
+#   facet_wrap(~assay) +
+#   theme_classic() +
+#   theme(aspect.ratio=1) +
+#   geom_smooth(method = "lm")
 
 # Compute correlation and standard error for Pearson and Spearman
 cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
@@ -350,9 +351,7 @@ fig.heat2
 
 
 
-```{r plot.pi}
-library(qvalue)
-
+```{r plot.pi, fig.height=4, fig.width=8}
 tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
   as_tibble %>% 
   group_by(assay) %>%
@@ -365,23 +364,26 @@ fig1 = ggplot(tab, aes(nGenes, assay)) +
     theme(aspect.ratio=1) +
     theme_classic() +
     scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
-    ylab("# genes expressed")
+    xlab("# genes expressed") +
+    ylab("Cell type")
 
 fig2 = ggplot(tab, aes(nDE, assay)) + 
     geom_bar(stat="identity") + 
     theme(aspect.ratio=1) +
     theme_classic() +
     scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
-    ylab("# genes with FDR < 5%")
+    xlab("# genes with FDR < 5%") +
+    ylab("Cell type")
 
 fig3 = ggplot(tab, aes(pi1, assay)) + 
     geom_bar(stat="identity") + 
     theme(aspect.ratio=1) +
     theme_classic() +
     scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
-    ylab(bquote(pi[1]))
+    xlab(bquote(pi[1])) +
+    ylab("Cell type")
 
-plot_grid(list(fig1, fig2, fig3), labels=LETTERS[1:3], nrow=1)
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", aling="hv")
 ```    
 
 
