@@ -6,15 +6,10 @@ date: "Run on `r Sys.time()`"
 documentclass: article
 output: 
   html_document:
-  toc: true
-  smart: false
+    toc: true
+    smart: false
 ---
 
-
-
-<!--- 
-
---->
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
