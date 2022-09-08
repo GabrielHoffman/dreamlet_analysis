@@ -283,20 +283,14 @@ res_zenith$assay = factor(res_zenith$assay)
 
 fig.zenith = plotZenithResults_gg(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
 
-ggsave(file="~/www/test.pdf", fig.zenith, height=7, width=15)
+# ggsave(file="~/www/test.pdf", fig.zenith, height=7, width=15)
 
-
-
-fig = plot_grid(plotlist = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.strat2, fig.vol, fig.zenith), 
+plot_grid(plotlist = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.strat2, fig.vol, fig.zenith), 
   nrow=2, ncol=5, labels=LETTERS[1:10], align="hv", axis="t")
-
-ggsave(file="~/www/test.pdf", fig, height=7, width=15)
-
+```
 
 
-
-
-
+```{r combine3, fig.height=5, fig.width=12}
 res_zenith = res_zenith.Tumor_Involved
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
 unique(res_zenith$Geneset[idx])
@@ -311,18 +305,7 @@ idx3 = idx
 res_zenith$assay = factor(res_zenith$assay)
 fig.zenith2 = plotZenithResults_gg(res_zenith[idx3,], 5, 3, transpose=TRUE, sortByGeneset=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
 
-fig = plot_grid(fig.zenith1, fig.zenith2)
-ggsave(file="~/www/test.pdf", fig, height=7, width=10)
-
-
-
-
-
-
-
-
-
-
+plot_grid(fig.zenith1, fig.zenith2)
 
 # # , assays = c("CTL-1", "CTL-2")
 # zmax = NULL
@@ -331,12 +314,6 @@ ggsave(file="~/www/test.pdf", fig, height=7, width=10)
 
 
 # ggsave(file="~/www/test.pdf", fig.heat1, height=12, width=8)
-
-
-
-
-
-
 ```
 
 
