@@ -319,7 +319,7 @@ fig.strat1 = plotStratify( VIM ~ Status, data, legend=FALSE, x.labels=TRUE, sort
   ggtitle('VIM') +
   ylab(bquote(log[2]~CPM)) +
   xlab('')
-
+ 
 fig.strat2 = plotStratify( CD52 ~ subject.id, data, legend=FALSE, x.labels=TRUE) + 
   theme(aspect.ratio=1, 
     plot.title = element_text(hjust = 0.5),
@@ -334,7 +334,7 @@ plot_grid(fig.strat0, fig.strat1, fig.strat2,
 
 
 ```{r combine3, fig.height=5, fig.width=12}
-res_zenith = res_zenith.Tumor_Involved
+res_zenith = res_zenith.Tumor_Involved 
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
 # unique(res_zenith$Geneset[idx])
 idx3 = idx
