@@ -6,8 +6,8 @@ date: "Run on `r Sys.time()`"
 documentclass: article
 output: 
   html_document:
-  toc: true
-  smart: false
+    toc: true
+    smart: false
 vignette: >
   %\VignetteIndexEntry{Human prostate cancer bone metastases have an actionable immunosuppressive microenvironment}
   %\VignetteEngine{knitr::rmarkdown}
@@ -74,7 +74,8 @@ colData(sce) %>%
   ggplot(aes(Coord1, Coord2, color=cells)) + 
   geom_scattermore() +
   theme_classic() + 
-  theme(aspect.ratio=1, axis.text=element_blank())
+  theme(aspect.ratio=1, axis.text=element_blank()) +
+  scale_color_discrete(name="Cell type")
 ```
 
 
@@ -88,14 +89,13 @@ df %>%
   kable_classic(full_width = FALSE) 
 
 df = list()
-# number of donors
-df$n_subjects = nlevels(sce$subject.id)
+df$`# Samples` = ncol(pb)
+df$`# Subjects` = nlevels(sce$subject.id)
+df$`# Cells` = ncol(sce)
+df = unlist(df)
+df = data.frame(Propert=names(df), count = df)
 
-# number of cells
-df$n_cells = ncol(sce)
-
-df %>%
-  data.frame %>%  
+df %>%  
   kbl(row.names=FALSE) %>% 
   kable_classic(full_width = FALSE) 
 ```
@@ -113,11 +113,19 @@ res.proc = processAssays( pb,
                           BPPARAM = SnowParam(6))
 ```
 
+### Show details of processing
+```{r details}
+details(res.proc)
+```
+
+### Show voom-style mean-variance trends
 ```{r voom.plot, fig.height=18, fig.width=12}
 # show voom plot for each cell clusters  
 plotVoom( res.proc, ncol=4)
 ```
 
+
+# Variance partitioning analysis
 ```{r vp}
 # run variance partitioning analysis
 form = ~ (1|subject.id) + (1|Status) + (1|subject.status) 
@@ -129,38 +137,46 @@ vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
 plotVarPart(vp.lst, label.angle=60, ncol=4) 
 ```
 
+# dreamlet analysis
 ```{r dreamlet}
 # Differential expression analysis for Status within each cell type,
 # evaluated on the voom normalized data 
 form = ~ 0 + Status + (1|subject.id) + (1|subject.status) 
 
+# Specify contrasts to compare regression coefficients
+# For example, 
+# Tumor_Involved = 'StatusTumor - StatusInvolved' tests if 
+# expression in Tumor is different that in Involved samples
 contrasts = c(Tumor_Involved  = 'StatusTumor - StatusInvolved',
               Tumor_Distal    = 'StatusTumor - StatusDistal',
               Involved_Distal = 'StatusInvolved - StatusDistal')
 
+# dreamlet analysis
 res.dl = dreamlet(res.proc, 
                   form, 
                   contrasts=contrasts, 
                   BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
 
-```{r volcano.Tumor_Involved, fig.height=20, fig.width=10}
+# Volcano plots for each contrast
+### Tumor_Involved  = 'StatusTumor - StatusInvolved'
+```{r volcano.Tumor_Involved, fig.height=16, fig.width=10}
 plotVolcano( res.dl, coef = 'Tumor_Involved', ncol=4)
 ```
 
-```{r volcano.Tumor_Distal, fig.height=20, fig.width=10}
+### Tumor_Distal = 'StatusTumor - StatusDistal'
+```{r volcano.Tumor_Distal, fig.height=16, fig.width=10}
 plotVolcano( res.dl, coef = 'Tumor_Distal', ncol=4)
 ```
 
-```{r volcano.Involved_Distal, fig.height=20, fig.width=10}
+### Involved_Distal = 'StatusInvolved - StatusDistal'
+```{r volcano.Involved_Distal, fig.height=16, fig.width=10}
 plotVolcano( res.dl, coef = 'Involved_Distal', ncol=4)
 ```
 
+# Gene set analysis using zenith
 ```{r zenith}
 # Load Gene Ontology database 
-# use gene 'SYMBOL', or 'ENSEMBL' id
-# use get_MSigDB() to load MSigDB
-# 
 go.gs = get_GeneOntology(to="SYMBOL")
 
 # Run zenith gene set analysis on result of dreamlet
@@ -171,17 +187,17 @@ res_zenith.Involved_Distal = zenith_gsa(res.dl, coef = 'Involved_Distal', go.gs)
 
 
 
-## Tumor_Involved
+### Tumor_Involved
 ```{r zenith.plot_Tumor_Involved, fig.height=18, fig.width=9}
 plotZenithResults(res_zenith.Tumor_Involved, 5, 3)
 ```
 
-## Tumor_Distal
+### Tumor_Distal
 ```{r zenith.plot_Tumor_Distal, fig.height=18, fig.width=9}
 plotZenithResults(res_zenith.Tumor_Distal, 5, 3)
 ```
 
-## Involved_Distal
+### Involved_Distal
 ```{r zenith.plot_Involved_Distal, fig.height=18, fig.width=9}
 plotZenithResults(res_zenith.Involved_Distal, 5, 3)
 ```
