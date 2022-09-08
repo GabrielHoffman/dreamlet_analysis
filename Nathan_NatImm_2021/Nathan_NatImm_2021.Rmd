@@ -350,7 +350,7 @@ fig.heat2
 
 
 
-```{r plot.pi, fig.height=4, fig.width=12}
+```{r plot.pi, fig.height=5, fig.width=16}
 tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
   as_tibble %>% 
   group_by(assay) %>%
