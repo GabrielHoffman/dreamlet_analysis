@@ -28,6 +28,9 @@ knitr::opts_chunk$set(
   cache.lazy = FALSE)
 ```
 
+# Dreamlet analysis of single cell data
+
+## Load libraries
 ```{r load.packages, cache=FALSE}
 library(GSEABase)
 library(SingleCellExperiment)
@@ -39,6 +42,7 @@ library(zenith)
 library(scattermore)
 library(tidyverse)
 library(knitr)
+library(broom)
 library(qvalue)
 library(cowplot)
 library(kableExtra)
@@ -51,6 +55,7 @@ library(DelayedArray)
 setAutoBlockSize(1e9)
 ```
 
+# Load data
 ```{r load.data}
 # read H5AD file
 path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021/"
@@ -88,6 +93,7 @@ pb <- aggregateToPseudoBulk(sce,
     sample_id = "donor_batch")
 ```
 
+## Plot UMAP
 ```{r UMAP}
 colData(sce) %>%
   data.frame %>%
@@ -97,6 +103,7 @@ colData(sce) %>%
     theme(aspect.ratio=1)
 ```
 
+## Show identifiers for each cell cluster
 ```{r cell.ids}
 colData(sce) %>%
   as_tibble %>%
@@ -108,43 +115,62 @@ colData(sce) %>%
   kable_classic(full_width = FALSE) 
 ```
 
-
+## Properties of dataset
 ```{r properties}
+df_properties = list()
+
 # number of batches
-nlevels(sce$batch)
+df_properties$n_batches = nlevels(sce$batch)
 
 # number of donors
-nlevels(sce$donor)
+df_properties$n_donors = nlevels(sce$donor)
 
 # number of donors
 df = unique(data.frame(donor = sce$donor, TB_status = sce$TB_status))
-table(df$TB_status)
+df_properties$n_cases = sum(df$TB_status == "CASE")
+df_properties$n_controls = sum(df$TB_status == "CONTROL")
+
+df_properties$n_cells = ncol(sce)
+
+df_properties %>%
+  data.frame %>%  
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
 ```
 
+
+## Relationship between variables
+Use canonical correlation analysis to show association between variables
 ```{r cca, fig.height=6, fig.width=6}
-form = ~ TB_status + donor + batch + season + prop_NAT
+form = ~ TB_status + sex + age + donor + batch + season + prop_NAT
 C = canCorPairs(form, colData(pb))
 
 plotCorrMatrix(C)
 ```
 
-
+## Process pseudobulk data to estimate precision weights
 ```{r voom}
-res.proc = processAssays( pb, ~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, min.count = 5, 
+form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
+res.proc = processAssays( pb, form, 
+  min.count = 5, 
   min.samples = 10,
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
+### Show details of processing
 ```{r details}
 details(res.proc)
 ```
 
+### Show voom-style mean-variance trends
 ```{r plot.voom, fig.width=8, fig.height=16}
 plotVoom( res.proc, ncol=4)
 ```
 
+# Variance partitioning analysis
 ```{r run.vp}
-vp.lst = fitVarPart( res.proc, ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + prop_NAT, 
+form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
+vp.lst = fitVarPart( res.proc, form, 
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
@@ -161,12 +187,14 @@ sum(df$batch > 0.10) / length(df$batch)
 sum(df$TB_status > 0.01) / length(df$batch)
 ```
 
+# dreamlet analysis
 ```{r dreamlet}
-res.dl = dreamlet( res.proc, ~ TB_status + (1|donor) + (1|batch) + (1|season) + prop_NAT, 
+form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
+res.dl = dreamlet( res.proc, form, 
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
-
+### Volcano plot for each cell type
 ```{r volcano, fig.width=9, fig.height=15}
 plotVolcano( res.dl, coef = 'TB_statusCASE', ncol=4)
 ```
@@ -182,20 +210,10 @@ df_GC = read.table(file, header=TRUE)
 
 df_vp = merge(as.data.frame(vp.lst), df_GC, by.x="gene", by.y="SYMBOL")
 
-# ggplot(df_vp, aes(batch, GC)) +  
-#   geom_scattermore() + 
-#   facet_wrap(~assay) +
-#   theme_classic() +
-#   theme(aspect.ratio=1) +
-#   geom_smooth(method = "lm")
-
 # Compute correlation and standard error for Pearson and Spearman
 cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
 
   method = match.arg(method)
-
-  library(tidyverse)
-  library(broom)
 
   if( method == "pearson"){
     df <- cor.test(x,y, method=method,...) %>%
@@ -250,6 +268,7 @@ plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")
 ```
 
 
+# Gene set analysis using zenith
 
 ```{r zenith}
 go.gs = get_GeneOntology(to="SYMBOL")
@@ -262,7 +281,7 @@ res.zenith$assay = factor(res.zenith$assay, names(res.dl))
 plotZenithResults(res.zenith, 3, 1)
 ```
 
-
+### Heatmap of results
 ```{r plot.zenith.subset, fig.width=8, fig.height=2.5}
 #GO0002456
 idx = grep( "GO0050852|GO0001909|GO0022625|GO0042101", res.zenith$Geneset)
@@ -349,7 +368,7 @@ fig.heat2
 
 
 
-```{r plot.pi, fig.height=5, fig.width=12}
+```{r plot.pi, fig.height=5, fig.width=16}
 tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
   as_tibble %>% 
   group_by(assay) %>%
