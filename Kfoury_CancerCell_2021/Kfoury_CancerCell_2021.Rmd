@@ -307,7 +307,7 @@ data = extractData(res.proc, CT)
 fig.strat0 = plotStratify( CCNL1 ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
   theme(aspect.ratio=2, 
     plot.title = element_text(hjust = 0.5),
-    axis.text.x=element_text(hjust=1, vjust=1, angle=70)) +
+    axis.text.x=element_text(hjust=1, vjust=1, angle=30)) +
   ggtitle('CCNL1') +
   ylab(bquote(log[2]~CPM)) +
   xlab('')
@@ -315,7 +315,7 @@ fig.strat0 = plotStratify( CCNL1 ~ Status, data, legend=FALSE, x.labels=TRUE, so
 fig.strat1 = plotStratify( VIM ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
   theme(aspect.ratio=2, 
     plot.title = element_text(hjust = 0.5),
-    axis.text.x=element_text(hjust=1, vjust=1, angle=70)) +
+    axis.text.x=element_text(hjust=1, vjust=1, angle=30)) +
   ggtitle('VIM') +
   ylab(bquote(log[2]~CPM)) +
   xlab('')
