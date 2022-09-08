@@ -29,7 +29,8 @@ knitr::opts_chunk$set(
 
 # Download data
 ```{r download}
-path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/raw2/"
+path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/raw/"
+dir.creat(path)
 setwd(path)
 system("wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143791/suppl/GSE143791_RAW.tar")
 system("wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143791/suppl/GSE143791_cell.annotation.csv.gz")
