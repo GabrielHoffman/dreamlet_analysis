@@ -2,8 +2,15 @@
 cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Kfoury_CancerCell_2021
 R
 
-system("git pull")
-rmarkdown::render("Kfoury_CancerCell_2021.Rmd");
+
+
+system("git pull"); rmarkdown::render("Kfoury_CancerCell_2021_get_data.Rmd");
+
+
+
+
+
+system("git pull"); rmarkdown::render("Kfoury_CancerCell_2021.Rmd");
 
 
 
