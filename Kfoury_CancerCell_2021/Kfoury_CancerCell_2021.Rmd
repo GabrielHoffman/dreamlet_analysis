@@ -276,7 +276,7 @@ fig.embed = colData(sce) %>%
   scale_color_manual(name='', values=c("grey", "orange")) +
   theme(aspect.ratio=1, 
     axis.text=element_blank(),
-    axis.ticks=element_blank() 
+    axis.ticks=element_blank(), 
     legend.position="bottom") +
   xlab("Coord 1")+
   xlab("Coord 2")
