@@ -115,20 +115,22 @@ colData(sce) %>%
 df_properties = list()
 
 # number of batches
-df_properties$n_batches = nlevels(sce$batch)
+df_properties$`# batches` = nlevels(sce$batch)
 
 # number of donors
-df_properties$n_donors = nlevels(sce$donor)
+df_properties$`# donors` = nlevels(sce$donor)
+
+df_properties$`# donors with technical replicates` = sum(table(pb$donor) > 1)
 
 # number of donors
-df = unique(data.frame(donor = sce$donor, TB_status = sce$TB_status))
-df_properties$n_cases = sum(df$TB_status == "CASE")
-df_properties$n_controls = sum(df$TB_status == "CONTROL")
+df = unique(data.frame(donor = pb$donor, TB_status = pb$TB_status))
+df_properties$`# Cases` = sum(df$TB_status == "CASE")
+df_properties$`# Controls` = sum(df$TB_status == "CONTROL")
 
-df_properties$n_cells = ncol(sce)
+df_properties$`# Cells` = ncol(sce)
 
-df_properties %>%
-  data.frame %>%  
+df_properties = unlist(df_properties)
+data.frame(Property = names(df_properties), counts = df_properties) %>% 
   kbl(row.names=FALSE) %>% 
   kable_classic(full_width = FALSE) 
 ```
