@@ -191,20 +191,22 @@ df = names(contrasts) %>%
             nGenes = length(adj.P.Val)) %>%
   mutate(assay = factor(assay, assayNames(pb)))
 
+ymax = 1.05*max(df$nGenes)
 fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, legend.position="none") +
-    scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
     xlab("# genes expressed") +
     ylab("Cell type") +
     facet_wrap(~ coef)
 
+ymax = 1.05*max(df$nDE)
 fig2 = ggplot(df, aes(nDE, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, legend.position="none") +
-    scale_x_continuous(limits=c(0,1000), expand=c(0,0)) +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
     xlab("# genes with FDR < 5%") +
     ylab("Cell type") +
     facet_wrap(~ coef)
