@@ -350,13 +350,14 @@ fig.heat2
 
 
 
-```{r plot.pi, fig.height=6, fig.width=16}
+```{r plot.pi, fig.height=5, fig.width=16}
 tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
   as_tibble %>% 
   group_by(assay) %>%
   summarize( nDE = sum(adj.P.Val < 0.05), 
             pi1 = 1 - pi0est(P.Value)$pi0,
-            nGenes = length(adj.P.Val))
+            nGenes = length(adj.P.Val)) %>%
+  mutate(assay = factor(assay, assayNames(pb)))
 
 fig1 = ggplot(tab, aes(nGenes, assay)) + 
     geom_bar(stat="identity") + 
@@ -369,7 +370,7 @@ fig1 = ggplot(tab, aes(nGenes, assay)) +
 fig2 = ggplot(tab, aes(nDE, assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
-    theme(aspect.ratio=1) +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
     scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
     xlab("# genes with FDR < 5%") +
     ylab("Cell type")
@@ -377,12 +378,12 @@ fig2 = ggplot(tab, aes(nDE, assay)) +
 fig3 = ggplot(tab, aes(pi1, assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
-    theme(aspect.ratio=1) +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
     scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
     xlab(bquote(pi[1])) +
     ylab("Cell type")
 
-plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", aling="hv")
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
 ```    
 
 
