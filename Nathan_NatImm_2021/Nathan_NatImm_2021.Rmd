@@ -151,7 +151,8 @@ plotCorrMatrix(C)
 form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
 res.proc = processAssays( pb, form, 
   min.count = 5, 
-  min.samples = 10,
+  min.cells = 5,
+  min.samples = 6,
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
@@ -305,6 +306,9 @@ res.zenith = zenith_gsa( res.dl, go.gs,
 ```
 
 ```{r plot.zenith, fig.width=15, fig.height=16}
+table(res.zenith$FDR < 0.05)
+unique(res.zenith$Geneset[res.zenith$FDR < 0.05])
+
 res.zenith$assay = factor(res.zenith$assay, names(res.dl))
 plotZenithResults(res.zenith, 3, 1)
 ```
@@ -438,10 +442,11 @@ topTable(fit, coef='TB_statusCASE', number=Inf) %>%
   kable_classic(full_width = FALSE) 
 ```
 
-`sessionInfo()`
+# Session info
 <details>
 ```{r sessionInfo}
 sessionInfo()
+```
 </details>
 
 ```{r exit123, cache=FALSE, echo=FALSE}
