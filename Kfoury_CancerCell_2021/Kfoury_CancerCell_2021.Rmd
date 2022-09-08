@@ -67,7 +67,7 @@ pb <- aggregateToPseudoBulk(sce,
     sample_id = "ID")
 ```
 
-# UMAP embending
+# UMAP embedding
 ```{r embeding}
 colData(sce) %>%
   data.frame() %>%
@@ -78,6 +78,29 @@ colData(sce) %>%
 ```
 
 
+## Properties of dataset
+```{r properties}
+df = data.frame(table(pb$Status))
+colnames(df) = c("Disease status", "Count")
+
+df %>%
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+
+df = list()
+# number of donors
+df$n_subjects = nlevels(sce$subject.id)
+
+# number of cells
+df$n_cells = ncol(sce)
+
+df %>%
+  data.frame %>%  
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+```
+
+## Process pseudobulk data to estimate precision weights
 ```{r voom}
 types = c("Benign", "Distal", "Involved", "Tumor")
 pb$Status = factor(pb$Status, types)
