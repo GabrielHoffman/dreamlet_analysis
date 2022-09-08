@@ -46,6 +46,7 @@ library(GEOquery)
 library(gtools)
 library(zellkonverter)
 library(stringr)
+library(Matrix)
 ```
 
 # Load data
