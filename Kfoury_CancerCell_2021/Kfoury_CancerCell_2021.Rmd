@@ -304,10 +304,26 @@ fig.vol = plotVolcano( res.dl[[CT]], coef = 'Tumor_Involved') + ggtitle("Tumor v
   
 data = extractData(res.proc, CT)
 
-fig.strat0 = plotStratify( CCNL1 ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + theme(aspect.ratio=2, axis.text.x=element_text(hjust=.5, vjust=1, angle=0))
-fig.strat1 = plotStratify( VIM ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + theme(aspect.ratio=2, axis.text.x=element_text(hjust=.5, vjust=1, angle=0))
+fig.strat0 = plotStratify( CCNL1 ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
+  theme(aspect.ratio=2, 
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x=element_text(hjust=.5, vjust=1, angle=0)) +
+  ggtitle('CCNL1') +
+  xlab(bquote(log[2]~CPM))
 
-fig.strat2 = plotStratify( CD52 ~ subject.id, data, legend=FALSE, x.labels=TRUE) + theme(aspect.ratio=1, axis.text.x=element_text(hjust=1, vjust=1, angle=70))
+fig.strat1 = plotStratify( VIM ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
+  theme(aspect.ratio=2, 
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x=element_text(hjust=.5, vjust=1, angle=0)) +
+  ggtitle('VIM') +
+  xlab(bquote(log[2]~CPM))
+
+fig.strat2 = plotStratify( CD52 ~ subject.id, data, legend=FALSE, x.labels=TRUE) + 
+  theme(aspect.ratio=1, 
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x=element_text(hjust=1, vjust=1, angle=70)) +
+  ggtitle('CD52') +
+  xlab(bquote(log[2]~CPM))
 
 plot_grid(fig.strat0, fig.strat1, fig.strat2, 
   nrow=1, ncol=3, labels=LETTERS[1:10], align="hv", axis="t")
@@ -325,14 +341,13 @@ gs = c('GO0060333', 'GO0023026', 'GO0006413', 'GO0042590', 'GO0042605', 'GO00303
 res_zenith = res_zenith.Tumor_Involved
 
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
-unique(res_zenith$Geneset[idx])
+# unique(res_zenith$Geneset[idx])
 
 # CellTypes = c("Mono1", "Mono2", "Mono3", "TIM", "Monocyte prog", "mDC", "Erythroid", "Immature B cells", "CTL-1", "CTL-2")
 idx3 = idx
 # idx2 = res_zenith.Tumor_Involved$assay %in% CellTypes
 # idx3 = intersect(idx, which(idx2))
 res_zenith$assay = factor(res_zenith$assay)
-
 
 fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
 
@@ -344,7 +359,7 @@ plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="
 ```{r combine3, fig.height=5, fig.width=12}
 res_zenith = res_zenith.Tumor_Involved
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
-unique(res_zenith$Geneset[idx])
+# unique(res_zenith$Geneset[idx])
 idx3 = idx
 res_zenith$assay = factor(res_zenith$assay)
 fig.zenith1 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) + 
