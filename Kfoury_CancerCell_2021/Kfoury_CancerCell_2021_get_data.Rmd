@@ -1,0 +1,143 @@
+---
+title: "Human prostate cancer bone metastases have an actionable immunosuppressive microenvironment (GSE143791)"
+subtitle: '[Kfoury, et al. Cancer Cell (2021)](https://doi.org/10.1016/j.ccell.2021.09.005)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+  toc: true
+  smart: false
+vignette: >
+  %\VignetteIndexEntry{Human prostate cancer bone metastases have an actionable immunosuppressive microenvironment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+# Download data
+```{r download, eval=FALSE}
+path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/raw2"
+setwd(path)
+system("wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143791/suppl/GSE143791_RAW.tar")
+system("wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143791/suppl/GSE143791_cell.annotation.csv.gz")
+system("wget --no-check-certificate https://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143791/suppl/GSE143791_cell.annotation.human.csv.gz"
+system("tar xvf GSE143791_RAW.tar"
+system("wget http://pklab.med.harvard.edu/bonemet/data/all.embedding.csv")
+```
+
+# Load packages
+```{r load.packages}
+library(data.table)
+library(SingleCellExperiment)
+library(GEOquery)
+library(gtools)
+library(zellkonverter)
+library(stringr)
+```
+
+# Load data
+```{r load.data}
+# get metadata for these samples from GEO
+info = getGEO("GSE143791")$`GSE143791-GPL20301_series_matrix.txt.gz`
+
+ids = sampleNames(phenoData(info))
+
+# get metadata
+info = lapply(ids, function(id){
+  res = getGEO(id)
+
+  values = str_split(res@header$characteristics_ch1, pattern=": ")
+  data = sapply(values, function(x) x[2])
+  names(data) = sapply(values, function(x) x[1])
+
+  data.frame(geoid = id, t(data))
+  })
+info = do.call(smartbind, info)
+
+info$age = as.numeric(info$age)
+info$psa.prior.to.surgery = as.numeric(info$psa.prior.to.surgery)
+
+# create sample names
+info$ID = paste0(info$subject.id, "-Benign")
+info$Status = rep('Benign', nrow(info))
+types = c("Tumor", "Involved", "Distal" )
+for( type in types){
+  i = grep(type, info$tissue.type)
+  info$ID[i] = paste0(info$subject.id[i], "-", type)
+  info$Status[i] = type 
+}
+
+# get file names
+files = dir(path, pattern="*.count.csv.gz", full.names=TRUE)
+
+# only keep files in this datasets
+# get sample names from this dataset
+pattern = paste(info$geoid, collapse="|")
+files = files[grep(pattern, files)]
+
+# read counts from files
+res = lapply(files, function(file){
+
+  message(file)
+  df = fread(file, showProgress=FALSE)
+  df = as.data.frame(df[!duplicated(df$V1),])
+  rownames(df) = df$V1
+  df[,-1]
+  })
+geneCounts = do.call(cbind, res)
+
+# get cell annotation file
+file = paste0(path, "/GSE143791_cell.annotation.human.csv.gz")
+cellAnnotation = as.data.frame(fread(file))
+
+# merge annotations with sample metadata
+cellAnnotation$ID = sapply(str_split(cellAnnotation$barcode, "_"), function(x) x[1] )
+metadata = merge(cellAnnotation, info, by="ID")
+rownames(metadata) = metadata$barcode
+
+# get only shared cell barcodes
+keep = intersect(colnames(geneCounts), metadata$barcode)
+geneCounts = geneCounts[,keep]
+metadata = metadata[keep,]
+
+# same order for both data
+idx = match(colnames(geneCounts), rownames(metadata))
+
+# create single SingleCellExperiment
+sce = SingleCellExperiment(assays = list(counts = as.matrix(geneCounts)),
+                          colData = DataFrame(metadata[idx,]))
+
+# Coordinates
+file = paste0(path, "/all.embedding.csv")
+df_embeding = fread(file)
+colnames(df_embeding) = c("barcode", "Coord1", "Coord2")
+
+idx = match(df_embeding$barcode, colnames(sce))
+colData(sce)$Coord1[idx] = df_embeding$Coord1
+colData(sce)$Coord2[idx] = df_embeding$Coord2
+
+# save to H5AD file
+writeH5AD(sce, file="../Kfoury_CancerCell_2021.h5ad", compression="lzf")
+```
+
+
+
+
+
+
+
+
+
