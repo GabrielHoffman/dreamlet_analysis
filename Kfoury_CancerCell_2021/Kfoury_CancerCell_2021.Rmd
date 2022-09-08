@@ -278,8 +278,8 @@ fig.embed = colData(sce) %>%
     axis.text=element_blank(),
     axis.ticks=element_blank(), 
     legend.position="bottom") +
-  xlab("Coord 1")+
-  xlab("Coord 2")
+  xlab("Coord 1") +
+  ylab("Coord 2")
 
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
 
@@ -307,14 +307,14 @@ data = extractData(res.proc, CT)
 fig.strat0 = plotStratify( CCNL1 ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
   theme(aspect.ratio=2, 
     plot.title = element_text(hjust = 0.5),
-    axis.text.x=element_text(hjust=.5, vjust=1, angle=0)) +
+    axis.text.x=element_text(hjust=.5, vjust=1, angle=90)) +
   ggtitle('CCNL1') +
   xlab(bquote(log[2]~CPM))
 
 fig.strat1 = plotStratify( VIM ~ Status, data, legend=FALSE, x.labels=TRUE, sort=FALSE) + 
   theme(aspect.ratio=2, 
     plot.title = element_text(hjust = 0.5),
-    axis.text.x=element_text(hjust=.5, vjust=1, angle=0)) +
+    axis.text.x=element_text(hjust=.5, vjust=1, angle=90)) +
   ggtitle('VIM') +
   xlab(bquote(log[2]~CPM))
 
@@ -327,32 +327,6 @@ fig.strat2 = plotStratify( CD52 ~ subject.id, data, legend=FALSE, x.labels=TRUE)
 
 plot_grid(fig.strat0, fig.strat1, fig.strat2, 
   nrow=1, ncol=3, labels=LETTERS[1:10], align="hv", axis="t")
-```
-
-
-
-```{r combine2, fig.height=7, fig.width=12}
-# gs = c("MHC class II protein complex binding", "interferon-g")#, "translation init", "antigen", "positive regulation of cell growth", "GO1902036", "GO0045582")
-# gs = "mitochondrial translation"
-#  "GO0045582",
-
-gs = c('GO0060333', 'GO0023026', 'GO0006413', 'GO0042590', 'GO0042605', 'GO0030307', "GO1902036", 'GO0032543', 'GO0044183')
-
-res_zenith = res_zenith.Tumor_Involved
-
-idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
-# unique(res_zenith$Geneset[idx])
-
-# CellTypes = c("Mono1", "Mono2", "Mono3", "TIM", "Monocyte prog", "mDC", "Erythroid", "Immature B cells", "CTL-1", "CTL-2")
-idx3 = idx
-# idx2 = res_zenith.Tumor_Involved$assay %in% CellTypes
-# idx3 = intersect(idx, which(idx2))
-res_zenith$assay = factor(res_zenith$assay)
-
-fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
-
-lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.strat2, fig.vol, fig.zenith)
-plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="t")
 ```
 
 
@@ -382,15 +356,34 @@ fig.zenith2 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) +
   ggtitle('Tumor_Distal')
 
 plot_grid(fig.zenith1, fig.zenith2, ncol=1)
-
-# # , assays = c("CTL-1", "CTL-2")
-# zmax = NULL
-# gs1 = "GO0060333: interferon−gamma−mediated signaling pathway"
-# fig.heat1 = plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=geneIds(go.gs[[gs1]]), zmax=zmax, assays=CellTypes) + ggtitle(gs1) + theme(legend.key.size = unit(.5, 'cm'))
-
-
-# ggsave(file="~/www/test.pdf", fig.heat1, height=12, width=8)
 ```
+
+
+```{r combine2, fig.height=7, fig.width=12}
+# gs = c("MHC class II protein complex binding", "interferon-g")#, "translation init", "antigen", "positive regulation of cell growth", "GO1902036", "GO0045582")
+# gs = "mitochondrial translation"
+#  "GO0045582",
+
+gs = c('GO0060333', 'GO0023026', 'GO0006413', 'GO0042590', 'GO0042605', 'GO0030307', "GO1902036", 'GO0032543', 'GO0044183')
+
+res_zenith = res_zenith.Tumor_Involved
+
+idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
+# unique(res_zenith$Geneset[idx])
+
+# CellTypes = c("Mono1", "Mono2", "Mono3", "TIM", "Monocyte prog", "mDC", "Erythroid", "Immature B cells", "CTL-1", "CTL-2")
+idx3 = idx
+# idx2 = res_zenith.Tumor_Involved$assay %in% CellTypes
+# idx3 = intersect(idx, which(idx2))
+res_zenith$assay = factor(res_zenith$assay)
+
+fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
+
+lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.vol, fig.zenith)
+plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="t")
+```
+
+
 
 
 # Session info
