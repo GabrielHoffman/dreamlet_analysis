@@ -281,7 +281,7 @@ idx3 = idx
 res_zenith$assay = factor(res_zenith$assay)
 
 
-fig.zenith = plotZenithResults_gg(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
+fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
 
 # ggsave(file="~/www/test.pdf", fig.zenith, height=7, width=15)
 
@@ -296,14 +296,14 @@ idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
 unique(res_zenith$Geneset[idx])
 idx3 = idx
 res_zenith$assay = factor(res_zenith$assay)
-fig.zenith1 = plotZenithResults_gg(res_zenith[idx3,], 5, 3, transpose=TRUE, sortByGeneset=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
+fig.zenith1 = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=TRUE, sortByGeneset=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
 
 res_zenith = res_zenith.Tumor_Distal
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
 unique(res_zenith$Geneset[idx])
 idx3 = idx
 res_zenith$assay = factor(res_zenith$assay)
-fig.zenith2 = plotZenithResults_gg(res_zenith[idx3,], 5, 3, transpose=TRUE, sortByGeneset=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
+fig.zenith2 = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=TRUE, sortByGeneset=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
 
 plot_grid(fig.zenith1, fig.zenith2)
 
