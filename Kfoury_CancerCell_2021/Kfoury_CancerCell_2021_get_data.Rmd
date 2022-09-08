@@ -95,7 +95,8 @@ res = lapply(files, function(file){
   df = fread(file, showProgress=FALSE)
   df = as.data.frame(df[!duplicated(df$V1),])
   rownames(df) = df$V1
-  df[,-1]
+  df = as.matrix(df[,-1])
+  as(df, "sparseMatrix")
   })
 geneCounts = do.call(cbind, res)
 
@@ -117,7 +118,7 @@ metadata = metadata[keep,]
 idx = match(colnames(geneCounts), rownames(metadata))
 
 # create single SingleCellExperiment
-sce = SingleCellExperiment(assays = list(counts = as.matrix(geneCounts)),
+sce = SingleCellExperiment(assays = list(counts = geneCounts),
                           colData = DataFrame(metadata[idx,]))
 
 # Coordinates
