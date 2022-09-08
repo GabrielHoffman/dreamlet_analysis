@@ -23,8 +23,9 @@ knitr::opts_chunk$set(
   cache.lazy = FALSE)
 ```
 
-# Dreamlet analysis of single cell data
+Perform dreamlet analysis of single cell data assaying T cell populations in donors infected with tuberculosis.
 
+# Loading
 ## Load libraries
 ```{r load.packages, cache=FALSE}
 library(GSEABase)
@@ -176,7 +177,7 @@ vp.lst = fitVarPart( res.proc, form,
 plotVarPart(vp.lst, label.angle=60, ncol=4)  
 ```
 
-```{r summary}
+```{r summary, eval=FALSE}
 df = vp.lst %>%
   as_tibble %>%
   filter(assay == 'CD4/8+ PD-1+TIGIT+') 
@@ -198,8 +199,48 @@ plotVolcano( res.dl, coef = 'TB_statusCASE', ncol=4)
 ```
 
 
+### Summarize differential expression 
+```{r plot.pi, fig.height=5, fig.width=16}
+tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
+  as_tibble %>% 
+  group_by(assay) %>%
+  summarize( nDE = sum(adj.P.Val < 0.05), 
+            pi1 = 1 - pi0est(P.Value)$pi0,
+            nGenes = length(adj.P.Val)) %>%
+  mutate(assay = factor(assay, assayNames(pb)))
+
+fig1 = ggplot(tab, aes(nGenes, assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
+    xlab("# genes expressed") +
+    ylab("Cell type")
+
+fig2 = ggplot(tab, aes(nDE, assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
+    scale_x_continuous(limits=c(0,1000), expand=c(0,0)) +
+    xlab("# genes with FDR < 5%") +
+    ylab("Cell type")
+
+fig3 = ggplot(tab, aes(pi1, assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
+    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
+    xlab(bquote(pi[1])) +
+    ylab("Cell type")
+
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
+```    
+
+
+
+
 ### Interpreting variance partitioning analysis
-Show that fraction of variation across batches, correlates with GC content
+Observe that fraction of variation across batches correlates with GC content of the corresponding gene.  Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in 'shot noise' due to low counts.
 
 ```{r gc.content, fig.height=5, fig.width=12}
 # read GC content
@@ -267,7 +308,6 @@ plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")
 
 
 # Gene set analysis using zenith
-
 ```{r zenith}
 go.gs = get_GeneOntology(to="SYMBOL")
 
@@ -280,7 +320,7 @@ plotZenithResults(res.zenith, 3, 1)
 ```
 
 ### Heatmap of results
-```{r plot.zenith.subset, fig.width=8, fig.height=2.5}
+```{r plot.zenith.subset, fig.height=4, fig.width=12}
 #GO0002456
 idx = grep( "GO0050852|GO0001909|GO0022625|GO0042101", res.zenith$Geneset)
 plotZenithResults(res.zenith[idx,], 3, 1, transpose=FALSE) + 
@@ -290,7 +330,7 @@ plotZenithResults(res.zenith[idx,], 3, 1, transpose=FALSE) +
     legend.key.size = unit(.3, 'cm') ) 
 ```
 
-
+### Select genes with high variation explained by each variable 
 ```{r plotPercent}
 CT = "CD4/8+ PD-1+TIGIT+"
 genes = vp.lst %>%
@@ -309,7 +349,7 @@ fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes)
 fig.percent
 ```
 
-# Figure Panels
+### Combine figure Panels
 ```{r panels, fig.height=4, fig.width=12}
 fig.umap = colData(sce) %>%
   data.frame %>%
@@ -324,7 +364,7 @@ fig.umap = colData(sce) %>%
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
 
 fig.voom = plotVoom( res.proc[[CT]] ) + theme_classic() + thm
-fig.vp = plotVarPart(vp.lst, assays = CT, label.angle=20) + thm +   theme(axis.text.x=element_text(size=10))
+fig.vp = plotVarPart(vp.lst, assays = CT, label.angle=40) + thm +   theme(axis.text.x=element_text(size=10))
 fig.vol = plotVolcano( res.dl[[CT]], coef = 'TB_statusCASE')
 
 fig.pct = fig.percent + theme(aspect.ratio=1, legend.position="bottom")
@@ -332,6 +372,7 @@ fig.pct = fig.percent + theme(aspect.ratio=1, legend.position="bottom")
 plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct), nrow=1, labels=LETTERS[1:4], align="hv", axis="t")
 ```
 
+### Highlight specific gnes
 ```{r panels2, fig.height=4}
 data = extractData(res.proc, CT)
 
@@ -344,6 +385,7 @@ fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) +
 plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
 ```
 
+### Highlight specific genesets
 ```{r panels3, fig.height=8, fig.width=5}
 zmax = 3.5
 gs1 = "GO0001909: leukocyte mediated cytotoxicity"
@@ -363,45 +405,6 @@ fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[
 fig.heat1
 fig.heat2
 ```
-
-
-
-```{r plot.pi, fig.height=5, fig.width=16}
-tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
-  as_tibble %>% 
-  group_by(assay) %>%
-  summarize( nDE = sum(adj.P.Val < 0.05), 
-            pi1 = 1 - pi0est(P.Value)$pi0,
-            nGenes = length(adj.P.Val)) %>%
-  mutate(assay = factor(assay, assayNames(pb)))
-
-fig1 = ggplot(tab, aes(nGenes, assay)) + 
-    geom_bar(stat="identity") + 
-    theme_classic() +
-    theme(aspect.ratio=1) +
-    scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
-    xlab("# genes expressed") +
-    ylab("Cell type")
-
-fig2 = ggplot(tab, aes(nDE, assay)) + 
-    geom_bar(stat="identity") + 
-    theme_classic() +
-    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
-    scale_x_continuous(limits=c(0,1000), expand=c(0,0)) +
-    xlab("# genes with FDR < 5%") +
-    ylab("Cell type")
-
-fig3 = ggplot(tab, aes(pi1, assay)) + 
-    geom_bar(stat="identity") + 
-    theme_classic() +
-    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
-    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
-    xlab(bquote(pi[1])) +
-    ylab("Cell type")
-
-plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
-```    
-
 
 
 
