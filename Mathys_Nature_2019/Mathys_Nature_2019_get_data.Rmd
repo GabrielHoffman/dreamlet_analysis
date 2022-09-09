@@ -1,3 +1,22 @@
+---
+title: "Analysis of snRNA-seq from [Mathys, et al. Nature 2019](https://www.nature.com/articles/s41586-019-1195-2)"
+subtitle: 'Data from AMP-AD synapse.org: [syn18485175](https://www.synapse.org/#!Synapse:syn18485175)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+  toc: true
+  smart: false
+vignette: >
+  %\VignetteIndexEntry{Mathys, et al. Nature 2019}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\usepackage[utf8]{inputenc}
+---
+
+
+
 # April 5, 2022
 #
 # Download and process data from Mathys, et al. Nature 2019
