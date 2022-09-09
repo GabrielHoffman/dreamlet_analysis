@@ -216,7 +216,7 @@ fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) +
     xlab("# genes expressed") +
     ylab("Cell type") 
 
-ymax = 1.05*max(df$nDE)
+ymax = max(1.05*max(df$nDE), 100)
 fig2 = ggplot(df, aes(nDE, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
