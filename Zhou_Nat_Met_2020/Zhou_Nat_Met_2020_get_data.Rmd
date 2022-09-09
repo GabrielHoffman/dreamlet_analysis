@@ -38,6 +38,7 @@ path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/"
 setwd(path) 
 system("synapse get -r syn21682218")
 system("synapse get -r syn21126462")
+system("mkdir data; mv ./* data")
 ```
 
 
