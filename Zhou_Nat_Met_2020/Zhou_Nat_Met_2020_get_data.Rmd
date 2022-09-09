@@ -46,9 +46,6 @@ rownames(df_meta) = df_meta$specimenID
 df_meta$Dx = gsub("(\\d+)$", "", df_meta$specimenID)
 df_meta$Dx = factor(df_meta$Dx, c("C", "AD", "P"))
 
-# file = paste0(path, '/data/snRNAseqAD_TREM2_biospecimen_metadata.csv')
-# df_meta2 = read.table(file, header=TRUE, sep=',')
-
 resList = lapply(rownames(df_meta), function(id){
 
 	# read counts file
