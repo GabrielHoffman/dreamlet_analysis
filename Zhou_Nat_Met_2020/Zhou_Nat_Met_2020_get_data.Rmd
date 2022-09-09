@@ -61,7 +61,7 @@ resList = lapply(rownames(df_meta), function(id){
 	# read gene names
 	file = paste0(path, '/data/', id, '_features.tsv.gz')
 	df = read.table(file)
-	rownames(counts) = df$V2
+	rownames(counts) = df$V1
 
 	# create colData for each cell from metadata for each sample
 	info = df_meta[rep(id, ncol(counts)),]
