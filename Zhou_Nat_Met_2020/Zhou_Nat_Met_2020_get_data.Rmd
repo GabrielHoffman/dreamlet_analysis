@@ -78,9 +78,11 @@ info = do.call(rbind, lapply(resList, function(x) x$info))
 ```
 
 ```{r create.sce, eval=FALSE}
+# Read cell-level metadata
 file = paste0(path, "data/clusters_cellID.xlsx")
 df_annotations = read.xlsx(file, sheet=2)
 
+# Update names
 df_annotations$Sample = gsub("^TWCC-", "", df_annotations$Sample)
 df_annotations$Barcodes = gsub("^TWCC-", "", df_annotations$Barcodes)
 
