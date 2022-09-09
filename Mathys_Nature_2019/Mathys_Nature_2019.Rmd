@@ -6,13 +6,8 @@ date: "Run on `r Sys.time()`"
 documentclass: article
 output: 
   html_document:
-  toc: true
-  smart: false
-vignette: >
-  %\VignetteIndexEntry{Mathys, et al. Nature 2019}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-  %\usepackage[utf8]{inputenc}
+    toc: true
+    smart: false
 ---
 
 
@@ -46,10 +41,6 @@ knitr::opts_chunk$set(
 
 # Load packages
 ```{r load.packages, cache=FALSE}
-# Use cache=FALSE so that package are fully loaded each time
-# This ensures that forks within mclapply() have these loaded
-# Othewise, mclapply() not have access to these libraries and will fail 
-#   unless the libraries are manually loaded within each fork
 library(SingleCellExperiment)
 library(zellkonverter)
 library(DelayedArray)
@@ -81,7 +72,7 @@ sce = readH5AD(file, use_hdf5=TRUE)
 sce$pmi[is.na(sce$pmi)] = mean(sce$pmi, na.rm=TRUE) 
 ```
 
-# Tsne embedding
+# tSNE embedding
 ```{r umap}
 colData(sce) %>% 
   as.data.frame() %>%
@@ -92,7 +83,7 @@ colData(sce) %>%
 ```
 
 # Sex check
-Aggregate reads across cells and plot expression on the UTY from chrY
+Aggregate reads across cells and plot expression on the UTY from chrY to confirm proper sex assignment.
 ```{r sex.check}
 # pseudobulk summing across all cells
 pb.all <- aggregateToPseudoBulk(sce,
@@ -155,26 +146,10 @@ details(res.proc)
 ```
 
 ### Show voom-style mean-variance trends
-```{r voom.plot, fig.height=18, fig.width=12}
+```{r voom.plot, fig.height=12, fig.width=12}
 # show voom plot for each cell clusters  
-plotVoom( res.proc, ncol=4)
+plotVoom( res.proc, ncol=3)
 ```
-
-# Variance partitioning analysis
-```{r vp, fig.width=8, fig.height=7}
-# variancePartition
-vp.sex = fitVarPart( res.proc, form, 
-  BPPARAM = SnowParam(6, progressbar=TRUE))
-```
-
-```{r vp.plot}
-plotVarPart(vp.sex)
-```
-
-```{r plotPercentBars, fig.height=3}
-plotPercentBars(vp.sex[vp.sex$gene %in% "UTY",])
-```
-
 
 ## Relationship between variables
 Use canonical correlation analysis to show association between variables

@@ -67,8 +67,12 @@ colData(sce) %>%
   ggplot(aes(tSNE_1, tSNE_2, color=Label)) + 
   geom_scattermore() +
   theme_classic() + 
-  theme(aspect.ratio=1, axis.text=element_blank()) +
-  scale_color_discrete(name="Cell type")
+  theme(aspect.ratio = 1, 
+    axis.text = element_blank(),
+    axis.ticks = element_blank()) +
+  scale_color_discrete(name="Cell type") +
+  xlab("tSNE 1") +
+  ylab("tSNE 2")
 ```
 
 
