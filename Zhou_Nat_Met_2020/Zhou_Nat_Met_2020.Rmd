@@ -50,7 +50,8 @@ setAutoBlockSize(1e9)
 ```{r load}
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/Zhou_Nat_Met_2020.h5ad"
 
-sce = readH5AD(file, use_hdf5=TRUE)   
+sce = readH5AD(file, use_hdf5=TRUE) 
+sce$sequencingBatch = factor(sce$sequencingBatch) 
 
 # create pseudobulk 
 pb <- aggregateToPseudoBulk(sce,
@@ -59,7 +60,7 @@ pb <- aggregateToPseudoBulk(sce,
     sample_id = "specimenID")
 ```
 
-# UMAP embedding
+# tSNE embedding
 ```{r embeding}
 colData(sce) %>%
   data.frame() %>%
@@ -75,7 +76,7 @@ colData(sce) %>%
 ```{r voom}
 # Normalize and apply voom/voomWithDreamWeights
 form = ~ (1|Dx) + (1|sequencingBatch)
-res.proc = processAssays( pb, 
+res.proc = processAssays( pb,  
                           form,  
                           min.count=5,
                           BPPARAM = SnowParam(6))
@@ -106,6 +107,22 @@ plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)
 ```
 
 
+
+# dreamlet analysis
+```{r dreamlet}
+form = ~ Dx + (1|sequencingBatch)
+
+# dreamlet analysis
+res.dl = dreamlet(res.proc, 
+                  form, 
+                  BPPARAM = SnowParam(6, progressbar=TRUE))
+```
+
+# Volcano plots for each contrast
+### Tumor_Involved  = 'StatusTumor - StatusInvolved'
+```{r volcano.Tumor_Involved, fig.height=16, fig.width=10}
+plotVolcano( res.dl, coef = 'Tumor_Involved', ncol=4)
+```
 
 
 

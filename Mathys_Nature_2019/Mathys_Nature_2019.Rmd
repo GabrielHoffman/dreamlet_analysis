@@ -256,7 +256,7 @@ fig3 = ggplot(df, aes(pi1, assay, fill=assay)) +
     xlab(bquote(pi[1])) +
     ylab("Cell type")
 
-plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=3, axis="tblr", align="hv")
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
 ```    
 
 
