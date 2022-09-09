@@ -333,6 +333,30 @@ plot_grid(fig.strat0, fig.strat1, fig.strat2,
 ```
 
 
+```{r combine2, fig.height=7, fig.width=12}
+# gs = c("MHC class II protein complex binding", "interferon-g")#, "translation init", "antigen", "positive regulation of cell growth", "GO1902036", "GO0045582")
+# gs = "mitochondrial translation"
+#  "GO0045582",
+
+gs = c('GO0060333', 'GO0023026', 'GO0006413', 'GO0042590', 'GO0042605', 'GO0030307', "GO1902036", 'GO0032543', 'GO0044183')
+
+res_zenith = res_zenith.Tumor_Involved
+
+idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
+# unique(res_zenith$Geneset[idx])
+
+# CellTypes = c("Mono1", "Mono2", "Mono3", "TIM", "Monocyte prog", "mDC", "Erythroid", "Immature B cells", "CTL-1", "CTL-2")
+idx3 = idx
+# idx2 = res_zenith.Tumor_Involved$assay %in% CellTypes
+# idx3 = intersect(idx, which(idx2))
+res_zenith$assay = factor(res_zenith$assay)
+
+fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
+  
+lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.vol) 
+plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="t")
+```
+
 ```{r combine3, fig.height=5, fig.width=12}
 res_zenith = res_zenith.Tumor_Involved 
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
@@ -362,29 +386,6 @@ plot_grid(fig.zenith1, fig.zenith2, ncol=1)
 ```
 
 
-```{r combine2, fig.height=7, fig.width=12}
-# gs = c("MHC class II protein complex binding", "interferon-g")#, "translation init", "antigen", "positive regulation of cell growth", "GO1902036", "GO0045582")
-# gs = "mitochondrial translation"
-#  "GO0045582",
-
-gs = c('GO0060333', 'GO0023026', 'GO0006413', 'GO0042590', 'GO0042605', 'GO0030307', "GO1902036", 'GO0032543', 'GO0044183')
-
-res_zenith = res_zenith.Tumor_Involved
-
-idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
-# unique(res_zenith$Geneset[idx])
-
-# CellTypes = c("Mono1", "Mono2", "Mono3", "TIM", "Monocyte prog", "mDC", "Erythroid", "Immature B cells", "CTL-1", "CTL-2")
-idx3 = idx
-# idx2 = res_zenith.Tumor_Involved$assay %in% CellTypes
-# idx3 = intersect(idx, which(idx2))
-res_zenith$assay = factor(res_zenith$assay)
-
-fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
-  
-lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.vol) 
-plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="t")
-```
 
 
 
