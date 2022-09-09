@@ -26,6 +26,7 @@ knitr::opts_chunk$set(
 library(Matrix)
 library(SingleCellExperiment)
 library(zellkonverter)
+library(openxlsx)
 ```
 
 ```{r download}
@@ -33,6 +34,7 @@ path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/"
 setwd(path) 
 system("synapse get -r syn21682218")
 system("synapse get -r syn21126462")
+system("synapse get -r syn22264145")
 system("mkdir data; mv ./* data")
 ```
 
@@ -73,17 +75,22 @@ resList = lapply(rownames(df_meta), function(id){
 # combine results from each sample
 counts = do.call(cbind, lapply(resList, function(x) x$counts))
 info = do.call(rbind, lapply(resList, function(x) x$info))
-
-# Create SingleCellExperiment
-sce = SingleCellExperiment( assays = list(counts = counts),
-		colData = info)
 ```
 
-```{r write}
-# write to file 
-file = paste0(path, '/Zhou_Nat_Met_2020.h5ad')
-writeH5AD(sce, file, compression="lzf")
-```
+# ```{r create.sce}
+# file = paste0(path, "data//clusters_cellID.xlsx")
+# df_annotations = read.xlsx(file, sheet=2)
+
+# # Create SingleCellExperiment
+# sce = SingleCellExperiment( assays = list(counts = counts),
+# 		colData = info)
+# ```
+
+# ```{r write}
+# # write to file 
+# file = paste0(path, '/Zhou_Nat_Met_2020.h5ad')
+# writeH5AD(sce, file, compression="lzf")
+# ```
 
 
 
