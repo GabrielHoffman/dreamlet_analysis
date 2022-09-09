@@ -105,7 +105,8 @@ counts = lapply(assayNames(pb.all), function(key){
   })
 counts = Reduce("+", counts)
 
-pb.all2 = SingleCellExperiment(assays=list(counts=counts), colData= colData(pb.all))
+pb.all2 = SingleCellExperiment(assays=list(counts=counts), 
+          colData= colData(pb.all))
 
 # compute sum-factors & normalize
 pb.all2 <- computeLibraryFactors(pb.all2)
@@ -139,7 +140,11 @@ pb$sequencingBatch = factor(pb$sequencingBatch)
 form = ~ (1|sequencingBatch) + (1|msex) + (1|Dx) + educ + braaksc
 
 # process data
-res.proc = processAssays( pb, form, min.cells=5, min.count=2, min.samples=8)
+res.proc = processAssays( pb, form, 
+  min.cells=5, 
+  min.count=2, 
+  min.samples=8, 
+  BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
 
 
@@ -157,7 +162,8 @@ plotVoom( res.proc, ncol=4)
 # Variance partitioning analysis
 ```{r vp, fig.width=8, fig.height=7}
 # variancePartition
-vp.sex = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
+vp.sex = fitVarPart( res.proc, form, 
+  BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
 
 ```{r vp.plot}
@@ -184,15 +190,20 @@ plotCorrMatrix(C)
 # run variance partitioning analysis
 #  + apoe_genotype + pmi
 form =  ~ (1|sequencingBatch) + (1|msex) + educ + pmi + (1|Dx) #+ braaksc + dcfdx_lv + cogdx + ceradsc
-vp.lst = fitVarPart( res.proc, form, BPPARAM=SnowParam(12, progressbar=TRUE))
 
+vp.lst = fitVarPart( res.proc, form, 
+  BPPARAM=SnowParam(12, progressbar=TRUE))
+```
+
+```{r plot.vp}
 plotVarPart(vp.lst)
 ```
 
 # Dreamlet analysis
 ```{r dreamlet2}
 form =  ~ (1|sequencingBatch) + (1|msex) + educ + pmi + Dx
-res.dl = dreamlet(res.proc, form, BPPARAM=SnowParam(12, progressbar=TRUE))
+res.dl = dreamlet(res.proc, form, 
+  BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
 ## Volcano plots 
