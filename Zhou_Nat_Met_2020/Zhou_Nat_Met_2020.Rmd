@@ -110,22 +110,28 @@ vp.lst = fitVarPart( res.proc, form,
 plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4) 
 ```
 
+# need to Model Sex
+
 
 
 # dreamlet analysis
 ```{r dreamlet}
 form = ~ Dx + (1|sequencingBatch)
 
+contrasts = c( "P_vs_C" = 'DxP - DxC',
+               "AD_vs_C" = 'DxAD - DxC',
+               "P_vs_AD" = 'DxP - DxAD')
 # dreamlet analysis
 res.dl = dreamlet(res.proc, 
-                  form, 
+                  form,                   
+                  contrasts=contrasts, 
                   BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
 
 # Volcano plots for each contrast
-### Tumor_Involved  = 'StatusTumor - StatusInvolved'
-```{r volcano.Tumor_Involved, fig.height=16, fig.width=10}
-plotVolcano( res.dl, coef = 'Tumor_Involved', ncol=4)
+### P_vs_C
+```{r volcano.P_vs_C, fig.height=16, fig.width=10}
+plotVolcano( res.dl, coef = 'P_vs_C', ncol=4)
 ```
 
 
