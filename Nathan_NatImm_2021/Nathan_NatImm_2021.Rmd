@@ -154,11 +154,6 @@ res.proc = processAssays( pb, form,
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
-```{r sdf, cache=FALSE}
-knitr::knit_exit()
-```
-
-
 ### Show details of processing
 ```{r details}
 details(res.proc)
