@@ -4,6 +4,19 @@
 #
 # Data located at https://www.synapse.org/#!Synapse:syn18485175
 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
 # Download data
 ```{r download}
 path = '/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Mathys_Nature_2019'
