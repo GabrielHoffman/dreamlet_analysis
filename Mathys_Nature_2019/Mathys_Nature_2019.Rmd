@@ -62,6 +62,7 @@ library(tidyverse)
 library(BiocParallel)
 library(kableExtra)
 library(qvalue)
+library(cowplot)
 
 # set block size for reading DelayedMatrix in H5AD file
 # The default of 1e8 to small and increasing to the block size 
