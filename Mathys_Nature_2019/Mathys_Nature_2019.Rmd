@@ -196,7 +196,7 @@ plotVolcano(res.dl, coef='DxAD')
 
 
 ### Summarize differential expression 
-```{r plot.pi, fig.height=6, fig.width=12}
+```{r plot.pi, fig.height=5, fig.width=12}
 # Summarize differential expression for each coef and assay
 df = res.dl %>%
   topTable(coef='DxAD', number=Inf) %>%
@@ -253,9 +253,6 @@ plotZenithResults(df_gs, 5, 2)
 ```
 
 
-```{r exit, cache=FALSE}
-knitr::knit_exit()
-```
 
 # MASHR
 ```{r mashr}
@@ -281,6 +278,10 @@ df_gs_mash = zenith_gsa(res_mash, go.gs)
 plotZenithResults(df_gs_mash, 5, 2)
 ```
 
+
+```{r exit, cache=FALSE, echo=FALSE}
+knitr::knit_exit()
+```
 
 
 Figure 1c: BEX1, STMN1, BEX3, LINGO1, MTRNR2L8, DHFR
