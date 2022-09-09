@@ -1,0 +1,73 @@
+# April 5, 2022
+#
+# Download and process data from Mathys, et al. Nature 2019
+#
+# Data located at https://www.synapse.org/#!Synapse:syn18485175
+
+# Download data
+```{r download}
+path = '/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Mathys_Nature_2019'
+setwd(path)
+
+system("synapse get -r syn18642926")
+system("synapse get -r syn18681734")
+system("synapse get syn3191087")
+dir.create("data")
+system("mv ./* data/")
+```
+
+# Read data
+```{r read.data}
+library(Matrix)
+library(SingleCellExperiment)
+library(zellkonverter)
+
+# read counts
+mmfile = "data/filtered_count_matrix.mtx"
+geneCounts = readMM( mmfile )
+geneCounts = as(geneCounts, "dgCMatrix")
+
+# read rownames
+file = "data/filtered_gene_row_names.txt" 
+df_rn = read.table(file)
+rownames(geneCounts) = df_rn$V1
+
+# read colnames
+file = "data/filtered_column_metadata.txt" 
+df_cn = read.table(file, head=TRUE)
+colnames(geneCounts) = df_cn$TAG
+
+
+# read METADATA
+file = "data/snRNAseqPFC_BA10_assay_scRNAseq_metadata.csv" 
+df_scrnaseq = read.csv(file, header=TRUE)
+
+file = "data/snRNAseqPFC_BA10_biospecimen_metadata.csv" 
+df_biospecimen = read.csv(file, header=TRUE)
+
+file = "data/snRNAseqPFC_BA10_id_mapping.csv" 
+df_id = read.csv(file, header=TRUE)
+
+file = "data/snRNAseqPFC_BA10_Sample_key.csv" 
+df_sample = read.csv(file, header=TRUE)
+
+file = "data/ROSMAP_clinical.csv" 
+df_clinical = read.csv(file, header=TRUE)
+
+i = which(colnames(df_clinical)=='individualID')
+df_colData = merge(df_biospecimen, df_clinical[,-i], by="projid")
+df_colData = merge(df_colData, unique(df_scrnaseq[,c('specimenID', 'sequencingBatch')]), by="specimenID")
+df_colData = merge(df_cn, df_colData, by="projid")
+rownames(df_colData) = df_colData$TAG
+df_colData = df_colData[,-which(colnames(df_colData) == "TAG")]
+
+# Make SingleCellExperiment
+sce = SingleCellExperiment(assays=list(counts=geneCounts), 
+	colData = df_colData[colnames(geneCounts),])
+
+# Write H5AD
+file = "Mathys_Nature_2019.h5ad"
+writeH5AD(sce, file, compression="lzf", verbose=TRUE)
+```
+
+
