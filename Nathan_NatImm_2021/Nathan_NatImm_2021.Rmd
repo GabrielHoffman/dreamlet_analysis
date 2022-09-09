@@ -150,11 +150,14 @@ plotCorrMatrix(C)
 ```{r voom}
 form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
 res.proc = processAssays( pb, form, 
-  min.count = 5, 
-  min.cells = 5,
-  min.samples = 6,
+  min.samples = 10,
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
+
+```{r sdf, cache=FALSE}
+knitr::knit_exit()
+```
+
 
 ### Show details of processing
 ```{r details}
@@ -163,13 +166,13 @@ details(res.proc)
 
 ### Show voom-style mean-variance trends
 ```{r plot.voom, fig.width=8, fig.height=16}
-plotVoom( res.proc, ncol=4)
+plotVoom( res.proc, ncol=4) 
 ```
 
 # Variance partitioning analysis
 Note that variation across donors here indicates technical variation since the multiple samples from the same donor are technical replicates.
 ```{r run.vp}
-form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
+form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT 
 vp.lst = fitVarPart( res.proc, form, 
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
