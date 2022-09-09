@@ -1,0 +1,76 @@
+---
+title: "Human and mouse single-nucleus transcriptomics reveal TREM2-dependent and TREM2-independent cellular responses in Alzheimer’s disease"
+subtitle: '[Zhou, et al. Nature Medicine (2020)](https://www.nature.com/articles/s41591-019-0695-9)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+    toc: true
+    smart: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+
+```{r load.packages, cache=FALSE}
+library(SingleCellExperiment)
+library(zellkonverter)
+library(GSEABase)
+library(dreamlet)
+library(scater)
+library(zenith)
+library(knitr)
+library(kableExtra)
+library(scattermore)
+library(cowplot)
+library(ggplot2)
+library(qvalue)
+library(tidyverse)
+library(BiocParallel)
+library(DelayedArray)
+
+# set block size for reading DelayedMatrix in H5AD file
+# The default of 1e8 to small and increasing to the block size 
+# (i.e. cache size) to 1e9 decrease run time 
+# with increased memory usage
+setAutoBlockSize(1e9)
+```
+
+```{r load}
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/Zhou_Nat_Met_2020.h5ad"
+
+sce = readH5AD(file, use_hdf5=TRUE)   
+
+
+# create pseudobulk 
+pb <- aggregateToPseudoBulk(sce,
+    assay = "counts",     
+    cluster_id = "Label",  
+    sample_id = "specimenID")
+```
+
+# UMAP embedding
+```{r embeding}
+colData(sce) %>%
+  data.frame() %>%
+  ggplot(aes(tSNE_1, tSNE_2, color=Label)) + 
+  geom_scattermore() +
+  theme_classic() + 
+  theme(aspect.ratio=1, axis.text=element_blank()) +
+  scale_color_discrete(name="Cell type")
+```
+
+
+
+
