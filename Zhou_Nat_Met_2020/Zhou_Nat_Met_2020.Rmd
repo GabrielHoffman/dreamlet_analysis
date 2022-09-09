@@ -116,7 +116,7 @@ plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)
 
 # dreamlet analysis
 ```{r dreamlet}
-form = ~ Dx + (1|sequencingBatch)
+form = ~ 0 + Dx + (1|sequencingBatch)
 
 contrasts = c( "P_vs_C" = 'DxP - DxC',
                "AD_vs_C" = 'DxAD - DxC',
