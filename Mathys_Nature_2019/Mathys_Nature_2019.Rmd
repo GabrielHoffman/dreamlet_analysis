@@ -91,7 +91,7 @@ colData(sce) %>%
 
 # Sex check
 ```{r sex.check}
-# pseudobulk summing across all cels
+# pseudobulk summing across all cells
 pb.all <- aggregateToPseudoBulk(sce,
     assay = "counts",     
     cluster_id = "projid",  
