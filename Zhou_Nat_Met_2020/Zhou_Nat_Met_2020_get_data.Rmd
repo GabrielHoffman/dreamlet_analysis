@@ -1,0 +1,113 @@
+---
+title: "Human and mouse single-nucleus transcriptomics reveal TREM2-dependent and TREM2-independent cellular responses in Alzheimer’s disease"
+subtitle: '[Zhou, et al. Nature Medicine (2020)](https://www.nature.com/articles/s41591-019-0695-9)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+    toc: true
+    smart: false
+vignette: >
+  %\VignetteIndexEntry{Human prostate cancer bone metastases have an actionable immunosuppressive microenvironment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+
+```{r download}
+system("synapse get -r syn21682218")
+system("synapse get -r syn21126462")
+```
+
+```{r load, cache=FALSE}
+library(Matrix)
+library(SingleCellExperiment)
+library(zellkonverter)
+```
+
+```{r read.data}
+path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/"
+
+file = paste0(path, '/data/snRNAseqAD_TREM2_assay_scRNAseq_metadata.csv')
+df_meta = read.table(file, header=TRUE, sep=',')
+rownames(df_meta) = df_meta$specimenID
+df_meta$Dx = gsub("(\\d+)$", "", df_meta$specimenID)
+df_meta$Dx = factor(df_meta$Dx, c("C", "AD", "P"))
+
+# file = paste0(path, '/data/snRNAseqAD_TREM2_biospecimen_metadata.csv')
+# df_meta2 = read.table(file, header=TRUE, sep=',')
+
+resList = lapply(rownames(df_meta), function(id){
+
+	# read counts file
+	file = paste0(path, '/data/', id, '_matrix.mtx.gz')
+	counts = readMM(file)
+
+	# read barcodes to columns
+	file = paste0(path, '/data/', id, '_barcodes.tsv.gz')
+	cn = scan(file, what=character())
+	colnames(counts) = paste0(id, '_', cn)
+
+	# read gene names
+	file = paste0(path, '/data/', id, '_features.tsv.gz')
+	df = read.table(file)
+	rownames(counts) = df$V2
+
+	# create colData for each cell from metadata for each sample
+	info = df_meta[rep(id, ncol(counts)),]
+	rownames(info) = colnames(counts)
+
+	list(counts=counts, info = info)
+	})
+
+# combine results from each sample
+counts = do.call(cbind, lapply(resList, function(x) x$counts))
+info = do.call(rbind, lapply(resList, function(x) x$info))
+
+# Create SingleCellExperiment
+sce = SingleCellExperiment( assays = list(counts = counts),
+		colData = info)
+```
+
+```{r write}
+# write to file
+file = paste0(path, '/Zhou_Nat_Met_2020.h5ad')
+writeH5AD(sce, file, compression="lzf")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
