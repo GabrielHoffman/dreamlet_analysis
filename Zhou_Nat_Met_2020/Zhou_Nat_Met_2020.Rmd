@@ -169,12 +169,12 @@ plotVolcano( res.dl, coef = 'P_vs_C', ncol=4)
 ```
 
 ### AD_vs_C
-```{r volcano.P_vs_C, fig.height=16, fig.width=10}
+```{r volcano.AD_vs_C, fig.height=16, fig.width=10}
 plotVolcano( res.dl, coef = 'AD_vs_C', ncol=4)
 ```
 
 ### P_vs_AD
-```{r volcano.P_vs_C, fig.height=16, fig.width=10}
+```{r volcano.P_vs_AD, fig.height=16, fig.width=10}
 plotVolcano( res.dl, coef = 'P_vs_AD', ncol=4)
 ```
 
