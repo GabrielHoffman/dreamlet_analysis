@@ -119,8 +119,9 @@ data.frame(UTY = logcounts(pb.all2)["UTY",], Sex = pb.all2$msex) %>%
     theme(aspect.ratio=1)
 ```
 
-# Dreamlet analysis
-```{r dreamlet}
+
+# Compute pseudobulk
+```{r pb}
 # Pseudobulk, dropping pericytes
 keep = sce$broad.cell.type != "Per"
 pb <- aggregateToPseudoBulk(sce[,keep],
@@ -131,7 +132,10 @@ pb <- aggregateToPseudoBulk(sce[,keep],
 
 # convert sequencingBatch to factor
 pb$sequencingBatch = factor(pb$sequencingBatch)
+```
 
+# Dreamlet analysis
+```{r dreamlet}
 form = ~ (1|sequencingBatch) + (1|msex) + (1|Dx) + educ + braaksc
 
 # process data
