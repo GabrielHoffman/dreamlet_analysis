@@ -73,7 +73,7 @@ setAutoBlockSize(1e9)
 # Read data
 ```{r read.data}
 # read h5ad
-file = "/sc/arion/projects/CommonMind/hoffman/Mathys_Nature_2019/Mathys_Nature_2019.h5ad"
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_Nature_2019/Mathys_Nature_2019.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE)
 
 sce$pmi[is.na(sce$pmi)] = mean(sce$pmi, na.rm=TRUE) 
@@ -117,6 +117,7 @@ data.frame(UTY = logcounts(pb.all2)["UTY",], Sex = pb.all2$msex) %>%
     theme(aspect.ratio=1)
 ```
 
+# Dreamlet analysis
 ```{r dreamlet}
 # Pseudobulk, dropping pericytes
 keep = sce$broad.cell.type != "Per"
