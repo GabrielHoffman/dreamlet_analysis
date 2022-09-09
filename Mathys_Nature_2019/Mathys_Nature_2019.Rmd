@@ -136,14 +136,27 @@ form = ~ (1|sequencingBatch) + (1|msex) + (1|Dx) + educ + braaksc
 
 # process data
 res.proc = processAssays( pb, form, min.cells=5, min.count=2, min.samples=8)
-
-plotVoom(res.proc)
 ```
 
+
+### Show details of processing
+```{r details}
+details(res.proc)
+```
+
+### Show voom-style mean-variance trends
+```{r voom.plot, fig.height=18, fig.width=12}
+# show voom plot for each cell clusters  
+plotVoom( res.proc, ncol=4)
+```
+
+# Variance partitioning analysis
 ```{r vp, fig.width=8, fig.height=7}
 # variancePartition
-vp.sex = fitVarPart( res.proc, form)
+vp.sex = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
+```
 
+```{r vp.plot}
 plotVarPart(vp.sex)
 ```
 
@@ -152,6 +165,8 @@ plotPercentBars(vp.sex[vp.sex$gene %in% "UTY",])
 ```
 
 
+## Relationship between variables
+Use canonical correlation analysis to show association between variables
 ```{r canCorPairs, fig.height=8, fig.width=7}
 form =  ~ sequencingBatch + msex + educ + pmi + Dx + braaksc + dcfdx_lv + cogdx + ceradsc
 
@@ -160,6 +175,7 @@ C = canCorPairs(form, colData(res.proc))
 plotCorrMatrix(C)
 ```
 
+# Variance Partitioning
 ```{r vp2, fig.width=8, fig.height=7}
 # run variance partitioning analysis
 #  + apoe_genotype + pmi
@@ -169,43 +185,84 @@ vp.lst = fitVarPart( res.proc, form, BPPARAM=SnowParam(12, progressbar=TRUE))
 plotVarPart(vp.lst)
 ```
 
-# dreamlet
+# Dreamlet analysis
 ```{r dreamlet2}
 form =  ~ (1|sequencingBatch) + (1|msex) + educ + pmi + Dx
 res.dl = dreamlet(res.proc, form, BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
+## Volcano plots 
 ```{r volcano, fig.width=8, fig.height=7}
 plotVolcano(res.dl, coef='DxAD')
 ```
 
 ```{r resTable}
-res.dl %>%
+
+```
+
+
+
+### Summarize differential expression 
+```{r plot.pi, fig.height=12, fig.width=12}
+# Summarize differential expression for each coef and assay
+df = res.dl %>%
   topTable(coef='DxAD', number=Inf) %>%
     as_tibble %>% 
     group_by(assay) %>% 
     summarise( 
       nGenes = length(adj.P.Val), 
       nDE = sum(adj.P.Val < 0.05),
-      pi1 = 1 - qvalue(P.Value)$pi0) %>%
-    kbl() %>% 
-    kable_styling(full_width=FALSE)
-```
+      pi1 = 1 - qvalue(P.Value)$pi0) 
 
+ymax = 1.05*max(df$nGenes)
+fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes expressed") +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+ymax = 1.05*max(df$nDE)
+fig2 = ggplot(df, aes(nDE, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes with FDR < 5%") +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+fig3 = ggplot(df, aes(pi1, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
+    xlab(bquote(pi[1])) +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=3, axis="tblr", align="hv")
+```    
+
+
+
+# Gene set analysis using zenith
 ```{r zenith1, fig.height=10}
 # Load Gene Ontology database 
-# use gene 'SYMBOL', or 'ENSEMBL' id
-# use get_MSigDB() to load MSigDB 
 go.gs = get_GeneOntology(to="SYMBOL")
 
-# valid values for statistic: 
-# "tstatistic", "abs(tstatistic)", "logFC", "abs(logFC)"
+# Run zenith gene set analysis on result of dreamlet 
 df_gs = zenith_gsa(res.dl, go.gs, coef='DxAD')
+```
 
-# Heatmap of results
+## Heatmap of results
+```
 plotZenithResults(df_gs, 5, 2)
 ```
 
+# MASHR
 ```{r mashr}
 # run mashr model to borrow information across genes and
 # cell types in estimating coefficients' posterior distribution
