@@ -27,17 +27,17 @@ knitr::opts_chunk$set(
   cache.lazy = FALSE)
 ```
 
+```{r load, cache=FALSE}
+library(Matrix)
+library(SingleCellExperiment)
+library(zellkonverter)
+```
 
 ```{r download}
 system("synapse get -r syn21682218")
 system("synapse get -r syn21126462")
 ```
 
-```{r load, cache=FALSE}
-library(Matrix)
-library(SingleCellExperiment)
-library(zellkonverter)
-```
 
 ```{r read.data}
 path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/"
