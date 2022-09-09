@@ -74,7 +74,7 @@ counts = do.call(cbind, lapply(resList, function(x) x$counts))
 info = do.call(rbind, lapply(resList, function(x) x$info))
 ```
 
-```{r create.sce, eval=FALSE}
+```{r create.sce}
 # Read cell-level metadata
 file = paste0(path, "data/clusters_cellID.xlsx")
 df_annotations = read.xlsx(file, sheet=2)
@@ -99,7 +99,7 @@ sce = SingleCellExperiment( assays =
 		colData = info2)
 ```
 
-```{r write, eval=FALSE}
+```{r write}
 # write to file 
 file = paste0(path, '/Zhou_Nat_Met_2020.h5ad')
 writeH5AD(sce, file, compression="lzf")
