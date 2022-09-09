@@ -81,6 +81,19 @@ df_colData = df_colData[,-which(colnames(df_colData) == "TAG")]
 sce = SingleCellExperiment(assays=list(counts=geneCounts), 
 	colData = df_colData[colnames(geneCounts),])
 
+# Fix metadata
+sce$msex[sce$msex==1] = "M"
+sce$msex[sce$msex==0] = "F"
+sce$msex = factor(sce$msex, c("F", "M"))
+
+# Code AD
+isAD = colData(sce)$age_first_ad_dx != ''
+colData(sce)$Dx = factor(c("Control", "AD")[isAD+1], c("Control", "AD"))
+
+AOD = as.character(sce$age_death)
+AOD[AOD=="90+"] = '90'
+sce$age_death_numeric = as.numeric(AOD)
+
 # Write H5AD
 file = "Mathys_Nature_2019.h5ad"
 writeH5AD(sce, file, compression="lzf", verbose=TRUE)
