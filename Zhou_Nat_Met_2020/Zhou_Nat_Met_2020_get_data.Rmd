@@ -77,18 +77,23 @@ counts = do.call(cbind, lapply(resList, function(x) x$counts))
 info = do.call(rbind, lapply(resList, function(x) x$info))
 ```
 
-```{r create.sce}
+```{r create.sce, eval=FALSE}
 file = paste0(path, "data/clusters_cellID.xlsx")
 df_annotations = read.xlsx(file, sheet=2)
 
-info2 = merge(info, df_annotations)
+df_annotations$Sample = gsub("^TWCC-", "", df_annotations$Sample)
+df_annotations$Barcodes = gsub("^TWCC-", "", df_annotations$Barcodes)
+
+rownames(info) = gsub("-1$", "", rownames(info))
+
+info2 = merge(info, df_annotations, by.x = "row.names", by.y = "Barcodes")
 
 # Create SingleCellExperiment
 sce = SingleCellExperiment( assays = list(counts = counts),
-		colData = info)
+		colData = info2)
 ```
 
-```{r write}
+```{r write, eval=FALSE}
 # write to file 
 file = paste0(path, '/Zhou_Nat_Met_2020.h5ad')
 writeH5AD(sce, file, compression="lzf")
