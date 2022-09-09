@@ -34,14 +34,14 @@ library(zellkonverter)
 ```
 
 ```{r download}
+path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/"
+setwd(path)
 system("synapse get -r syn21682218")
 system("synapse get -r syn21126462")
 ```
 
 
 ```{r read.data}
-path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/"
-
 file = paste0(path, '/data/snRNAseqAD_TREM2_assay_scRNAseq_metadata.csv')
 df_meta = read.table(file, header=TRUE, sep=',')
 rownames(df_meta) = df_meta$specimenID
