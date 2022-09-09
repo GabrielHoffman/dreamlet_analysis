@@ -36,8 +36,9 @@ rownames(geneCounts) = df_rn$V1
 file = "data/filtered_column_metadata.txt" 
 df_cn = read.table(file, head=TRUE)
 colnames(geneCounts) = df_cn$TAG
+```
 
-
+```{r data.read2}
 # read METADATA
 file = "data/snRNAseqPFC_BA10_assay_scRNAseq_metadata.csv" 
 df_scrnaseq = read.csv(file, header=TRUE)
