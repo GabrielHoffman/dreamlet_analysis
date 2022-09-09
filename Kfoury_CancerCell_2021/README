@@ -1,5 +1,6 @@
 
 cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Kfoury_CancerCell_2021
+ml git
 R
 
 
@@ -14,3 +15,9 @@ system("git pull"); rmarkdown::render("Kfoury_CancerCell_2021.Rmd");
 
 
 
+
+rsync -zP sklar1:/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021.html ~/Downloads/
+
+
+
+rsync -zP sklar1:/sc/arion/projects/CommonMind/hoffman/eval_methods/dreamlet/Nathan_NatImm_2021.html ~/Downloads
