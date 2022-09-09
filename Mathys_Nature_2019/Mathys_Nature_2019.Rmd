@@ -73,9 +73,10 @@ setAutoBlockSize(1e9)
 # Read data
 ```{r read.data}
 # read h5ad
-file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_Nature_2019/Mathys_Nature_2019.h5ad"
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Mathys_Nature_2019/Mathys_Nature_2019.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE)
 
+# Set missing PMI to mean
 sce$pmi[is.na(sce$pmi)] = mean(sce$pmi, na.rm=TRUE) 
 ```
 
@@ -90,6 +91,7 @@ colData(sce) %>%
 ```
 
 # Sex check
+Aggregate reads across cells and plot expression on the UTY from chrY
 ```{r sex.check}
 # pseudobulk summing across all cells
 pb.all <- aggregateToPseudoBulk(sce,
