@@ -100,12 +100,10 @@ pb.all2 = SingleCellExperiment(assays=list(counts=counts),
 pb.all2 <- computeLibraryFactors(pb.all2)
 pb.all2 <- logNormCounts(pb.all2)
 
-# plot Sex
-data.frame(UTY = logcounts(pb.all2)["ENSG00000183878",], Sex = pb.all2$msex) %>%
-  ggplot(aes(Sex, UTY)) + 
-    geom_point() + 
-    theme_classic() + 
-    theme(aspect.ratio=1)
+df  = data.frame(Sex = ifelse(logcounts(pb.all2)["ENSG00000183878",] > 1, "M", "F"))
+
+i = match(colnames(pb), rownames(df))
+pb$Sex = df$Sex
 ```
 
 
@@ -113,7 +111,7 @@ data.frame(UTY = logcounts(pb.all2)["ENSG00000183878",], Sex = pb.all2$msex) %>%
 ## Process pseudobulk data to estimate precision weights
 ```{r voom}
 # Normalize and apply voom/voomWithDreamWeights
-form = ~ (1|Dx) + (1|sequencingBatch)
+form = ~ (1|Dx) + (1|sequencingBatch) + (1|Sex)
 res.proc = processAssays( pb,  
                           form,  
                           min.count=5,
@@ -134,7 +132,7 @@ plotVoom( res.proc, ncol=4)
 # Variance partitioning analysis
 ```{r vp}
 # run variance partitioning analysis
-form = ~ (1|Dx) + (1|sequencingBatch)
+form = ~ (1|Dx) + (1|sequencingBatch) + (1|Sex)
 vp.lst = fitVarPart( res.proc, form, 
   BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
@@ -150,7 +148,7 @@ plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)
 
 # dreamlet analysis
 ```{r dreamlet}
-form = ~ 0 + Dx + (1|sequencingBatch)
+form = ~ 0 + Dx + (1|sequencingBatch)  + (1|Sex)
 
 contrasts = c( "P_vs_C" = 'DxP - DxC',
                "AD_vs_C" = 'DxAD - DxC',
