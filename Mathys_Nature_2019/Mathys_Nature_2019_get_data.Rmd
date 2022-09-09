@@ -31,6 +31,7 @@ system("mv ./* data/")
 
 # Read data
 ```{r read.data}
+setwd(path)
 library(Matrix)
 library(SingleCellExperiment)
 library(zellkonverter)
@@ -52,6 +53,7 @@ colnames(geneCounts) = df_cn$TAG
 ```
 
 ```{r data.read2}
+setwd(path)
 # read METADATA
 file = "data/snRNAseqPFC_BA10_assay_scRNAseq_metadata.csv" 
 df_scrnaseq = read.csv(file, header=TRUE)
