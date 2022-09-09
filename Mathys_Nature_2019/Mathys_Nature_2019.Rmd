@@ -79,7 +79,9 @@ colData(sce) %>%
   ggplot(aes(tsne1, tsne2, color=broad.cell.type)) + 
     geom_point() + 
     theme_classic() + 
-    theme(aspect.ratio=1)
+    theme(aspect.ratio=1, axis.ticks = element_blank()) +
+  xlab("tSNE 1") +
+  ylab("tSNE 2")
 ```
 
 # Sex check
@@ -146,7 +148,7 @@ details(res.proc)
 ```
 
 ### Show voom-style mean-variance trends
-```{r voom.plot, fig.height=12, fig.width=12}
+```{r voom.plot, fig.height=10, fig.width=10}
 # show voom plot for each cell clusters  
 plotVoom( res.proc, ncol=3)
 ```
@@ -172,7 +174,7 @@ vp.lst = fitVarPart( res.proc, form,
 ```
 
 ```{r plot.vp}
-plotVarPart(vp.lst)
+plotVarPart(vp.lst, label.angle=60)
 ```
 
 # Dreamlet analysis
@@ -194,7 +196,7 @@ plotVolcano(res.dl, coef='DxAD')
 
 
 ### Summarize differential expression 
-```{r plot.pi, fig.height=12, fig.width=12}
+```{r plot.pi, fig.height=6, fig.width=12}
 # Summarize differential expression for each coef and assay
 df = res.dl %>%
   topTable(coef='DxAD', number=Inf) %>%
@@ -237,7 +239,7 @@ plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv"
 
 
 # Gene set analysis using zenith
-```{r zenith1, fig.height=10}
+```{r zenith1}
 # Load Gene Ontology database 
 go.gs = get_GeneOntology(to="SYMBOL")
 
@@ -246,8 +248,13 @@ df_gs = zenith_gsa(res.dl, go.gs, coef='DxAD')
 ```
 
 ## Heatmap of results
-```
+```{r zenith.heat, fig.height=10, fig.width=12}
 plotZenithResults(df_gs, 5, 2)
+```
+
+
+```{r exit, cache=FALSE}
+knitr::knit_exit()
 ```
 
 # MASHR
