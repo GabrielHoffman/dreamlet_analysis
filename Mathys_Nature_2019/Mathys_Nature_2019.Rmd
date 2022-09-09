@@ -173,7 +173,7 @@ vp.lst = fitVarPart( res.proc, form,
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
 
-```{r plot.vp}
+```{r plot.vp, fig.width=8, fig.height=8}
 plotVarPart(vp.lst, label.angle=60)
 ```
 
@@ -269,7 +269,7 @@ plotVolcano(res_mash)
 plotForest(res_mash, "OLFM3") 
 ```
 
-```{r zenith.mashr, fig.height=10}
+```{r zenith.mashr, fig.height=10, fig.width=12}
 # valid values for statistic: 
 # "tstatistic", "abs(tstatistic)", "logFC", "abs(logFC)"
 df_gs_mash = zenith_gsa(res_mash, go.gs)
