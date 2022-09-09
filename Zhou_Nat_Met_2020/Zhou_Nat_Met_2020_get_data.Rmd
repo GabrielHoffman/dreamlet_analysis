@@ -80,7 +80,7 @@ sce = SingleCellExperiment( assays = list(counts = counts),
 ```
 
 ```{r write}
-# write to file
+# write to file 
 file = paste0(path, '/Zhou_Nat_Met_2020.h5ad')
 writeH5AD(sce, file, compression="lzf")
 ```
