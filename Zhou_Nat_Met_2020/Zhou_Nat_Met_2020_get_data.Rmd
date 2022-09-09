@@ -85,14 +85,17 @@ df_annotations$Barcodes = gsub("^TWCC-", "", df_annotations$Barcodes)
 
 # remove -1 suffix from cell identifiers
 rownames(info) = gsub("-1$", "", rownames(info))
+colnames(counts) = gsub("-1$", "", colnames(counts))
 
 # Merge two sources of metadata
 info2 = merge(info, df_annotations, by.x = "row.names", by.y = "Barcodes")
+rownames(info2) = info2$Row.names
+info2$Row.names = c()
 
 # Create SingleCellExperiment
 # Only keep cells assigned to clusters
 sce = SingleCellExperiment( assays = 
-		list(counts = counts[,rownames(info)]),
+		list(counts = counts[,rownames(info2)]),
 		colData = info2)
 ```
 
