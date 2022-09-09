@@ -212,7 +212,7 @@ fig1 = ggplot(tab, aes(nGenes, assay, fill=assay)) +
 fig2 = ggplot(tab, aes(nDE, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
-    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank(), legend.position="none") +
     scale_x_continuous(limits=c(0,1000), expand=c(0,0)) +
     xlab("# genes with FDR < 5%") +
     ylab("Cell type")
@@ -220,7 +220,7 @@ fig2 = ggplot(tab, aes(nDE, assay, fill=assay)) +
 fig3 = ggplot(tab, aes(pi1, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
-    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank()) +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank(), legend.position="none") +
     scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
     xlab(bquote(pi[1])) +
     ylab("Cell type")
@@ -270,7 +270,8 @@ fig1 = df_vp %>%
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
     theme_classic() +
-    theme(aspect.ratio=1) +
+    theme(aspect.ratio=1, 
+      legend.position="none") +
     xlab("Cell type") +
     ylab("Spearman correlation between batch % and GC content") +
     coord_flip() 
@@ -287,7 +288,10 @@ fig2 = df_vp %>%
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
     theme_classic() +
-    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y=element_blank()) +
+    theme(aspect.ratio=1, 
+      axis.text.y=element_blank(), 
+      axis.ticks.y=element_blank(), 
+      legend.position="none") +
     xlab("Cell type") +
     ylab("Spearman correlation between Donor % and CPM") +
     coord_flip() 
@@ -369,17 +373,19 @@ fig.pct = fig.percent + theme(aspect.ratio=1, legend.position="bottom")
 plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct), nrow=1, labels=LETTERS[1:4], align="hv", axis="t")
 ```
 
-### Highlight specific gnes
+### Highlight specific genes
 ```{r panels2, fig.height=4}
 data = extractData(res.proc, CT)
 
 fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + 
-  theme(aspect.ratio=1)
+  theme(aspect.ratio=1) +
+  ylab(bquote(log[2]~CPM))
 
 fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) +
   theme(aspect.ratio=4, legend.position="none") +
   scale_fill_manual(values=c("blue", "red")) +
-  scale_color_manual(values=c("blue", "red"))
+  scale_color_manual(values=c("blue", "red"))+
+  ylab(bquote(log[2]~CPM))
 
 plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
 ```
@@ -438,6 +444,7 @@ dcmp$x %>%
 fit = dream(cobj, ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT, colData(pb))
 fit = eBayes(fit)
 topTable(fit, coef='TB_statusCASE', number=Inf) %>%   
+  select(logFC, AveExpr, t, P.Value, adj.P.Val) %>% 
   kbl() %>% 
   kable_classic(full_width = FALSE) 
 ```
