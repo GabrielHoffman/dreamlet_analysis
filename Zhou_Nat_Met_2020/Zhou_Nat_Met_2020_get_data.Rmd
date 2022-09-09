@@ -8,11 +8,6 @@ output:
   html_document:
     toc: true
     smart: false
-vignette: >
-  %\VignetteIndexEntry{Human prostate cancer bone metastases have an actionable immunosuppressive microenvironment}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-  %\usepackage[utf8]{inputenc}
 ---
 
 ```{r setup, include=FALSE}
