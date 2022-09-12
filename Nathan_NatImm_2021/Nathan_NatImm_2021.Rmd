@@ -302,10 +302,6 @@ plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")
 ```
 
 
-
-
-
-
 # Gene set analysis using zenith
 ```{r zenith}
 go.gs = getGenesets( org = "hsa", 
@@ -320,11 +316,21 @@ res.zenith = zenith_gsa( res.dl, go.gs,
 ```
 
 ```{r plot.zenith, fig.width=15, fig.height=16}
-table(res.zenith$FDR < 0.05)
-unique(res.zenith$Geneset[res.zenith$FDR < 0.05])
- 
 res.zenith$assay = factor(res.zenith$assay, names(res.dl))
 plotZenithResults(res.zenith, 3, 1)
+```
+
+
+### Heatmap of results
+```{r plot.zenith.subset, fig.height=4, fig.width=12}
+ids = c("GO0006613", "GO0043043", "GO0050852", "GO1902750", "GO0071346", "GO0038094")
+
+idx = grep( paste0(ids, collapse="|"), res.zenith$Geneset)
+plotZenithResults(res.zenith[idx,], 3, 1, transpose=FALSE) + 
+  theme(axis.text.x=element_text(size=10, angle = 90),
+    axis.text.y=element_text(size=10), 
+    legend.position="right",
+    legend.key.size = unit(.3, 'cm') ) 
 ```
 
 
@@ -333,16 +339,6 @@ knitr::knit_exit()
 ```
 
 
-### Heatmap of results
-```{r plot.zenith.subset, fig.height=4, fig.width=12}
-
-idx = grep( "GO0050852|GO0001909|GO0022625|GO0042101|GO0002456", res.zenith$Geneset)
-plotZenithResults(res.zenith[idx,], 3, 1, transpose=FALSE) + 
-  theme(axis.text.x=element_text(size=10, angle = 90),
-    axis.text.y=element_text(size=10), 
-    legend.position="right",
-    legend.key.size = unit(.3, 'cm') ) 
-```
 
 ### Select genes with high variation explained by each variable 
 ```{r plotPercent}
