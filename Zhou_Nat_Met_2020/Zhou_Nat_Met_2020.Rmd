@@ -47,6 +47,7 @@ library(DelayedArray)
 setAutoBlockSize(1e9)
 ```
 
+# Load data
 ```{r load}
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Zhou_Nat_Met_2020/Zhou_Nat_Met_2020.h5ad"
 
@@ -124,7 +125,7 @@ details(res.proc)
 ```
 
 ### Show voom-style mean-variance trends
-```{r voom.plot, fig.height=18, fig.width=12}
+```{r voom.plot, fig.height=12, fig.width=12}
 # show voom plot for each cell clusters  
 plotVoom( res.proc, ncol=4)
 ```
@@ -137,14 +138,10 @@ vp.lst = fitVarPart( res.proc, form,
   BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
 
-```{r vp.plot, fig.height=20, fig.width=12}
+```{r vp.plot, fig.height=12, fig.width=12}
 # Summarize variance fractions genome-wide for each cell type
 plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4) 
 ```
-
-# need to Model Sex
-
-
 
 # dreamlet analysis
 ```{r dreamlet}
@@ -162,17 +159,17 @@ res.dl = dreamlet(res.proc,
 
 # Volcano plots for each contrast
 ### P_vs_C
-```{r volcano.P_vs_C, fig.height=16, fig.width=10}
+```{r volcano.P_vs_C, fig.height=12, fig.width=10}
 plotVolcano( res.dl, coef = 'P_vs_C', ncol=4)
 ```
 
 ### AD_vs_C
-```{r volcano.AD_vs_C, fig.height=16, fig.width=10}
+```{r volcano.AD_vs_C, fig.height=12, fig.width=10}
 plotVolcano( res.dl, coef = 'AD_vs_C', ncol=4)
 ```
 
 ### P_vs_AD
-```{r volcano.P_vs_AD, fig.height=16, fig.width=10}
+```{r volcano.P_vs_AD, fig.height=12, fig.width=10}
 plotVolcano( res.dl, coef = 'P_vs_AD', ncol=4)
 ```
 
