@@ -228,10 +228,10 @@ plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=3, axis="tblr", align="hv"
 # Gene set analysis using zenith
 ```{r zenith}
 # Load Gene Ontology database 
-go.gs = get_GeneOntology(to="SYMBOL")
+go.gs = get_GeneOntology(to="ENSEMBL")
 
 res_zenith_list = map(names(contrasts), function(coef) 
-  zenith_gsa(res.dl, coef, go.gs))
+  zenith_gsa(res.dl, go.gs, coef))
 names(res_zenith_list) = names(contrasts)
 ```
 
