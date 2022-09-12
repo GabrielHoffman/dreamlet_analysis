@@ -234,17 +234,19 @@ names(res_zenith_list) = names(contrasts)
 
 ### P_vs_C
 ```{r zenith.plot_Tumor_Involved, fig.height=18, fig.width=12}
-plotZenithResults(res_zenith_list[["P_vs_C"]], 5, 3)
+zmax = max(unlist(map(res_zenith_list, function(x) max(abs(x$delta / x$se)))))
+
+plotZenithResults(res_zenith_list[["P_vs_C"]], 5, 3, zmax=zmax)
 ```
 
 ### AD_vs_C
 ```{r zenith.plot_Tumor_Distal, fig.height=18, fig.width=12}
-plotZenithResults(res_zenith_list[["AD_vs_C"]], 5, 3)
+plotZenithResults(res_zenith_list[["AD_vs_C"]], 5, 3, zmax=zmax)
 ```
 
 ### P_vs_AD
 ```{r zenith.plot_Involved_Distal, fig.height=22, fig.width=13}
-plotZenithResults(res_zenith_list[["P_vs_AD"]], 5, 3)
+plotZenithResults(res_zenith_list[["P_vs_AD"]], 5, 3, zmax=zmax)
 ```
 
 
