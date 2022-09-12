@@ -42,6 +42,7 @@ library(broom)
 library(qvalue)
 library(cowplot)
 library(kableExtra)
+library(EnrichmentBrowser)
 library(DelayedArray)
 
 # set block size for reading DelayedMatrix in H5AD file
@@ -153,6 +154,9 @@ res.proc = processAssays( pb, form,
   min.samples = 10,
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
+
+#  min.count = 5
+
 
 ### Show details of processing
 ```{r details}
@@ -298,9 +302,17 @@ plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")
 ```
 
 
+
+
+
+
 # Gene set analysis using zenith
 ```{r zenith}
-go.gs = get_GeneOntology(to="SYMBOL")
+go.gs = getGenesets( org = "hsa", 
+                  db = "enrichr", 
+                  lib = "GO_Biological_Process_2021",
+                  gene.id.type = "SYMBOL", 
+                  return.type = "GeneSetCollection")
 
 res.zenith = zenith_gsa( res.dl, go.gs, 
               coef = 'TB_statusCASE', 
@@ -310,15 +322,21 @@ res.zenith = zenith_gsa( res.dl, go.gs,
 ```{r plot.zenith, fig.width=15, fig.height=16}
 table(res.zenith$FDR < 0.05)
 unique(res.zenith$Geneset[res.zenith$FDR < 0.05])
-
+ 
 res.zenith$assay = factor(res.zenith$assay, names(res.dl))
 plotZenithResults(res.zenith, 3, 1)
 ```
 
+
+```{r exit, cache=FALSE}
+knitr::knit_exit()
+```
+
+
 ### Heatmap of results
 ```{r plot.zenith.subset, fig.height=4, fig.width=12}
-#GO0002456
-idx = grep( "GO0050852|GO0001909|GO0022625|GO0042101", res.zenith$Geneset)
+
+idx = grep( "GO0050852|GO0001909|GO0022625|GO0042101|GO0002456", res.zenith$Geneset)
 plotZenithResults(res.zenith[idx,], 3, 1, transpose=FALSE) + 
   theme(axis.text.x=element_text(size=10, angle = 90),
     axis.text.y=element_text(size=10), 
