@@ -380,10 +380,10 @@ fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) +
   ylab(bquote(log[2]~CPM))
 
 # fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) +
-  theme(aspect.ratio=4, legend.position="none") +
-  scale_fill_manual(values=c("blue", "red")) +
-  scale_color_manual(values=c("blue", "red"))+
-  ylab(bquote(log[2]~CPM))
+  # theme(aspect.ratio=4, legend.position="none") +
+  # scale_fill_manual(values=c("blue", "red")) +
+  # scale_color_manual(values=c("blue", "red"))+
+  # ylab(bquote(log[2]~CPM))
 fig.strat2 = ggplot()
 
 plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
