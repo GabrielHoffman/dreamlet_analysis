@@ -165,7 +165,7 @@ details(res.proc)
 
 ### Show voom-style mean-variance trends
 ```{r plot.voom, fig.width=8, fig.height=16}
-plotVoom( res.proc, ncol=4) 
+plotVoom( res.proc, ncol=4, alpha=.2) 
 ```
 
 # Variance partitioning analysis
@@ -384,10 +384,10 @@ fig.umap = colData(sce) %>%
       legend.position="bottom") +
     xlab('UMAP 1') +
     ylab('UMAP 2')
-      
+
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
 
-fig.voom = plotVoom( res.proc[[CT]] ) + theme_classic() + thm
+fig.voom = plotVoom( res.proc[[CT]], alpha=.2) + theme_classic() + thm
 fig.vp = plotVarPart(vp.lst, assays = CT, label.angle=40) + thm +   theme(axis.text.x=element_text(size=10))
 fig.vol = plotVolcano( res.dl[[CT]], coef = 'TB_statusCASE')
 
