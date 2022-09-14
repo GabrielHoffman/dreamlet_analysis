@@ -166,7 +166,7 @@ details(res.proc)
 
 ### Show voom-style mean-variance trends
 ```{r plot.voom, fig.width=8, fig.height=16}
-plotVoom( res.proc, ncol=4, alpha=.1) 
+plotVoom( res.proc, ncol=4, alpha=.1)  
 ```
 
 # Variance partitioning analysis
@@ -174,11 +174,11 @@ Note that variation across donors here indicates technical variation since the m
 ```{r run.vp}
 form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT 
 vp.lst = fitVarPart( res.proc, form, 
-  BPPARAM=SnowParam(12, progressbar=TRUE))
+  BPPARAM=SnowParam(12, progressbar=TRUE)) 
 ```
 
 ```{r plot.vp, fig.width=8, fig.height=16}
-plotVarPart(vp.lst, label.angle=60, ncol=4)  
+plotVarPart(vp.lst, label.angle=60, ncol=4)   
 ```
 
 # dreamlet analysis
@@ -190,7 +190,7 @@ res.dl = dreamlet( res.proc, form,
 
 ### Volcano plot for each cell type
 ```{r volcano, fig.width=9, fig.height=15}
-plotVolcano( res.dl, coef = 'TB_statusCASE', ncol=4)
+plotVolcano( res.dl, coef = 'TB_statusCASE', ncol=4) 
 ```
 
 
@@ -210,7 +210,7 @@ fig1 = ggplot(tab, aes(nGenes, assay, fill=assay)) +
     theme(aspect.ratio=1, legend.position="none") +
     scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
     xlab("# genes expressed") +
-    ylab("Cell type")
+    ylab("Cell type") 
 
 fig2 = ggplot(tab, aes(nDE, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
@@ -283,7 +283,7 @@ tab = topTable(res.dl, 'TB_statusCASE', number=Inf)
 
 df_vp = merge(as.data.frame(vp.lst), tab, by.x=c("assay", "gene"), by.y=c("assay", "ID") )
 
-fig2 = df_vp %>%
+fig2 = df_vp %>% 
   as_tibble %>%
   group_by(assay) %>%
   summarize(cor.se(donor, AveExpr, method="spearman")) %>%
