@@ -366,6 +366,8 @@ genes = vp.lst %>%
   unlist %>% 
   array
 
+genes = c("HIST1H1E", "EIF1", "CXCR4", "RPS4X", "LTB", "TSPO",   "RPS2", "NDFIP1")
+
 fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes)
 ```
 
@@ -400,10 +402,10 @@ plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct), nrow=1, labels=L
 ```{r panels2, fig.height=6}
 data = extractData(res.proc, CT)
 
-fig.strat1 = plotStratify( MALAT1 ~ batch, data, legend=FALSE, colorBy=NULL) + 
+fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + 
   theme(aspect.ratio=1) +
   ylab(bquote(log[2]~CPM)) + 
-  ggtitle("MALAT1")
+  ggtitle("HIST1H1E")
 
 fig.strat2 = plotStratify( LTB ~ TB_status, data, x.labels=TRUE, sort=FALSE) +
   theme(aspect.ratio=4, legend.position="none", axis.text.x=element_text(angle=0)) +
@@ -427,9 +429,22 @@ plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assa
 ```
 
 
-```{r exit, cache=FALSE, echo=FALSE}
+# Manuscript text
+Variance partitioning analysis for each gene in this cluster estimates the fraction of expression variance attributable to variation across 46 technical batches, 259 donors and 2 disease states (Figure XC).  While the fraction of variation explained by batch is low for most genes, 30% of expressed genes have more than 10% of their expression variance attributed to cross-batch variation.  Importantly, TB status explains > 1% of variance for just 5.7% of expressed genes, underscoring the small effect of TB infection following disease resolution. 
+
+# Session info
+<details>
+```{r sessionInfo}
+sessionInfo()
+```
+</details>
+
+```{r exit123, cache=FALSE, echo=FALSE}
 knitr::knit_exit()
 ```
+
+
+
 
 
 # Cell type composition
@@ -468,16 +483,19 @@ topTable(fit, coef='TB_statusCASE', number=Inf) %>%
   kable_classic(full_width = FALSE) 
 ```
 
-# Session info
-<details>
-```{r sessionInfo}
-sessionInfo()
-```
-</details>
 
-```{r exit123, cache=FALSE, echo=FALSE}
-knitr::knit_exit()
-```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
