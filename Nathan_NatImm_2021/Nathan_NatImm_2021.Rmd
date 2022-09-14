@@ -93,7 +93,7 @@ pb <- aggregateToPseudoBulk(sce,
 
 ## Plot UMAP
 ```{r UMAP}
-colData(sce) %>%
+colData(sce) %>%  
   data.frame %>%
   ggplot(aes(UMAP_1, UMAP_2, color=cluster_name)) +
     geom_scattermore() +
