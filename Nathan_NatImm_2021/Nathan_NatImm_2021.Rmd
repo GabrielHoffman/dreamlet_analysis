@@ -326,17 +326,20 @@ plotZenithResults(res.zenith, 3, 1)
 ids = c("GO0006613", "GO0043043", "GO0050852", "GO1902750", "GO0071346", "GO0038094")
 
 idx = grep( paste0(ids, collapse="|"), res.zenith$Geneset)
-plotZenithResults(res.zenith[idx,], 3, 1, transpose=FALSE) + 
+df2 = res.zenith[idx,]
+
+df2$Geneset = df2$Geneset %>% 
+  gsub("^(ER\\d+)_", "", .) %>% 
+  gsub("_\\(GO.*\\)$", "", .) %>% 
+  gsub("_", " ", .)
+
+plotZenithResults(df, 3, 1, transpose=FALSE) + 
   theme(axis.text.x=element_text(size=10, angle = 90),
     axis.text.y=element_text(size=10), 
     legend.position="right",
     legend.key.size = unit(.3, 'cm') ) 
 ```
 
-
-```{r exit, cache=FALSE}
-knitr::knit_exit()
-```
 
 
 
@@ -424,6 +427,10 @@ fig.heat1
 fig.heat2
 ```
 
+
+```{r exit, cache=FALSE}
+knitr::knit_exit()
+```
 
 
 # Cell type composition
