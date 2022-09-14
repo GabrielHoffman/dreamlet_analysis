@@ -144,7 +144,7 @@ Use canonical correlation analysis to show association between variables
 ```{r cca, fig.height=6, fig.width=6}
 form = ~ TB_status + sex + age + donor + batch + season + prop_NAT
 C = canCorPairs(form, colData(pb))
-
+ 
 plotCorrMatrix(C)
 ```
 
