@@ -416,9 +416,9 @@ plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), la
 gs1 = "ER541_cellular_response_to_interferon-gamma_(GO0071346)"
 plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, transpose=TRUE) + 
   ggtitle(trimGenesets(gs1)) + 
-  theme(legend.key.size = unit(.3, 'cm'), 
-    axis.text.x=element_text(size=8, angle=90),
-    axis.text.y=element_text(size=8)) + 
+  theme(legend.position = "bottom",
+    axis.text.x=element_text(size=10, angle=90),
+    axis.text.y=element_text(size=10)) + 
   xlab('') + ylab('')
 ```
 
