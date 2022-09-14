@@ -351,20 +351,34 @@ plotZenithResults(df2, 3, 1, transpose=FALSE) +
 ### Select genes with high variation explained by each variable 
 ```{r plotPercent}
 CT = "CD4/8+ PD-1+TIGIT+"
+ngenes = 1
 genes = vp.lst %>%
   as_tibble %>%
   filter(assay == CT) %>%
-  summarize(gene[order(batch, decreasing=TRUE)[1:20]],
-            gene[order(donor, decreasing=TRUE)[1:20]],
-            gene[order(TB_status, decreasing=TRUE)[1:20]],
-            gene[order(Residuals, decreasing=TRUE)[1:20]]) %>%
+  summarize(gene[order(batch, decreasing=TRUE)[1:ngenes]],
+            gene[order(donor, decreasing=TRUE)[1:ngenes]],
+            gene[order(season, decreasing=TRUE)[1:ngenes]],
+            gene[order(sex, decreasing=TRUE)[1:ngenes]],
+            gene[order(TB_status, decreasing=TRUE)[1:ngenes]],
+            gene[order(age + I.age.2., decreasing=TRUE)[1:ngenes]],
+            gene[order(prop_NAT, decreasing=TRUE)[1:ngenes]],
+            gene[order(Residuals, decreasing=TRUE)[1:ngenes]]) %>%
   unlist %>% 
   array
 
-genes = c("MALAT1", 'HIST1H1E', "CXCR4", 'DUSP2', 'LTB', 'HELZ', 'ITGB1', 'PARK7')  
-
 fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes)
 ```
+
+
+vp.lst %>%
+  as_tibble %>%
+  filter(assay == CT) %>%
+  summarize(gene[order(TB_status, decreasing=TRUE)[1:10]],) %>%
+  unlist %>% 
+  array
+
+
+
 
 ### Combine figure Panels
 ```{r panels, fig.height=4, fig.width=12}
@@ -399,20 +413,21 @@ data = extractData(res.proc, CT)
 
 fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + 
   theme(aspect.ratio=1) +
-  ylab(bquote(log[2]~CPM))
+  ylab(bquote(log[2]~CPM)) + 
+  ggtitle("HIST1H1E")
 
-# fig.strat2 = plotStratify( IAH1 ~ TB_status, data, x.labels=TRUE) +
-  # theme(aspect.ratio=4, legend.position="none") +
-  # scale_fill_manual(values=c("blue", "red")) +
-  # scale_color_manual(values=c("blue", "red"))+
-  # ylab(bquote(log[2]~CPM))
-fig.strat2 = ggplot()
+fig.strat2 = plotStratify( LTB ~ TB_status, data, x.labels=TRUE) +
+  theme(aspect.ratio=4, legend.position="none") +
+  scale_fill_manual(values=c("blue", "red")) +
+  scale_color_manual(values=c("blue", "red"))+
+  ylab(bquote(log[2]~CPM)) + 
+  ggtitle("LTB")
 
 plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
 ```
 
 ### Highlight specific genesets
-```{r panels3, fig.height=6, fig.width=12}
+```{r panels3, fig.height=3, fig.width=8}
 gs1 = "ER541_cellular_response_to_interferon-gamma_(GO0071346)"
 plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, transpose=TRUE) + 
   ggtitle(trimGenesets(gs1)) + 
@@ -423,7 +438,7 @@ plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assa
 ```
 
 
-```{r exit, cache=FALSE}
+```{r exit, cache=FALSE, echo=FALSE}
 knitr::knit_exit()
 ```
 
