@@ -369,17 +369,6 @@ genes = vp.lst %>%
 fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes)
 ```
 
-
-vp.lst %>%
-  as_tibble %>%
-  filter(assay == CT) %>%
-  summarize(gene[order(TB_status, decreasing=TRUE)[1:10]],) %>%
-  unlist %>% 
-  array
-
-
-
-
 ### Combine figure Panels
 ```{r panels, fig.height=4, fig.width=12}
 fig.umap = colData(sce) %>%
@@ -416,8 +405,8 @@ fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) +
   ylab(bquote(log[2]~CPM)) + 
   ggtitle("HIST1H1E")
 
-fig.strat2 = plotStratify( LTB ~ TB_status, data, x.labels=TRUE) +
-  theme(aspect.ratio=4, legend.position="none") +
+fig.strat2 = plotStratify( LTB ~ TB_status, data, x.labels=TRUE, sort=FALSE) +
+  theme(aspect.ratio=4, legend.position="none", axis.text.x=element_text(angle=0)) +
   scale_fill_manual(values=c("blue", "red")) +
   scale_color_manual(values=c("blue", "red"))+
   ylab(bquote(log[2]~CPM)) + 
