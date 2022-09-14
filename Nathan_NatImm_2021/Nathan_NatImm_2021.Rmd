@@ -328,10 +328,15 @@ ids = c("GO0006613", "GO0043043", "GO0050852", "GO1902750", "GO0071346", "GO0038
 idx = grep( paste0(ids, collapse="|"), res.zenith$Geneset)
 df2 = res.zenith[idx,]
 
-df2$Geneset = df2$Geneset %>% 
-  gsub("^(ER\\d+)_", "", .) %>% 
-  gsub("_\\(GO.*\\)$", "", .) %>% 
-  gsub("_", " ", .)
+# Clean up  geneset names
+trimGenesets = function(x){
+  x %>%
+    gsub("^(ER\\d+)_", "", .) %>% 
+    gsub("_\\(GO.*\\)$", "", .) %>% 
+    gsub("_", " ", .)
+}
+
+df2$Geneset = trimGenesets(df2$Geneset)
 
 plotZenithResults(df2, 3, 1, transpose=FALSE) + 
   theme(axis.text.x=element_text(size=10, angle = 90),
@@ -389,7 +394,7 @@ plot_grid(plotlist = list(fig.umap, fig.voom, fig.vp, fig.pct), nrow=1, labels=L
 ```
 
 ### Highlight specific genes
-```{r panels2, fig.height=4}
+```{r panels2, fig.height=6}
 data = extractData(res.proc, CT)
 
 fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + 
@@ -410,24 +415,25 @@ plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), la
 ```{r panels3, fig.height=8, fig.width=5}
 zmax = NULL
 gs1 = "ER541_cellular_response_to_interferon-gamma_(GO0071346)"
-fig.heat1 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, zmax=zmax) + 
-  ggtitle(gs1) + 
+fig.heat1 = f( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, zmax=zmax, transpose=TRUE) + 
+  ggtitle(trimGenesets(gs1)) + 
   theme(legend.key.size = unit(.3, 'cm'), 
     axis.text.x=element_text(size=5, angle=90),
-    axis.text.y=element_text(size=5)) + 
-  coord_flip()
+    axis.text.y=element_text(size=5)) 
+
 
 gs2 = 'ER541_cellular_response_to_interferon-gamma_(GO0071346)'
-fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs2]]), assays=CT, zmax=zmax) + 
-  ggtitle(gs2) + 
+fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs2]]), assays=CT, zmax=zmax, transpose=TRUE) + 
+  ggtitle(trimGenesets(gs2)) + 
   theme(legend.key.size = unit(.3, 'cm'),
     axis.text.x=element_text(size=5, angle=20),
     axis.text.y=element_text(size=5))+ 
   coord_flip()
 
-fig.heat1
-fig.heat2
+plot_grid(fig.heat1, fig.heat2, nrow=1)
 ```
+
+f( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, zmax=zmax)
 
 
 ```{r exit, cache=FALSE}
