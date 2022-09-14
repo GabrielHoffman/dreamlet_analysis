@@ -384,7 +384,7 @@ fig.umap = colData(sce) %>%
       legend.position="bottom") +
     xlab('UMAP 1') +
     ylab('UMAP 2')
-
+      
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
 
 fig.voom = plotVoom( res.proc[[CT]] ) + theme_classic() + thm
