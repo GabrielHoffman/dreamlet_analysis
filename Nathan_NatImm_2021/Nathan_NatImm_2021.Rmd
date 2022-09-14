@@ -41,6 +41,7 @@ library(knitr)
 library(broom)
 library(qvalue)
 library(cowplot)
+library(RColorBrewer)
 library(kableExtra)
 library(EnrichmentBrowser)
 library(DelayedArray)
@@ -368,7 +369,9 @@ genes = vp.lst %>%
 
 genes = c("HIST1H1E", "EIF1", "CXCR4", "RPS4X", "LTB", "TSPO",   "RPS2", "NDFIP1")
 
-fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes)
+col = c(brewer.pal(n = 9, name = "Set1")[-6], "grey85")
+
+fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes, col = col)
 ```
 
 ### Combine figure Panels
@@ -389,8 +392,13 @@ fig.umap = colData(sce) %>%
 
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
 
-fig.voom = plotVoom( res.proc[[CT]], alpha=.3) + theme_classic() + thm
-fig.vp = plotVarPart(vp.lst, assays = CT, label.angle=40) + thm +   theme(axis.text.x=element_text(size=10))
+fig.voom = plotVoom( res.proc[[CT]], alpha=.8) + theme_classic() + thm
+fig.vp = plotVarPart(vp.lst, assays = CT, label.angle=40, col=col) + 
+  thm +   
+  theme(axis.text.x=element_text(size=10))
+file = paste0(getwd(), "/vp.pdf")
+ggsave(file, fig.vp)
+
 fig.vol = plotVolcano( res.dl[[CT]], coef = 'TB_statusCASE')
 
 fig.pct = fig.percent + theme(aspect.ratio=1, legend.position="bottom")
