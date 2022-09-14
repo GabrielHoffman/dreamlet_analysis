@@ -430,7 +430,25 @@ plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assa
 
 
 # Manuscript text
-Variance partitioning analysis for each gene in this cluster estimates the fraction of expression variance attributable to variation across 46 technical batches, 259 donors and 2 disease states (Figure XC).  While the fraction of variation explained by batch is low for most genes, 30% of expressed genes have more than 10% of their expression variance attributed to cross-batch variation.  Importantly, TB status explains > 1% of variance for just 5.7% of expressed genes, underscoring the small effect of TB infection following disease resolution. 
+```{r summary.for.text}
+vp.summary_batch = vp.lst %>%
+  as_tibble %>%
+  filter(assay == CT) %>%
+  select(batch) %>%
+  summarize(median = median(batch), 
+    fraction = sum(batch > .25) / length(batch))
+
+vp.summary_TB = vp.lst %>%
+  as_tibble %>%
+  filter(assay == CT) %>%
+  select(TB_status) %>%
+  summarize(median = median(TB_status), 
+    fraction = sum(TB_status > .01) / length(TB_status))
+```
+
+Variance partitioning analysis for each gene in this cluster estimates the fraction of expression variance attributable to variation across `r nlevels(pb$batch)` technical batches, `r nlevels(pb$donor)` donors and 2 disease states (Figure XC).  While the median fraction of variation explained by batch `r format(vp.summary_batch$median *100, digits=2)`%, `r format(vp.summary_batch$fraction *100, digits=2)`% of expressed genes have more than 25% of their expression variance attributed to cross-batch variation.  Importantly, TB status explains > 1% of variance for just `r format(vp.summary_TB$fraction *100, digits=2)`% of expressed genes, underscoring the small effect of TB infection following disease resolution. 
+
+
 
 # Session info
 <details>
