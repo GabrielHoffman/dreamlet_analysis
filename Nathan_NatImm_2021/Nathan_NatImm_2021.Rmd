@@ -333,7 +333,7 @@ df2$Geneset = df2$Geneset %>%
   gsub("_\\(GO.*\\)$", "", .) %>% 
   gsub("_", " ", .)
 
-plotZenithResults(df, 3, 1, transpose=FALSE) + 
+plotZenithResults(df2, 3, 1, transpose=FALSE) + 
   theme(axis.text.x=element_text(size=10, angle = 90),
     axis.text.y=element_text(size=10), 
     legend.position="right",
