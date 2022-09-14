@@ -374,7 +374,7 @@ fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes)
 ### Combine figure Panels
 ```{r panels, fig.height=4, fig.width=12}
 fig.umap = colData(sce) %>%
-  data.frame %>%
+  data.frame %>% 
   ggplot(aes(UMAP_1, UMAP_2, color=ifelse(cluster_name==CT, CT, ''))) +
     geom_scattermore() +
     theme_classic() +
