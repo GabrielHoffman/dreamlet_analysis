@@ -408,20 +408,22 @@ plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), la
 
 ### Highlight specific genesets
 ```{r panels3, fig.height=8, fig.width=5}
-zmax = 3.5
-gs1 = "GO0001909: leukocyte mediated cytotoxicity"
+zmax = NULL
+gs1 = "ER541_cellular_response_to_interferon-gamma_(GO0071346)"
 fig.heat1 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assays=CT, zmax=zmax) + 
   ggtitle(gs1) + 
   theme(legend.key.size = unit(.3, 'cm'), 
     axis.text.x=element_text(size=5, angle=90),
-    axis.text.y=element_text(size=5))
+    axis.text.y=element_text(size=5)) + 
+  coord_flip()
 
-gs2 = 'GO0002431: Fc receptor mediated stimulatory signaling pathway'
+gs2 = 'ER541_cellular_response_to_interferon-gamma_(GO0071346)'
 fig.heat2 = plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs2]]), assays=CT, zmax=zmax) + 
   ggtitle(gs2) + 
   theme(legend.key.size = unit(.3, 'cm'),
     axis.text.x=element_text(size=5, angle=20),
-    axis.text.y=element_text(size=5))
+    axis.text.y=element_text(size=5))+ 
+  coord_flip()
 
 fig.heat1
 fig.heat2
