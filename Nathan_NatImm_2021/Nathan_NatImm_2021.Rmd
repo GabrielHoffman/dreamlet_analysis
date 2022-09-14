@@ -206,7 +206,7 @@ tab = topTable(res.dl, coef = 'TB_statusCASE', number=Inf) %>%
 fig1 = ggplot(tab, aes(nGenes, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
-    theme(aspect.ratio=1) +
+    theme(aspect.ratio=1, legend.position="none") +
     scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
     xlab("# genes expressed") +
     ylab("Cell type")
