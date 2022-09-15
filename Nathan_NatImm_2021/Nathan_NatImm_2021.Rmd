@@ -342,7 +342,7 @@ df2$Geneset = trimGenesets(df2$Geneset)
 plotZenithResults(df2, 3, 1, transpose=FALSE) + 
   theme(axis.text.x=element_text(size=10, angle = 90),
     axis.text.y=element_text(size=10), 
-    legend.position="right",
+    legend.position="right", 
     legend.key.size = unit(.3, 'cm') ) 
 ```
 
@@ -371,7 +371,7 @@ genes = c("HIST1H1E", "EIF1", "CXCR4", "RPS4X", "LTB", "TSPO",   "RPS2", "NDFIP1
 
 col = c(brewer.pal(n = 9, name = "Set1")[-6], "grey85")
 
-fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes, col = col)
+fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes, col = col) 
 ```
 
 ### Combine figure Panels
@@ -385,7 +385,7 @@ fig.umap = colData(sce) %>%
     theme(aspect.ratio=1, 
       axis.text.x=element_blank(), 
       axis.text.y=element_blank(), 
-      axis.ticks=element_blank(),
+      axis.ticks=element_blank(), 
       legend.position="bottom") +
     xlab('UMAP 1') +
     ylab('UMAP 2')
@@ -413,10 +413,10 @@ data = extractData(res.proc, CT)
 fig.strat1 = plotStratify( HIST1H1E ~ batch, data, legend=FALSE, colorBy=NULL) + 
   theme(aspect.ratio=1) +
   ylab(bquote(log[2]~CPM)) + 
-  ggtitle("HIST1H1E")
+  ggtitle("HIST1H1E") 
 
 fig.strat2 = plotStratify( LTB ~ TB_status, data, x.labels=TRUE, sort=FALSE) +
-  theme(aspect.ratio=4, legend.position="none", axis.text.x=element_text(angle=0)) +
+  theme(aspect.ratio=1, legend.position="none", axis.text.x=element_text(angle=0)) +
   scale_fill_manual(values=c("blue", "red")) +
   scale_color_manual(values=c("blue", "red"))+
   ylab(bquote(log[2]~CPM)) + 
@@ -433,7 +433,7 @@ plotGeneHeatmap( res.dl, coef="TB_statusCASE", genes=geneIds(go.gs[[gs1]]), assa
   theme(legend.position = "bottom",
     axis.text.x=element_text(size=10, angle=90),
     axis.text.y=element_text(size=10)) + 
-  xlab('') + ylab('')
+  xlab('') + ylab('') 
 ```
 
 
