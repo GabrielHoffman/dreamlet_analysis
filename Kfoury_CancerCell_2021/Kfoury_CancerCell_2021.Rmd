@@ -379,12 +379,12 @@ plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=geneIds(go.gs[[gs1]]), tra
   xlab('') + ylab('') 
 ```
 
-```{r plotGeneHeatmap2, fig.height=3, fig.width=8}
+```{r plotGeneHeatmap2, fig.height=6, fig.width=8}
 gs1 = "GO0044183: protein folding chaperone"
 plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=geneIds(go.gs[[gs1]]), assay=CT, transpose=TRUE) + 
   ggtitle(gs1) + 
   theme(legend.position = "bottom",
-    axis.text.x=element_text(size=10, angle=30),
+    axis.text.x=element_text(size=10, angle=90),
     axis.text.y=element_text(size=10)) + 
   xlab('') + ylab('') 
 ```
