@@ -422,7 +422,7 @@ fig.strat2 = plotStratify( LTB ~ TB_status, data, x.labels=TRUE, sort=FALSE) +
   ylab(bquote(log[2]~CPM)) + 
   ggtitle("LTB")
 
-plot_grid(fig.strat1, fig.strat2, align="hv", axis="tb", rel_widths=c(1.5,1), labels=LETTERS[5:6])
+plot_grid(fig.strat1, fig.strat2, align="hv", axis="tblr", rel_widths=c(1.5,1), labels=LETTERS[5:6])
 ```
 
 ### Highlight specific genesets
