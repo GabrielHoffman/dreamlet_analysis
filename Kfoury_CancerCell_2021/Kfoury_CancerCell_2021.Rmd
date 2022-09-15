@@ -369,7 +369,7 @@ fig.zenith1 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) +
     plot.title = element_text(hjust = 0.5),
     legend.key.size = unit(.4, 'cm'))+
   ggtitle('Tumor_Involved')
-
+ 
 res_zenith = res_zenith.Tumor_Distal
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
 unique(res_zenith$Geneset[idx])
