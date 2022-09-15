@@ -368,7 +368,7 @@ plot_grid(fig.zenith1, fig.zenith2, ncol=1)
 
 
 ### Highlight specific genesets
-```{r plotGeneHeatmap, fig.height=3, fig.width=8}
+```{r plotGeneHeatmap, fig.height=6, fig.width=8}
 gs1 = "GO0044183: protein folding chaperone"
 plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=geneIds(go.gs[[gs1]]), transpose=TRUE) + 
   ggtitle(gs1) + 
