@@ -330,7 +330,9 @@ plot_grid(fig.strat0, fig.strat1, fig.strat2,
 # gs = "mitochondrial translation"
 #  "GO0045582", # "GO1902036"
 
-gs = c('GO0060333', 'GO0023026', 'GO0006413', 'GO0042590', 'GO0042605', 'GO0030307', 'GO0032543', 'GO0044183')
+# gs = c('GO0060333', 'GO0023026', 'GO0006413', 'GO0042590', 'GO0042605', 'GO0030307', 'GO0032543', 'GO0044183')
+
+gs = c('GO0022624', 'GO1905369', 'GO0007186', 'GO0050920', 'GO0042613', 'GO0022626', 'GO1903561', 'GO0023026', 'GO0042026')
 
 res_zenith = res_zenith.Tumor_Involved
 
@@ -353,7 +355,7 @@ plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="
 res_zenith = res_zenith.Tumor_Involved 
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
 # unique(res_zenith$Geneset[idx])
-idx3 = idx
+idx3 = idx 
 res_zenith$assay = factor(res_zenith$assay)
 fig.zenith1 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) + 
   theme(axis.text.x=element_text(size=7, angle=90),
