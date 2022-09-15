@@ -283,7 +283,7 @@ fig.embed = colData(sce) %>%
   ylab("Coord 2")
 
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
-col = c(brewer.pal(n=3), "grey85")
+col = c(brewer.pal(n=3, "Set1"), "grey85")
 
 fig.voom = plotVoom( res.proc[[CT]]) + theme_classic() + thm
 fig.vp = plotVarPart( sortCols(vp.lst), label.angle=20, assays=CT, col=col) + thm 
