@@ -44,6 +44,7 @@ library(cowplot)
 library(ggplot2)
 library(qvalue)
 library(tidyverse)
+library(RColorBrewer)
 library(BiocParallel)
 library(DelayedArray)
 
@@ -282,9 +283,10 @@ fig.embed = colData(sce) %>%
   ylab("Coord 2")
 
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
+col = c(brewer.pal(n=3), "grey85")
 
 fig.voom = plotVoom( res.proc[[CT]]) + theme_classic() + thm
-fig.vp = plotVarPart( sortCols(vp.lst), label.angle=20, assays=CT) + thm 
+fig.vp = plotVarPart( sortCols(vp.lst), label.angle=20, assays=CT, col=col) + thm 
 
 # genes = vp.lst %>%
 #   as_tibble %>%
@@ -298,7 +300,7 @@ fig.vp = plotVarPart( sortCols(vp.lst), label.angle=20, assays=CT) + thm
 
 genes = c('CD52', 'IDH3G', "CCNL1", 'NAMPT', 'CHMP1B', 'IFNAR1', 'VIM', 'UFC1', 'NOTCH2')
 
-fig.percent = plotPercentBars( sortCols(vp.lst), assays = CT, genes = genes) + theme(aspect.ratio=1, legend.position="bottom")
+fig.percent = plotPercentBars( sortCols(vp.lst), assays = CT, genes = genes, col=col) + theme(aspect.ratio=1, legend.position="bottom")
 
 fig.vol = plotVolcano( res.dl[[CT]], coef = 'Tumor_Involved') + ggtitle("Tumor vs Involved")
   
@@ -350,7 +352,7 @@ idx3 = idx
 # idx2 = res_zenith.Tumor_Involved$assay %in% CellTypes
 # idx3 = intersect(idx, which(idx2))
 res_zenith$assay = factor(res_zenith$assay)
-
+ 
 fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
   
 lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.vol) 
