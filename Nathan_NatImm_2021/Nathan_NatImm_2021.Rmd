@@ -369,9 +369,9 @@ genes = vp.lst %>%
 
 genes = c("HIST1H1E", "EIF1", "CXCR4", "RPS4X", "LTB", "TSPO",   "RPS2", "NDFIP1")
 
-col = c(brewer.pal(n = 9, name = "Set1")[-6], "grey85")
+col = c(brewer.pal(n = 8, name = "Set1")[-6], "grey85")
 
-fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes, col = col) 
+fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes, col = col)  
 ```
 
 ### Combine figure Panels
@@ -394,7 +394,7 @@ thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank
 
 fig.voom = plotVoom( res.proc[[CT]], alpha=.8) + theme_classic() + thm
 fig.vp = plotVarPart(vp.lst, assays = CT, label.angle=40, col=col) + 
-  thm +   
+  thm +    
   theme(axis.text.x=element_text(size=10))
 file = paste0(getwd(), "/vp.pdf")
 ggsave(file, fig.vp)
