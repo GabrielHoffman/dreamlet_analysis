@@ -137,7 +137,7 @@ vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
 
 ```{r vp.plot, fig.height=20, fig.width=12}
 # Summarize variance fractions genome-wide for each cell type
-plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4) 
+plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)  
 ```
 
 # dreamlet analysis
@@ -287,16 +287,6 @@ col = c(brewer.pal(n=3, "Set1"), "grey85")
 
 fig.voom = plotVoom( res.proc[[CT]]) + theme_classic() + thm
 fig.vp = plotVarPart( sortCols(vp.lst), label.angle=20, assays=CT, col=col) + thm 
-
-# genes = vp.lst %>%
-#   as_tibble %>%
-#   filter(assay == CT) %>%
-#   summarize(gene[order(Status, decreasing=TRUE)[1:20]],
-#             gene[order(subject.id, decreasing=TRUE)[1:20]],
-#             gene[order(subject.status, decreasing=TRUE)[1:20]],
-#             gene[order(Residuals, decreasing=TRUE)[1:20]]) %>%
-#   unlist %>% 
-#   array
 
 genes = c('CD52', 'IDH3G', "CCNL1", 'NAMPT', 'CHMP1B', 'IFNAR1', 'VIM', 'UFC1', 'NOTCH2')
 
