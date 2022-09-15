@@ -374,7 +374,7 @@ gs1 = "GO0044183: protein folding chaperone"
 plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=geneIds(go.gs[[gs1]]), transpose=TRUE) + 
   ggtitle(gs1) + 
   theme(legend.position = "bottom",
-    axis.text.x=element_text(size=10, angle=30),
+    axis.text.x=element_text(size=10, angle=60),
     axis.text.y=element_text(size=10)) + 
   xlab('') + ylab('') 
 ```
