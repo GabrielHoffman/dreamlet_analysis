@@ -369,7 +369,7 @@ genes = vp.lst %>%
 
 genes = c("HIST1H1E", "EIF1", "CXCR4", "RPS4X", "LTB", "TSPO",   "RPS2", "NDFIP1")
 
-col = c(brewer.pal(n = 8, name = "Set1")[-6], "grey85")
+col = c(brewer.pal(n = 8, name = "Set1"), "grey85")
 
 fig.percent = plotPercentBars(vp.lst, assays = CT, genes = genes, col = col)  
 ```
@@ -388,7 +388,7 @@ fig.umap = colData(sce) %>%
       axis.ticks=element_blank(), 
       legend.position="bottom") +
     xlab('UMAP 1') +
-    ylab('UMAP 2')
+    ylab('UMAP 2') 
 
 thm = theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), aspect.ratio=1)
 
