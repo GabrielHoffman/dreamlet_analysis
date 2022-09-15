@@ -316,7 +316,7 @@ res.zenith = zenith_gsa( res.dl, go.gs,
               n_genes_min=20)
 ```
 
-```{r plot.zenith, fig.width=15, fig.height=16}
+```{r plot.zenith, fig.width=15, fig.height=16, eval=FALSE}
 res.zenith$assay = factor(res.zenith$assay, names(res.dl))
 plotZenithResults(res.zenith, 3, 1)
 ```
