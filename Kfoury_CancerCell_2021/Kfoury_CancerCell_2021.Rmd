@@ -326,26 +326,15 @@ plot_grid(fig.strat0, fig.strat1, fig.strat2,
 
 
 ```{r combine2, fig.height=7, fig.width=12}
-# gs = c("MHC class II protein complex binding", "interferon-g")#, "translation init", "antigen", "positive regulation of cell growth", "GO1902036", "GO0045582")
-# gs = "mitochondrial translation"
-#  "GO0045582", # "GO1902036"
-
-# gs = c('GO0060333', 'GO0023026', 'GO0006413', 'GO0042590', 'GO0042605', 'GO0030307', 'GO0032543', 'GO0044183')
-
 gs = c('GO0022624', 'GO1905369', 'GO0007186', 'GO0050920', 'GO0042613', 'GO0044183', 'GO1903561', 'GO0023026', 'GO0042026')
 
 res_zenith = res_zenith.Tumor_Involved
 
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
-# unique(res_zenith$Geneset[idx])
 
-# CellTypes = c("Mono1", "Mono2", "Mono3", "TIM", "Monocyte prog", "mDC", "Erythroid", "Immature B cells", "CTL-1", "CTL-2")
-idx3 = idx
-# idx2 = res_zenith.Tumor_Involved$assay %in% CellTypes
-# idx3 = intersect(idx, which(idx2))
 res_zenith$assay = factor(res_zenith$assay)
  
-fig.zenith = plotZenithResults(res_zenith[idx3,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
+fig.zenith = plotZenithResults(res_zenith[idx,], 5, 3, transpose=FALSE) + theme(axis.text.x=element_text(size=7), legend.position="right",legend.key.size = unit(.4, 'cm'))
   
 lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig.vol) 
 plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="t") 
@@ -354,22 +343,20 @@ plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="
 ```{r combine3, fig.height=5, fig.width=12}
 res_zenith = res_zenith.Tumor_Involved 
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
-# unique(res_zenith$Geneset[idx])
-idx3 = idx 
+
 res_zenith$assay = factor(res_zenith$assay)
-fig.zenith1 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) + 
+fig.zenith1 = plotZenithResults(res_zenith[idx,], 5, 3, sortByGeneset=FALSE) + 
   theme(axis.text.x=element_text(size=7, angle=90),
     legend.position="right",
     plot.title = element_text(hjust = 0.5),
     legend.key.size = unit(.4, 'cm'))+
   ggtitle('Tumor_Involved')
- 
+  
 res_zenith = res_zenith.Tumor_Distal
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
-unique(res_zenith$Geneset[idx])
-idx3 = idx
+
 res_zenith$assay = factor(res_zenith$assay)
-fig.zenith2 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) + 
+fig.zenith2 = plotZenithResults(res_zenith[idx,], 5, 3, sortByGeneset=FALSE) + 
   theme(axis.text.x=element_text(size=7, angle=90),
     legend.position="right",
     plot.title = element_text(hjust = 0.5),
@@ -377,6 +364,18 @@ fig.zenith2 = plotZenithResults(res_zenith[idx3,], 5, 3, sortByGeneset=FALSE) +
   ggtitle('Tumor_Distal')
 
 plot_grid(fig.zenith1, fig.zenith2, ncol=1)
+```
+
+
+### Highlight specific genesets
+```{r plotGeneHeatmap, fig.height=3, fig.width=8}
+gs1 = "GO0044183: protein folding chaperone"
+plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=geneIds(go.gs[[gs1]]), assays=CT, transpose=TRUE) + 
+  ggtitle(trimGenesets(gs1)) + 
+  theme(legend.position = "bottom",
+    axis.text.x=element_text(size=10, angle=30),
+    axis.text.y=element_text(size=10)) + 
+  xlab('') + ylab('') 
 ```
 
 
