@@ -46,6 +46,7 @@ library(org.Hs.eg.db)
 ```{r load.data}
 file = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/PsychAD_r0_Sept24_2022.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
+assayNames(sce)[1] = "counts"
 ```
 
 Public freeze 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$batch))` 10X batches, `r length(table(sce$SubID))` donors, and `r format(ncol(sce), big.mark=',')` cells passing QC.
@@ -55,8 +56,8 @@ Public freeze 0 includes `r length(table(sce$Channel))` samples, `r length(table
 ```{r umap, dev="png"}
 # extract UMAP coordinates and annotations
 df = cbind(reducedDim(sce, "X_umap"), 
-        colData(sce)[,c("anno", "celltype", "class", "subtype")]) 
-        %>% as.data.frame
+    colData(sce)[,c("anno", "celltype", "class", "subtype")]) %>% 
+    as.data.frame
 
 ggplot(df, aes(V1, V2, color=anno)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
 ```
@@ -76,16 +77,16 @@ ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + 
 ## Summarize cell counts
 ```{r summarize.cell.counts}
 # cells per Channel
-colData(sceCombine)$Channel %>% 
+colData(sce)$Channel %>% 
   table %>% 
   hist(main=paste0("Cell counts per Channel: mean=", format(mean(.), digits=2), ", median = ", format(median(.), digits=2)))
 
-colData(sceCombine)$SubID %>% 
+colData(sce)$SubID %>% 
   table %>% 
   hist(main=paste0("Cell counts per SubID: mean=", format(mean(.), digits=2), ", median = ", format(median(.), digits=2)))
 
 # Number of cells observed per Channel
-colData(sceCombine) %>%
+colData(sce) %>%
   xtabs( ~ Channel + celltype,.) %>%
   as_tibble %>%
   pivot_longer(cols=Channel) %>%
@@ -101,7 +102,7 @@ colData(sceCombine) %>%
     xlab('')
 
 # Number of cells observed per Subject
-colData(sceCombine) %>%
+colData(sce) %>%
   xtabs( ~ SubID + celltype,.) %>%
   as_tibble %>%
   pivot_longer(cols=SubID) %>%
