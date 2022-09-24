@@ -29,11 +29,13 @@ library(SingleCellExperiment)
 library(zellkonverter)
 library(dreamlet)
 library(zenith)
+library(DelayedArray)
 
 library(GSEABase)
 library(muscat)
 library(cowplot)
 library(scater)
+
 library(tidyverse)
 library(kableExtra)
 library(qvalue)
