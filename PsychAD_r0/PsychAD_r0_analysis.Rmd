@@ -57,7 +57,6 @@ colData(sce) = droplevels(colData(sce))
 
 Public freeze 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$batch))` 10X batches, `r length(table(sce$SubID))` donors, and `r format(ncol(sce), big.mark=',')` cells passing QC.
 
-
 # Joint UMAP
 ```{r umap, dev="png"}
 # extract UMAP coordinates and annotations
@@ -127,7 +126,7 @@ pb = aggregateToPseudoBulk(sce,
     assay = "counts", 
     cluster_id = "celltype",
     sample_id = "Channel",
-    BPPARAM = SnowParam(12, progressbar=TRUE))
+    BPPARAM = SnowParam(12))
 ```
 
 
