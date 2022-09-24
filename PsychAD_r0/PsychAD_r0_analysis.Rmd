@@ -126,7 +126,7 @@ pb = aggregateToPseudoBulk(sce,
     assay = "counts", 
     cluster_id = "celltype",
     sample_id = "Channel",
-    BPPARAM = SnowParam(12))
+    BPPARAM = SnowParam(6))
 ```
 
 
