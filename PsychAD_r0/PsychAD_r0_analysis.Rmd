@@ -312,7 +312,7 @@ ggplot(df_sex2, aes(XIST, UTY, color=Sex)) + geom_point() + theme_classic() + sc
 
 
 ```{r varPart}
-form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + AD
+form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + (1|AD)
 
 res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
 ```
