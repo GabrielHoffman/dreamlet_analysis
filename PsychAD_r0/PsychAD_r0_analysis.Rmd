@@ -25,6 +25,7 @@ knitr::opts_chunk$set(
 
 # Load libraries
 ```{r load.packages, cache=FALSE}
+suppressPackageStartupMessages({
 library(SingleCellExperiment)
 library(zellkonverter)
 library(dreamlet)
@@ -42,6 +43,7 @@ library(qvalue)
 library(scattermore)
 library(corrplot)
 library(org.Hs.eg.db)
+})
 ```
 
 
@@ -221,10 +223,6 @@ dreamlet::plotHeatmap(df, genes=unique(genes))
 
 
 
-```{r exi234234, cache=FALSE}
-knitr::knit_exit()
-```
-
 ```{r Dx.summary, eval=FALSE}
 df = unique(data.frame(Dx = pb$dx, Donor = pb$SubID))
 
@@ -233,9 +231,8 @@ sort(table(df$dx), decreasing=TRUE) %>% kbl() %>% kable_styling(full_width=FALSE
 
 ```{r voom}
 # Normalize and apply voom
-res.proc = processAssays( pb, ~ Institution, 
-  min.cells = 5,
-  min.count = 10, 
+form = ~ 1
+res.proc = processAssays( pb, form, 
   BPPARAM = SnowParam(6))
   
 res.proc
@@ -243,11 +240,6 @@ res.proc
 
 ```{r voom.plot, fig.height=10, fig.width=10, cache=TRUE}
 plotVoom( res.proc ) 
-```
-
-
-```{r voom.plot_sub, fig.height=4, fig.width=10, cache=TRUE}
-plotVoom( res.proc[7:9] ) 
 ```
 
 
@@ -267,7 +259,7 @@ df_sex = lapply( names(res.proc), function(CT){
 }) 
 df_sex = do.call(rbind, df_sex)
 
-df_sex = merge(df_sex, colData(pbObj)[,"Sex",drop=FALSE], by.x="IDS", by.y="row.names")
+df_sex = merge(df_sex, colData(pb)[,"Sex",drop=FALSE], by.x="IDS", by.y="row.names")
 
 ggplot(as.data.frame(df_sex), aes(XIST, UTY, color=Sex)) + geom_point() + theme_classic() + facet_wrap(~cellType) + theme(aspect.ratio=1)
 ```
@@ -542,7 +534,7 @@ ggsave(fig, file="~/www/test.png", width=15, height=25)
 
 
 
-apply(colData(pbObj)[,keep], 2, table)
+apply(colData(pb)[,keep], 2, table)
 
 
 
