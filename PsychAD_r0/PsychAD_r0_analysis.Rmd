@@ -226,17 +226,17 @@ knitr::knit_exit()
 ```
 
 ```{r Dx.summary, eval=FALSE}
-df = unique(data.frame(Dx = pbObj$dx, Donor = pbObj$SubID))
+df = unique(data.frame(Dx = pb$dx, Donor = pb$SubID))
 
 sort(table(df$dx), decreasing=TRUE) %>% kbl() %>% kable_styling(full_width=FALSE)
 ```
 
 ```{r voom}
 # Normalize and apply voom
-res.proc = processAssays( pbObj, ~ Institution, 
+res.proc = processAssays( pb, ~ Institution, 
   min.cells = 5,
   min.count = 10, 
-  BPPARAM = SnowParam(6, progressbar=TRUE))
+  BPPARAM = SnowParam(6))
   
 res.proc
 ```
