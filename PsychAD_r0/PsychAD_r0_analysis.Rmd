@@ -55,6 +55,9 @@ assayNames(sce)[1] = "counts"
 # drop cells with annotation "Unknown"
 sce = sce[,sce$celltype != "Unknown"]
 colData(sce) = droplevels(colData(sce)) 
+
+# AD status as factor
+sce$AD = factor(sce$AD, 0:1)
 ```
 
 Public freeze 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$batch))` 10X batches, `r length(table(sce$SubID))` donors, and `r format(ncol(sce), big.mark=',')` cells passing QC.
@@ -308,25 +311,19 @@ ggplot(df_sex2, aes(XIST, UTY, color=Sex)) + geom_point() + theme_classic() + sc
 
 
 
-# ```{r varPart}
-# form = ~ (1|batch) #+ (1|round_num) + (1|HTO) + (1|Sex) + (1|Institution) + scale(Age)
+```{r varPart}
+form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + AD
 
-# res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
-# ```
+res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
+```
 
-# ```{r vp.plot, fig.height=15, fig.width=10, cache=TRUE}
+```{r vp.plot, fig.height=15, fig.width=10, cache=TRUE}
+plotVarPart( sortCols(res.vp), label.angle=45 )
+```
 
-# colnames(res.vp) = gsub("scale\\.", "", colnames(res.vp))
-# colnames(res.vp) = gsub("\\.", "", colnames(res.vp))
-# # colnames(res.vp) = gsub("SubID", "Donor", colnames(res.vp))
-
-# plotVarPart( sortCols(res.vp), label.angle=45 )
-# ```
-
-# ```{r vp.plot_sub, fig.height=4, fig.width=10, cache=TRUE}
-# idx = res.vp$assay %in% c('GABAergic neuron', 'Glutamatergic neuron', 'Microglia')
-# plotVarPart( sortCols(res.vp[idx,]), label.angle=70 )
-# ```
+```{r exit2, cache=FALSE}
+knitr::knit_exit()
+```
 
 
 
@@ -1127,12 +1124,6 @@ fig = plotZenithResults(res_zenith[[3]], 3, 1) + ggtitle(names(res_zenith)[3])
 # + PMI and brain bank (Institution) and Ethnicity
 # mvIC
 # write data for QTL analysis
---->
-
-<!---
-```{r exit2, cache=FALSE, eval=TRUE, echo=FALSE}
-knitr::knit_exit()
-```
 --->
 
 
