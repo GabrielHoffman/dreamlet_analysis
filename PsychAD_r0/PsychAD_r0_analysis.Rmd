@@ -324,7 +324,7 @@ plotVarPart( sortCols(res.vp), label.angle=45 )
 ```{r plotPercentBars, fig.height=6, fig.width=10}
 # Show variance fractions at the gene-level for each cell type
 genes = c("PTPRG", "TREM2", "NPTP")
-plotPercentBars(res.vp[res.vp$gene %in% genes,])
+plotPercentBars(sortCols(res.vp)[res.vp$gene %in% genes,])
 ```
 
 # Correlation with and between donors
@@ -346,11 +346,11 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 plotVolcano(fit, "AD1")
 ```
 
-```{r genehatmap, fig.height=6, fig.width=10}
+```{r genehatmap, fig.height=4, fig.width=6}
 plotGeneHeatmap( fit, coef="AD1", genes=genes)
 ```
 
-```{r plotForest, fig.height=6, fig.width=10}
+```{r plotForest, fig.height=4, fig.width=4}
 plotForest( fit, coef = 'AD1', gene = genes[1])
 ```
 
