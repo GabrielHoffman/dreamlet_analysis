@@ -323,7 +323,7 @@ plotVarPart( sortCols(res.vp), label.angle=45 )
 
 
 # Correlation with and between donors
-```{r within_btw, fig.height=10, fig.width=10
+```{r within_btw, fig.height=10, fig.width=10}
 source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses.R")
 
 eval_within_across_donor( res.proc, "SubID" )
