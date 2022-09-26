@@ -361,7 +361,7 @@ plotForest( fit, coef = 'AD1', gene = genes[1]) +
 
 
 ### Summarize differential expression 
-```{r plot.pi, fig.height=5, fig.width=9}
+```{r plot.pi, fig.height=5, fig.width=12}
 # Summarize differential expression for each coef and assay
 df = fit %>%
   topTable(coef='AD1', number=Inf) %>%
