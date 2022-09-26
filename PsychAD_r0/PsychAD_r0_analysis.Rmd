@@ -338,7 +338,7 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 
 ## Volcano
 ```{r volcano, fig.height=15, fig.width=10}
-plotVolcano(fit, "AD")
+plotVolcano(fit, "AD1")
 ```
 
 ## Summarize differential expression
@@ -349,11 +349,11 @@ plotVolcano(fit, "AD")
 go.gs = get_GeneOntology()
 
 # zenith analysis
-res.gsa = zenith_gsa(fit.dl, coefs="AD1")
+res.gsa = zenith_gsa(fit, coefs="AD1")
 ```
 
 ```{r zenith.heatmap.1, fig.width=7, fig.height=12}
-plotZenithResults(res.gsa, 3, 1) 
+plotZenithResults(res.gsa, 5, 2) 
 ```
 
 # Write residuals
