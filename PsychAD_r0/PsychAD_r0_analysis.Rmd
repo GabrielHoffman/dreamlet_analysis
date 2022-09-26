@@ -346,10 +346,10 @@ plotVolcano(fit, "AD1")
 ## Gene set analysis
 ```{r zenith}
 # Load Gene Ontology database 
-go.gs = get_GeneOntology()
+go.gs = get_GeneOntology(to="SYMBOL")
 
 # zenith analysis
-res.gsa = zenith_gsa(fit, coefs="AD1")
+res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
 ```
 
 ```{r zenith.heatmap.1, fig.width=7, fig.height=12}
@@ -357,6 +357,15 @@ plotZenithResults(res.gsa, 5, 2)
 ```
 
 # Write residuals
+
+
+
+# Session Info
+<details>
+```{r sessioninfo, cache=FALSE}
+sessionInfo()
+```
+</details>
 
 
 
