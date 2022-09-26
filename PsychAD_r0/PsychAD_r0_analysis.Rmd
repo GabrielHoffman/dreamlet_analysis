@@ -355,9 +355,9 @@ plotGeneHeatmap( fit, coef="AD1", genes=genes)
 ```
 
 ```{r plotForest, fig.height=4, fig.width=4}
-plotForest( fit, coef = 'AD1', gene = genes[1])
+plotForest( fit, coef = 'AD1', gene = genes[1]) +
+  theme(aspect.ratio=1)
 ```
-
 
 
 ## Summarize differential expression
