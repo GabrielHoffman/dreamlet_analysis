@@ -388,18 +388,16 @@ ymax = max(1.05*max(df$nDE), 100)
 fig2 = ggplot(df, aes(nDE, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
-    theme(aspect.ratio=1, legend.position="none") +
+    theme(aspect.ratio=1, legend.position="none", axis.text.y=element_blank()) +
     scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
-    xlab("# genes with FDR < 5%") +
-    ylab("Cell type") 
+    xlab("# genes with FDR < 5%") 
 
 fig3 = ggplot(df, aes(pi1, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
-    theme(aspect.ratio=1, legend.position="none") +
+    theme(aspect.ratio=1, legend.position="none", axis.text.y=element_blank()) +
     scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
-    xlab(bquote(pi[1])) +
-    ylab("Cell type")
+    xlab(bquote(pi[1]))
 
 plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
 ```    
