@@ -317,7 +317,7 @@ form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + (1|AD)
 res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
 ```
 
-```{r vp.plot, fig.height=15, fig.width=10
+```{r vp.plot, fig.height=15, fig.width=10}
 colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "batch"] = '10X batch'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
