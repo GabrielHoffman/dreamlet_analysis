@@ -350,7 +350,7 @@ plotVolcano(fit, "AD1")
 plotGeneHeatmap( res.dl, coef="AD1", genes=genes)
 ```
 
-```{r genehatmap, fig.height=6, fig.width=10}
+```{r plotForest, fig.height=6, fig.width=10}
 plotForest( res.dl, coef = 'AD1', gene = genes[1])
 ```
 
