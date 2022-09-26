@@ -428,10 +428,10 @@ plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv"
 go.gs = get_GeneOntology(to="SYMBOL")
 
 # zenith analysis
-res.gsa = zenith_gsa(fit, go.gs, coefs="AD1", n_genes_min=20)
+res.gsa = zenith_gsa(fit, go.gs, coefs="AD1", n_genes_min=30)
 ```
 
-```{r zenith.heatmap.1, fig.width=10, fig.height=18} 
+```{r zenith.heatmap.1, fig.width=10, fig.height=18, cache=FALSE} 
 plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom") 
 ```
 
