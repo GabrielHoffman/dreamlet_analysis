@@ -362,6 +362,50 @@ plotForest( fit, coef = 'AD1', gene = genes[1]) +
 
 ## Summarize differential expression
 
+
+### Summarize differential expression 
+```{r plot.pi, fig.height=5, fig.width=12}
+# Summarize differential expression for each coef and assay
+df = fit %>%
+  topTable(coef='AD1', number=Inf) %>%
+    as_tibble %>% 
+    group_by(assay) %>% 
+    summarise( 
+      nGenes = length(adj.P.Val), 
+      nDE = sum(adj.P.Val < 0.05),
+      pi1 = 1 - qvalue(P.Value)$pi0) 
+
+ymax = 1.05*max(df$nGenes)
+fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes expressed") +
+    ylab("Cell type") 
+
+ymax = max(1.05*max(df$nDE), 100)
+fig2 = ggplot(df, aes(nDE, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes with FDR < 5%") +
+    ylab("Cell type") 
+
+fig3 = ggplot(df, aes(pi1, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
+    xlab(bquote(pi[1])) +
+    ylab("Cell type")
+
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
+```    
+
+
+
 ## Gene set analysis
 ```{r zenith}
 # Load Gene Ontology database 
