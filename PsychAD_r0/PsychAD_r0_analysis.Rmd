@@ -321,354 +321,51 @@ res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
 plotVarPart( sortCols(res.vp), label.angle=45 )
 ```
 
+
+# Correlation with and between donors
+```{r within_btw, fig.height=10, fig.width=10
+source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses.R")
+
+eval_within_across_donor( res.proc, "SubID" )
+```
+
+# dreamlet
+```{r dreamlet}
+form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + AD
+
+fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
+```
+
+## Volcano
+```{r volcano, fig.height=15, fig.width=10}
+plotVolcano(fit, "AD")
+```
+
+## Summarize differential expression
+
+## Gene set analysis
+```{r zenith}
+# Load Gene Ontology database 
+go.gs = get_GeneOntology()
+
+# zenith analysis
+res.gsa = zenith_gsa(fit.dl, coefs="AD1")
+```
+
+```{r zenith.heatmap.1, fig.width=7, fig.height=12}
+plotZenithResults(res.gsa, 3, 1) 
+```
+
+# Write residuals
+
+
+
 ```{r exit2, cache=FALSE}
 knitr::knit_exit()
 ```
 
 
 
-# ### Examine variancePartition results
-# ```{r vp.examine, fig.height=3, fig.width=7}
-# CT = "Astrocyte"
-
-# i = 1:3
-# df = sortCols(res.vp)[res.vp$assay == CT,]
-# rownames(df) = df$gene
-# i = c(i, which.max(df$Donor), which.max(df$Batch), which.max(df$Residuals))
-
-# plotPercentBars( data.frame(df[i,-c(1,2)])) + ggtitle(CT)
-# ```
-
-# Examples
-
-# ```{r vp.examine2, fig.height=6, fig.width=8, cache=TRUE, eval=FALSE}      
-# figList = lapply( df$gene[i], function(geneName){
-#   df = merge( as.data.frame(t(assay(res.proc, CT)$E[geneName,,drop=FALSE])), colData(res.proc), by="row.names")
-
-#   plotStratifyBy(df, 'SubID', geneName, colorBy=NULL, main=geneName) + theme(aspect.ratio=1)
-# })
-# plot_grid( plotlist=figList, nrow=2 )
-# ```
-
-# ## Batch effects and gen sets
-# ```{r DE.batch, eval=FALSE}
-# library(zenith)
-# go.gs = get_GeneOntology(to="ENSEMBL")
-
-# coef = "batch"
-# n_genes_min = 10
-# geneSets = go.gs
-
-# res = lapply( unique(res.vp$assay), function(key){
-  
-#   message(key)
-
-#   # subset by assay
-#   df = res.vp[res.vp$assay == key,]
-
-#   # get variance statistic
-#   statistic = df[,coef]
-#   names(statistic) = df$gene
-
-#   # convert GeneSetCollection to list
-#   geneSets.lst = geneIds( geneSets )
-
-#   # Map from Ensembl genes in geneSets_GO to 
-#   # from trimmed Ensembl names from RNA-seq data 
-#   index = ids2indices( geneSets.lst, names(statistic))
-     
-#   # filter by size of gene set
-#   index = index[vapply(index, length, FUN.VALUE=numeric(1)) >= n_genes_min]
-#   if( length(index) == 0){
-#     ret = NULL
-#   }else{
-#     res = cameraPR( statistic, index, use.ranks=TRUE)
-
-#     ret = DataFrame( assay = key, Geneset = rownames(res), res)
-#   }
-
-#   ret
-# })
-# res = do.call(rbind, res)
-
-# res$FDR = p.adjust(res$PValue, "fdr")
-
-# # table(res$FDR < 0.05)
-# ```
-
-
-
-
-
-
-# Correlation with and between donors
-```{r within_btw, fig.height=10, fig.width=10, eval=FALSE}
-source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses.R")
-
-eval_within_across_donor( res.proc, "SubID" )
-```
-
-
-when data is non-missing from only 1 Institution, dreamlet returns empty result
-is model singular?
-
-```{r dreamlet.fit.many.faster}
-form = ~ Sex + scale(Age) # + Institution
-
-test.traits = colnames(colData(res.proc))[c(22:59, 67:104)]
-test.traits = c(test.traits, 'CERAD', "BRAAK_AD", "BRAAK_PD" ,  "CDRScore",  "Plq_Mn", "ApoE_gt")
-
-values = sort(apply(colData(res.proc)[,test.traits,drop=FALSE], 2, var, na.rm=TRUE))
-
-test.traits = names(values)[values > 0]
-
-fitList = lapply( test.traits, function(x){
-
-  message(x)
-
-  if( is.logical(colData(res.proc)[,x]) ){
-     res.proc@data[,x] = as.numeric(colData(res.proc)[,x] )
-   }
-
-  # test trait term at end
-  formula = update.formula(form, paste(' ~ . + ',x))
-
-  dreamlet( res.proc, formula, BPPARAM = SnowParam(6), quiet=TRUE )
-  })
-names(fitList) = test.traits
-```
-
-
-form = ~ Sex + scale(Age) + CERAD + Institution
-fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6), assays='Astrocyte' )
-
-
-
-
-```{r topTable.fit.many}
-tabList = lapply( names(fitList), function(x){
-
-  fit = fitList[[x]]
-
-  topTable(fit, coef=x, number=Inf)
-})
-names(tabList) = names(fitList)
-```
-
-
-# Number DE genes
-```{r n.de}
-library(tidyverse)
-library(qvalue)
-
-get_pi1 = function(p){
-
-  res <- tryCatch( pi0est(p), error = function(e) NULL)
-
-  pi1 = NA
-  if( ! is.null(res)){
-    pi1 = 1 - res$pi0
-  }
-  pi1
-}
-
-df_tab = lapply( names(tabList), function(trait){
-
-  tab = tabList[[trait]]
-  tab$trait = trait
-  as_tibble(tab)
-  })
-df_tab = bind_rows(df_tab)
-
-df = df_tab %>%
-  group_by(trait, assay) %>%
-  summarise( nGenes = length(adj.P.Val), 
-              nDE = sum(adj.P.Val < 0.05), 
-              pi1 = get_pi1(P.Value))
-
-keep = df %>% 
-  group_by(trait) %>% 
-  summarise(nDE=sum(nDE)) %>%
-  arrange(nDE) %>%
-  tail(8) %>%
-  select(trait) %>%
-  array %>%
-  unlist
-
-keep = keep[!keep%in% c('Anxiety', 'ADHD')]
-
-fig = df %>%
-  filter(trait %in% keep) %>%
-  # filter(nDE > 0) %>%
-  ggplot(aes(assay, nDE, fill=assay)) +
-    geom_bar(stat='identity') + 
-    facet_wrap(~ trait, ncol=5) +
-    theme_classic() +
-    theme(aspect.ratio=1, legend.position="none") +
-    ylab("Number DE genes") +
-    coord_flip()#ylim=c(0, 300)) 
-
-ggsave(fig, file="~/www/test.png", width=10, height=15)
-
-
-
-
-fig = df %>%
-  # filter(trait %in% keep) %>%
-  ggplot(aes(assay, pi1, fill=assay)) +
-    geom_bar(stat='identity') + 
-    facet_wrap(~ trait) +
-    theme_classic() +
-    theme(aspect.ratio=1, legend.position="none", strip.text = element_text(size=6)) +
-    ylab("pi1") +
-    coord_flip(ylim=c(0,1))
-
-ggsave(fig, file="~/www/test.png", width=15, height=25)
-
-
-
-
-
-
-
-apply(colData(pb)[,keep], 2, table)
-
-
-
-# dcast as wide matrix
-df2 = df_tab %>%      
-  filter(trait %in% keep[1:3]) %>%      
-  reshape2::dcast(ID ~ trait + assay , value.var="z.std")
-
-C = cor(df2[,-1], use='pairwise.complete.obs')
-
-col = colorRampPalette(c("blue3", "white","red3"))(200)
-
-png("~/www/test.png", height=1024, width=1024)
-corrplot(C, col=col, tl.col="black")
-dev.off()
-
-
-png("~/www/test.png", height=1024, width=1024)
-corrplot(C, order="hclust", col=col, tl.col="black")
-dev.off()
-
-
-
-
-keep = c('nps_DelCurValue', 'nps_FatCurValue', 'nps_LifeCurValue', 'nps_WtGainCurValue', "AD", "BRAAK_AD", "CERAD", "Plq_Mn")
-
-
-# dcast as wide matrix
-df2 = df_tab %>%      
-  filter(trait %in% keep) %>%      
-  reshape2::dcast(ID ~ trait + assay , value.var="z.std")
-
-
-C = cor(df2[,-1], use='pairwise.complete.obs')
-C = C[order(colnames(C)), order(colnames(C))]
-
-# i = grep("Gluta", colnames(C))
-cols =  c('AD_Glutamatergic neuron','BRAAK_AD_Glutamatergic neuron','CERAD_Glutamatergic neuron','Plq_Mn_Glutamatergic neuron','nps_DelCurValue_Glutamatergic neuron','nps_FatCurValue_Glutamatergic neuron','nps_LifeCurValue_Glutamatergic neuron','nps_WtGainCurValue_Glutamatergic neuron')
-
-col = colorRampPalette(c("blue3", "white","red3"))(200)
-
-png("~/www/test.png")#, height=1024, width=1024)
-corrplot(C[cols, cols], col=col, tl.col="black")
-dev.off()
-
-
-
-
-
-# dcast as wide matrix
-df2 = df_tab %>%           
-  reshape2::dcast(ID ~ trait + assay , value.var="z.std") 
-
-
-
-
-
-C = cor(df2[,2:13], df2[,-c(1:13)], use='pairwise.complete.obs')
-
-
-df_cor = reshape2::melt(C) %>%
-  as_tibble %>%
-  mutate(trait = gsub("_(.*)$", "", Var2))
-
-df_keep = df_cor %>%
-  group_by(trait)  %>%
-  summarize(mean = mean(abs(value))) %>%
-  arrange(mean) %>%
-  tail(12)
-
-df_use = df_cor %>%
-        filter(trait %in% c("MCI", "DLBD", 'ApoE')) 
-
-ratio = with(df_use, length(unique(Var2)) / length(unique(Var1)))
-
-fig = df_use %>% 
-  ggplot(aes(Var1, Var2, fill=value)) +
-  geom_tile() +
-  theme_classic() +
-  theme(aspect.ratio=ratio ,axis.text.x=element_text(angle = 90, hjust = 1)) +
-  scale_fill_gradient2(low="blue", mid="white", high="red", limits=c(-1,1), name="Correlation") +
-  xlab("") + ylab('')
-
-
-ggsave(fig, file="~/www/test.png", width=6, height=7)
-
-
-cor(as.data.frame(colData(pbObj)[,c("AD", "MCI")]), use='pairwise.complete.obs')
-
-
-
-res.gsa[["AD"]]
-
-
-```
-
-
-
-
-devtools::reload("/hpc/users/hoffmg01/.Rlib/R_420/zenith")
-
-
-
-```
-
-
-# zenith for gene set analysis
-```{r zenith.many}
-# Load Gene Ontology database 
-go.gs = get_GeneOntology(to="SYMBOL")
-
-ngenes = sapply(go.gs, function(gs) length(geneIds(gs)))
-go.gs = go.gs[(ngenes > 20) & (ngenes < 2000)]
-
-# traits = c("AD", "MCI", "DLBD", 'ApoE_gt', "BD", "SZC")
-
-traits = c('nps_DelCurValue', 'nps_FatCurValue', 'nps_LifeCurValue', 'nps_WtGainCurValue')
-
-res.gsa = mclapply( traits, function(x){
-
-  zenith_gsa(fitList[[x]], coefs=x, go.gs)
-}, mc.cores=4)
-names(res.gsa) = traits
-
-# saveRDS(res.gsa, file="res.gsa.RDS")
-# res.gsa = readRDS("res.gsa.RDS")
-
-trait = traits[4]
-
-fig = plotZenithResults( res.gsa[[trait]], 2, 1 ) + ggtitle(trait)
-ggsave(fig, file="~/www/test.png", width=10, height=10)
-
-
-
-
-
-```
 
 
 
