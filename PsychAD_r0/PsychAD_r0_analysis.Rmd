@@ -352,8 +352,8 @@ go.gs = get_GeneOntology(to="SYMBOL")
 res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
 ```
 
-```{r zenith.heatmap.1, fig.width=7, fig.height=12}
-plotZenithResults(res.gsa, 5, 2) 
+```{r zenith.heatmap.1, fig.width=10, fig.height=18}
+plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom")
 ```
 
 # Write residuals
