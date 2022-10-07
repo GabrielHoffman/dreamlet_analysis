@@ -48,7 +48,7 @@ library(org.Hs.eg.db)
 
 
 ```{r load.data}
-file = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/PsychAD_r0_Sept24_2022.h5ad"
+file = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/PsychAD_r0_Oct_06_2022.h5ad "
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 
