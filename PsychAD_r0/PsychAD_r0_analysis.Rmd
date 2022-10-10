@@ -77,6 +77,16 @@ ggplot(df, aes(V1, V2, color=class)) + geom_scattermore() + theme_classic() + th
 ```
 
 
+```{r umap4, dev="png"}
+ggplot(df, aes(V1, V2, color=anno)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+```
+
+
+```{r umap5, dev="png"}
+ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+```
+
+
 ## Summarize cell counts
 ```{r summarize.cell.counts}
 # cells per Channel
