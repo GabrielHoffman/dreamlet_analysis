@@ -1,0 +1,78 @@
+---
+title: "Analysis of snRNA-seq from [Mathys, et al. Nature 2019](https://www.nature.com/articles/s41586-019-1195-2)"
+subtitle: 'Data from AMP-AD synapse.org: [syn18485175](https://www.synapse.org/#!Synapse:syn18485175)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+    toc: true
+    smart: false
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  package.startup.message = FALSE,
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+# Load packages
+```{r load.packages, cache=FALSE}
+library(SingleCellExperiment)
+library(zellkonverter)
+library(DelayedArray)
+library(scater)
+library(tidyverse)
+library(kableExtra)
+library(qvalue)
+library(cowplot)
+```
+
+# Read data
+```{r read.data}
+# read h5ad
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Mathys_Nature_2019/Mathys_Nature_2019.h5ad"
+sce = readH5AD(file, use_hdf5=TRUE)
+
+# Set missing PMI to mean
+sce$pmi[is.na(sce$pmi)] = mean(sce$pmi, na.rm=TRUE) 
+```
+
+# tSNE embedding
+```{r umap}
+colData(sce) %>% 
+  as.data.frame() %>%
+  ggplot(aes(tsne1, tsne2, color=broad.cell.type)) + 
+    geom_point() + 
+    theme_classic() + 
+    theme(aspect.ratio=1, axis.ticks = element_blank()) +
+  xlab("tSNE 1") +
+  ylab("tSNE 2")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
