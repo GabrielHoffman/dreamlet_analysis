@@ -64,9 +64,7 @@ colData(sce) %>%
 
 # Compute pseudobulk
 ```{r pb}
-# Pseudobulk, dropping pericytes
-keep = sce$broad.cell.type != "Per"
-pb <- aggregateToPseudoBulk(sce[,keep],
+pb <- aggregateToPseudoBulk(sce,
     assay = "counts",     
     cluster_id = "broad.cell.type",  
     sample_id = "projid",
