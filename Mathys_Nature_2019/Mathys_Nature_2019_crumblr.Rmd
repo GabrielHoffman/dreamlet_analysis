@@ -35,6 +35,7 @@ library(scater)
 library(tidyverse)
 library(kableExtra)
 library(qvalue)
+library(dreamlet)
 library(cowplot)
 ```
 
@@ -60,6 +61,26 @@ colData(sce) %>%
   ylab("tSNE 2")
 ```
 
+
+# Compute pseudobulk
+```{r pb}
+# Pseudobulk, dropping pericytes
+keep = sce$broad.cell.type != "Per"
+pb <- aggregateToPseudoBulk(sce[,keep],
+    assay = "counts",     
+    cluster_id = "broad.cell.type",  
+    sample_id = "projid",
+    verbose = TRUE)
+
+# convert sequencingBatch to factor
+pb$sequencingBatch = factor(pb$sequencingBatch)
+```
+
+# crumblr
+```{r test1}
+library(crumblr)
+
+cobj = crumblr(cellCounts(pb))
 
 
 
