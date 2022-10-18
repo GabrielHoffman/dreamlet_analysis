@@ -553,7 +553,8 @@ ggplot(df, aes(ID, logFC)) +
   geom_point(color="navy") +
   coord_flip() +
   theme_classic() +
-  xlab('')
+  xlab('') +
+  theme(aspect.ratio=2)
 ```
 
 
