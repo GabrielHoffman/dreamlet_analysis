@@ -42,13 +42,15 @@ library(kableExtra)
 library(qvalue)
 library(scattermore)
 library(corrplot)
+library(dplyr)
 library(org.Hs.eg.db)
 })
 ```
 
 
 ```{r load.data}
-file = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/PsychAD_r0_Oct_06_2022.h5ad"
+folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
+file = paste0(folder, "PsychAD_r0_Oct_06_2022.h5ad")
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 
@@ -58,6 +60,36 @@ colData(sce) = droplevels(colData(sce))
 
 # AD status as factor
 sce$AD = factor(sce$AD, 0:1)
+
+# collapse cell type annotations into 9 categories
+sce$celltype9 = recode_factor(sce$subtype,
+                Astro_1 = "Astrocyte",
+                Astro_2 = "Astrocyte",
+                EN_L2_3_IT_1 = "Excitatory neuron",
+                EN_L2_3_IT_2 = "Excitatory neuron",
+                EN_L4_IT = "Excitatory neuron",
+                EN_L5_6_NP = "Excitatory neuron",
+                EN_L5_IT = "Excitatory neuron",
+                EN_L6_CT = "Excitatory neuron",
+                Endo = "Endothelial",
+                IN_Chandelier = "Inhibitory neuron",
+                IN_LAMP5 = "Inhibitory neuron",
+                IN_PVALB = "Inhibitory neuron",
+                IN_SST = "Inhibitory neuron",
+                IN_VIP = "Inhibitory neuron",
+                Immune_T = "T cell",
+                Micro_PVM_1 = "Microglia",
+                Micro_PVM_2 = "Microglia",
+                OPC = "OPC",
+                Oligo_1 = "Oligodendrocyte",
+                Oligo_2 = "Oligodendrocyte",
+                Oligo_3 = "Oligodendrocyte",
+                Oligo_4 = "Oligodendrocyte",
+                Oligo_5 = "Oligodendrocyte",
+                Oligo_6 = "Oligodendrocyte",
+                Oligo_7 = "Oligodendrocyte",
+                VLMC_SMC_PC = "VLMC_SMC_PC")
+
 ```
 
 Public freeze 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$batch))` 10X batches, `r length(table(sce$SubID))` donors, and `r format(ncol(sce), big.mark=',')` cells passing QC.
@@ -81,6 +113,11 @@ ggplot(df, aes(V1, V2, color=class)) + geom_scattermore() + theme_classic() + th
 ggplot(df, aes(V1, V2, color=anno)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
 ```
 
+```{r umap9, dev="png"}
+ggplot(df, aes(V1, V2, color=celltype9)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+```
+
+
 
 ```{r umap5, dev="png"}
 ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
@@ -100,10 +137,10 @@ colData(sce)$SubID %>%
 
 # Number of cells observed per Channel
 colData(sce) %>%
-  xtabs( ~ Channel + celltype,.) %>%
+  xtabs( ~ Channel + celltype9,.) %>%
   as_tibble %>%
   pivot_longer(cols=Channel) %>%
-  ggplot(aes(celltype, n, fill=celltype)) + 
+  ggplot(aes(celltype9, n, fill=celltype9)) + 
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
@@ -116,10 +153,10 @@ colData(sce) %>%
 
 # Number of cells observed per Subject
 colData(sce) %>%
-  xtabs( ~ SubID + celltype,.) %>%
+  xtabs( ~ SubID + celltype9,.) %>%
   as_tibble %>%
   pivot_longer(cols=SubID) %>%
-  ggplot(aes(celltype, n, fill=celltype)) + 
+  ggplot(aes(celltype9, n, fill=celltype9)) + 
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
@@ -139,7 +176,7 @@ setAutoBlockSize(1e9)
 # Create pseudo-bulk SingleCellExperiment
 pb = aggregateToPseudoBulk(sce,
     assay = "counts", 
-    cluster_id = "celltype",
+    cluster_id = "celltype9",
     sample_id = "Channel",
     BPPARAM = SnowParam(6))
 ```
@@ -156,7 +193,7 @@ df_counts = lapply( assayNames(pb), function(x){
 })
 df_counts = do.call(rbind, df_counts)
 
-ggplot(df_counts, aes(celltype, readCounts, fill=celltype)) +  
+ggplot(df_counts, aes(celltype9, readCounts, fill=celltype9)) +  
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
@@ -440,28 +477,6 @@ file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/misc/GRCh38.104_gc_c
 df_GC = read.table(file, header=TRUE)
 
 df_vp = merge(as.data.frame(res.vp), df_GC, by.x="gene", by.y="SYMBOL")
-
-# Compute correlation and standard error for Pearson and Spearman
-cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
-
-  method = match.arg(method)
-
-  if( method == "pearson"){
-    df <- cor.test(x,y, method=method,...) %>%
-      tidy %>%
-      mutate(se = sqrt((1 - estimate^2)/parameter))
-    res = data.frame(rho = df$estimate, rho.se = df$se)
-  }else if(method == "spearman"){
-    # https://stats.stackexchange.com/questions/18887/how-to-calculate-a-confidence-interval-for-spearmans-rank-correlation
-    rho <- cor(x,y, method=method,...)
-    n <- sum(complete.cases(x, y))
-    rho.se <- sqrt((1+rho^2/2)/(n-3))
-
-    res <- data.frame(rho = rho, rho.se = rho.se)
-  }
-
-  return(res) 
-}
 
 fig1 = df_vp %>%
   group_by(assay) %>%
