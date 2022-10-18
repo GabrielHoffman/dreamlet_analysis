@@ -532,14 +532,31 @@ form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + AD
 fit = dream(cobj, form, info)
 fit = eBayes(fit)
 
-topTable(fit, "AD1", number=Inf)
-
 res1 = treeTest( fit, cobj, hcl, coef="AD1", method="FE")
 plotTreeTest(res1) + xlim(0, 13) + ggtitle("FE")
 
 res2 = treeTest( fit, cobj, hcl, coef="AD1", method="RE2C")
 plotTreeTest(res2) + xlim(0, 13) + ggtitle("RE2C")
+
+# plot of LogFC
+tab = topTable(fit, "AD1", number=Inf, sort.by="none")
+
+# sort based on tree
+tab2 = tab[levels(sce$subtype)[hcl$order],]
+
+df = data.frame(ID = factor(rownames(tab2), rownames(tab2)), tab2)
+df$se = with(df, logFC/ t)
+
+ggplot(df, aes(ID, logFC)) +
+  geom_hline(yintercept=0, linetype="dashed", color="grey50") + 
+  geom_errorbar(aes(ymin=logFC - 1.96*se, ymax=logFC + 1.96*se), width=0) +
+  geom_point(color="navy") +
+  coord_flip() +
+  theme_classic() +
+  xlab('')
 ```
+
+
 
 
 
