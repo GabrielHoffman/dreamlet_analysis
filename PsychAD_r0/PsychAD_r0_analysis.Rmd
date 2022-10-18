@@ -550,7 +550,7 @@ df$se = with(df, logFC/ t)
 ggplot(df, aes(ID, logFC)) +
   geom_hline(yintercept=0, linetype="dashed", color="grey50") + 
   geom_errorbar(aes(ymin=logFC - 1.96*se, ymax=logFC + 1.96*se), width=0) +
-  geom_point(color="navy") +
+  geom_point(color="dodgerblue") +
   coord_flip() +
   theme_classic() +
   xlab('') +
