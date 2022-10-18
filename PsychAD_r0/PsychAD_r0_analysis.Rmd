@@ -552,7 +552,7 @@ fig.logFC = ggplot(df, aes(ID, logFC)) +
   coord_flip() +
   theme_classic() +
   xlab('') +
-  theme(aspect.ratio=4), axis.text.y = element_blank())
+  theme(aspect.ratio=4, axis.text.y = element_blank())
 
 fig.logFC %>% insert_left(fig.tree)
 ```
