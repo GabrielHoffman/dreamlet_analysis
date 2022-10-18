@@ -535,10 +535,10 @@ fit = eBayes(fit)
 topTable(fit, "AD1", number=Inf)
 
 res = treeTest( fit, cobj, hcl, coef="AD1", method="FE")
-plotTreeTest(res) + xlim(0, 12)
+plotTreeTest(res) + xlim(0, 13) + ggtitle("FE")
 
 res = treeTest( fit, cobj, hcl, coef="AD1", method="RE2C")
-plotTreeTest(res) + xlim(0, 12) + ggtitle("RE2C")
+plotTreeTest(res) + xlim(0, 13) + ggtitle("RE2C")
 ```
 
 
