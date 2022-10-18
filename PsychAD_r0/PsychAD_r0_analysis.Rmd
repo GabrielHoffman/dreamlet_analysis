@@ -517,9 +517,9 @@ plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom")
 ```{r test.crumblr}
 library(crumblr)
 
-hcl = buildClusterTree(sce, "X_pca_regressed_harmony", "anno")
+hcl = buildClusterTree(sce, "X_pca_regressed", "subtype")
 
-counts = computeCellCounts(sce, "anno", "Channel")
+counts = computeCellCounts(sce, "subtype", "Channel")
 
 idx = match( rownames(counts), sce$Channel)
 info = colData(sce)[idx,]
