@@ -400,7 +400,7 @@ plotPercentBars(df.vp.sub)
 # Correlation with and between donors
 ```{r within_btw, fig.height=10, fig.width=10}
 source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses.R")
-
+ 
 eval_within_across_donor( res.proc, "SubID" )
 ```
 
@@ -511,6 +511,7 @@ fig2 = df_vp %>%
       legend.position="none") +
     xlab("Cell type") +
     ylab("Spearman correlation between Donor % and CPM") +
+    scale_y_continuous(limits=c(0, .7), expand=c(0,0)) +
     coord_flip() 
 
 plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")    
