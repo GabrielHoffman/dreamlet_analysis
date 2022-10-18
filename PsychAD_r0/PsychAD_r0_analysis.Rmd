@@ -514,7 +514,7 @@ plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom")
 
 
 # Cell type composition
-```{r test.crumblr}
+```{r test.crumblr, fig.width=8}
 library(crumblr)
 library(aplot)
 
