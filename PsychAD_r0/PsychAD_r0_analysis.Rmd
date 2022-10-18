@@ -472,6 +472,8 @@ plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv"
 Observe that fraction of variation across batches correlates with GC content of the corresponding gene.  Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in 'shot noise' due to low counts.
 
 ```{r gc.content, fig.height=5, fig.width=12}
+source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses.R")
+
 # read GC content
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/misc/GRCh38.104_gc_content.tsv.gz"
 df_GC = read.table(file, header=TRUE)
