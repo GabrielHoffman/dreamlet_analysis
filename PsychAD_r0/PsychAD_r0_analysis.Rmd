@@ -193,7 +193,7 @@ df_counts = lapply( assayNames(pb), function(x){
 })
 df_counts = do.call(rbind, df_counts)
 
-ggplot(df_counts, aes(celltype9, readCounts, fill=celltype9)) +  
+ggplot(df_counts, aes(celltype, readCounts, fill=celltype)) +  
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
