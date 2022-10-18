@@ -514,6 +514,7 @@ plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom")
 
 
 # Cell type composition
+```{r test.crumblr}
 library(crumblr)
 library(Matrix)
 
@@ -535,16 +536,11 @@ getCellCounts = function(sce, column1, column2){
   t(as.matrix(M))
 }
 
-
-
-
-
 # M[1:4, 1:4]
 
 #  identical(counts, M)
 
 hcl = buildClusterTree(sce, "X_pca_regressed_harmony", "celltype")
-
 
 # counts = cellCounts(pb)
 
@@ -553,7 +549,6 @@ counts = getCellCounts(sce, "celltype", "Channel")
 idx = match( rownames(counts), sce$Channel)
 info = colData(sce)[idx,]
 rownames(info) = info$Channel
-
 
 # counts[1:2, 1:2]
 
@@ -572,7 +567,7 @@ topTable(fit, "AD1", number=Inf)
 res = treeTest( fit, cobj, hcl, coef="AD1", method="LS")
  
 plotTreeTest(res)
- 
+```
 
 
 
