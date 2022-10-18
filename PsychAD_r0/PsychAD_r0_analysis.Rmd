@@ -538,11 +538,15 @@ plotTreeTest(res1) + xlim(0, 13) + ggtitle("FE")
 # res2 = treeTest( fit, cobj, hcl, coef="AD1", method="RE2C")
 # plotTreeTest(res2) + xlim(0, 13) + ggtitle("RE2C")
 
+
+hcl$labels[hcl$order]
+
 # plot of LogFC
 tab = topTable(fit, "AD1", number=Inf, sort.by="none")
 
 # sort based on tree
-tab2 = tab[levels(sce$subtype)[hcl$order],]
+# tab2 = tab[levels(sce$subtype)[hcl$order],]
+tab2 = tab[hcl$labels[hcl$order],]
 
 df = data.frame(ID = factor(rownames(tab2), rownames(tab2)), tab2)
 df$se = with(df, logFC/ t)
