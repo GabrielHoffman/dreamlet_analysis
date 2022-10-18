@@ -98,7 +98,7 @@ Public freeze 0 includes `r length(table(sce$Channel))` samples, `r length(table
 ```{r umap, dev="png"}
 # extract UMAP coordinates and annotations
 df = cbind(reducedDim(sce, "X_umap"), 
-    colData(sce)[,c("anno", "celltype", "class", "subtype")]) %>% 
+    colData(sce)[,c("anno", "celltype", "celltype9", "class", "subtype")]) %>% 
     as.data.frame
  
 ggplot(df, aes(V1, V2, color=celltype)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
