@@ -535,8 +535,8 @@ fit = eBayes(fit)
 res1 = treeTest( fit, cobj, hcl, coef="AD1", method="FE")
 plotTreeTest(res1) + xlim(0, 13) + ggtitle("FE")
 
-res2 = treeTest( fit, cobj, hcl, coef="AD1", method="RE2C")
-plotTreeTest(res2) + xlim(0, 13) + ggtitle("RE2C")
+# res2 = treeTest( fit, cobj, hcl, coef="AD1", method="RE2C")
+# plotTreeTest(res2) + xlim(0, 13) + ggtitle("RE2C")
 
 # plot of LogFC
 tab = topTable(fit, "AD1", number=Inf, sort.by="none")
