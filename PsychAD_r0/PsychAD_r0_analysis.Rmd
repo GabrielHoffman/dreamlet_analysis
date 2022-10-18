@@ -516,43 +516,14 @@ plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom")
 # Cell type composition
 ```{r test.crumblr}
 library(crumblr)
-library(Matrix)
 
-getCellCounts = function(sce, column1, column2){
+hcl = buildClusterTree(sce, "X_pca_regressed_harmony", "anno")
 
-  df = colData(sce) %>%
-    as_tibble %>%
-    group_by(across(column1), across(column2)) %>%
-    summarize( count=n()) %>%
-    distinct 
-
-  M = sparseMatrix( as.numeric(df[[column1]]), 
-            as.numeric(df[[column2]]), 
-            x=df$count,
-            dims=c(nlevels(df[[column1]]), nlevels(df[[column2]])))
-  rownames(M) = levels(df[[column1]])
-  colnames(M) = levels(df[[column2]])
-
-  t(as.matrix(M))
-}
-
-# M[1:4, 1:4]
-
-#  identical(counts, M)
-
-hcl = buildClusterTree(sce, "X_pca_regressed_harmony", "celltype")
-
-# counts = cellCounts(pb)
-
-counts = getCellCounts(sce, "celltype", "Channel")
+counts = computeCellCounts(sce, "anno", "Channel")
 
 idx = match( rownames(counts), sce$Channel)
 info = colData(sce)[idx,]
 rownames(info) = info$Channel
-
-# counts[1:2, 1:2]
-
-# counts2[1:2, 1:2]
 
 cobj = crumblr(counts)
 
@@ -564,10 +535,10 @@ fit = eBayes(fit)
 topTable(fit, "AD1", number=Inf)
 
 res = treeTest( fit, cobj, hcl, coef="AD1", method="FE")
-plotTreeTest(res) + xlim(0, 11)
+plotTreeTest(res) + xlim(0, 12)
 
 res = treeTest( fit, cobj, hcl, coef="AD1", method="RE2C")
-plotTreeTest(res) + xlim(0, 11)
+plotTreeTest(res) + xlim(0, 12) + ggtitle("RE2C")
 ```
 
 
