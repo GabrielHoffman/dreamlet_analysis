@@ -531,6 +531,27 @@ plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom")
 ```
 
 
+# Gene set analysis using zenith
+```{r zenith}
+go.gs.en = getGenesets( org = "hsa", 
+                  db = "enrichr", 
+                  lib = "GO_Biological_Process_2021",
+                  gene.id.type = "SYMBOL", 
+                  return.type = "GeneSetCollection")
+
+res.zenith2 = zenith_gsa( fit, go.gs.en, 
+              coef = 'AD1', 
+              n_genes_min=20)
+```
+
+```{r plot.zenith, fig.width=15, fig.height=16}
+res.zenith2$assay = factor(res.zenith2$assay, names(fit))
+plotZenithResults(res.zenith2, 3, 1)
+```
+
+
+
+
 # Cell type composition
 ```{r test.crumblr, fig.width=8}
 library(crumblr)
