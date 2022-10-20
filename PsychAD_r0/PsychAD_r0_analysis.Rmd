@@ -532,7 +532,7 @@ plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom")
 
 
 # Gene set analysis using zenith
-```{r zenith}
+```{r zenith2}
 go.gs.en = getGenesets( org = "hsa", 
                   db = "enrichr", 
                   lib = "GO_Biological_Process_2021",
@@ -544,7 +544,7 @@ res.zenith2 = zenith_gsa( fit, go.gs.en,
               n_genes_min=20)
 ```
 
-```{r plot.zenith, fig.width=15, fig.height=16}
+```{r plot.zenith2, fig.width=15, fig.height=16}
 res.zenith2$assay = factor(res.zenith2$assay, names(fit))
 plotZenithResults(res.zenith2, 3, 1)
 ```
