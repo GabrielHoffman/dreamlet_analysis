@@ -553,54 +553,6 @@ plotZenithResults(res.zenith2, 3, 1)
 
 
 
-# Cell type composition
-```{r test.crumblr, fig.width=8}
-library(crumblr)
-library(aplot)
-
-hcl = buildClusterTree(sce, "X_pca_regressed", "subtype")
-
-counts = computeCellCounts(sce, "subtype", "Channel")
-
-idx = match( rownames(counts), sce$Channel)
-info = colData(sce)[idx,]
-rownames(info) = info$Channel
-
-cobj = crumblr(counts)
-
-form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + AD
-
-fit = dream(cobj, form, info)
-fit = eBayes(fit)
-
-res1 = treeTest( fit, cobj, hcl, coef="AD1", method="FE")
-fig.tree = plotTreeTest(res1) + xlim(0, 13) + ggtitle("FE")
-
-# plot of LogFC
-tab = topTable(fit, "AD1", number=Inf, sort.by="none")
-
-# sort based on tree
-# tab2 = tab[get_taxa_name(fig.tree),]
-# df = data.frame(ID = factor(rownames(tab2), rev(rownames(tab2))), tab2)
-df = data.frame(ID = rownames(tab), tab)
-df$se = with(df, logFC/ t)
-
-fig.logFC = ggplot(df, aes(ID, logFC)) +
-  geom_hline(yintercept=0, linetype="dashed", color="grey50") + 
-  geom_errorbar(aes(ymin=logFC - 1.96*se, ymax=logFC + 1.96*se), width=0) +
-  geom_point(color="dodgerblue") +
-  coord_flip() +
-  theme_classic() +
-  xlab('') +
-  theme(aspect.ratio=4, axis.text.y = element_blank())
-
-fig.logFC %>% insert_left(fig.tree)
-```
-
-
-
-
-
 
 
 # Session Info
