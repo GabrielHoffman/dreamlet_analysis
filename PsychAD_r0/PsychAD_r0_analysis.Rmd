@@ -540,29 +540,7 @@ res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
 ```
 
 ```{r zenith.heatmap.1, fig.width=10, fig.height=18, cache=FALSE} 
-plotZenithResults(res.gsa, 5, 2) + theme(legend.position="bottom") 
-```
-
-
-# Gene set analysis using zenith
-```{r zenith2}
-go.gs.en = getGenesets( org = "hsa", 
-                  db = "enrichr", 
-                  lib = "GO_Biological_Process_2021",
-                  gene.id.type = "SYMBOL", 
-                  return.type = "GeneSetCollection")
-
-# remove set with > 1000 genes
-go.gs.en = go.gs.en[sapply(go.gs.en, function(x)length(geneIds(x))) < 1000]
-
-res.zenith2 = zenith_gsa( fit, go.gs.en, 
-              coef = 'AD1', 
-              n_genes_min=20)
-```
-
-```{r plot.zenith2, fig.width=15, fig.height=16, cache=FALSE}
-res.zenith2$assay = factor(res.zenith2$assay, names(fit))
-plotZenithResults(res.zenith2, 3, 1) 
+plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
 ```
 
 
