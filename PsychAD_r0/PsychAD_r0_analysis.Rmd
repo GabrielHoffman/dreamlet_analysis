@@ -563,6 +563,23 @@ res.zenith2$assay = factor(res.zenith2$assay, names(fit))
 plotZenithResults(res.zenith2, 3, 1) 
 ```
 
+
+
+# # Gene set analysis using zenith
+# ```{r zenith2}
+# go.BioCarta = getGenesets( org = "hsa", 
+#                   db = "enrichr", 
+#                   lib = "BioCarta_2016",
+#                   gene.id.type = "SYMBOL", 
+#                   return.type = "GeneSetCollection")
+
+# res.zenith2 = zenith_gsa( fit, go.BioCarta, 
+#               coef = 'AD1')
+# ```
+
+
+
+
 # Mashr Analysis
 ```{r mashr}
 # run mashr model to borrow information across genes and
