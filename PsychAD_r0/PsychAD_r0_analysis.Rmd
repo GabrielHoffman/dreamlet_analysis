@@ -375,7 +375,7 @@ plotVarPart( sortCols(res.vp), label.angle=45 )
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
 # Show variance fractions at the gene-level for each cell type
-genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", "XIST", 'C1D')
+genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1',"XIST", 'C1D')
 
 # res.vp %>%
 #  as_tibble %>%
@@ -395,7 +395,7 @@ df.vp.sub = sortCols(res.vp)[(res.vp$gene %in% genes) &(res.vp$assay=="Microglia
 df.vp.sub$gene = factor(df.vp.sub$gene, rev(genes))
 df.vp.sub = df.vp.sub[order(df.vp.sub$gene, decreasing=TRUE),]
 
-plotPercentBars(df.vp.sub)
+plotPercentBars(df.vp.sub) + theme(aspect.ratio=1)
 ```
 
 # Correlation with and between donors
@@ -413,17 +413,20 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 ```
 
 ## Volcano
-```{r volcano, fig.height=15, fig.width=10}
+```{r volcano, fig.height=12, fig.width=10}
 plotVolcano(fit, "AD1")
 ```
 
-```{r genehatmap, fig.height=4, fig.width=6}
+```{r genehatmap, fig.height=4, fig.width=6, cache=FALSE}
 plotGeneHeatmap( fit, coef="AD1", genes=genes)
 ```
 
-```{r plotForest, fig.height=6, fig.width=6}
-plotForest( fit, coef = 'AD1', gene = genes[1]) +
-  theme(aspect.ratio=1)
+```{r plotForest, fig.height=6, fig.width=6, cache=FALSE}
+figList = lapply(genes, function(g){
+  plotForest( fit, coef = 'AD1', gene = g) +
+    theme(aspect.ratio=1)
+})
+plot_grid(plotlist=figList, ncol=4)
 ```
 
 
