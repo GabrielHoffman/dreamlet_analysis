@@ -413,18 +413,19 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 ```
 
 ## Volcano
-```{r volcano, fig.height=12, fig.width=10}
+```{r volcano, fig.height=10, fig.width=10}
 plotVolcano(fit, "AD1")
 ```
 
+## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=6, cache=FALSE}
 plotGeneHeatmap( fit, coef="AD1", genes=genes)
 ```
 
-```{r plotForest, fig.height=6, fig.width=6, cache=FALSE}
+```{r plotForest, fig.height=6, fig.width=12, cache=FALSE}
 figList = lapply(genes, function(g){
   plotForest( fit, coef = 'AD1', gene = g) +
-    theme(aspect.ratio=1)
+    theme(aspect.ratio=1, position.legend="none")
 })
 plot_grid(plotlist=figList, ncol=4)
 ```
