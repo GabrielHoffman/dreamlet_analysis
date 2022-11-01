@@ -557,7 +557,7 @@ plotZenithResults(res.zenith2, 3, 1)
 ```
 
 # Mashr Analysis
-```{r mashr}
+```{r mashr, eval=FALSE}
 # run mashr model to borrow information across genes and
 # cell types in estimating coefficients' posterior distribution
 res_mash = run_mash(fit, coef='AD1')
