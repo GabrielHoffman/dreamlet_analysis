@@ -533,8 +533,7 @@ plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")
 go.gs = get_GeneOntology(to="SYMBOL")
 
 # remove set with > 1000 genes
-go.gs = go.gs[sapply(go.gs, function(x)length(geneIds(x))) < 1000]
-
+go.gs = go.gs[sapply(go.gs, function(x) length(geneIds(x))) < 1000]
 
 # zenith analysis
 res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
@@ -566,19 +565,6 @@ res.zenith2$assay = factor(res.zenith2$assay, names(fit))
 plotZenithResults(res.zenith2, 3, 1) 
 ```
 
-
-
-# # Gene set analysis using zenith
-# ```{r zenith2}
-# go.BioCarta = getGenesets( org = "hsa", 
-#                   db = "enrichr", 
-#                   lib = "BioCarta_2016",
-#                   gene.id.type = "SYMBOL", 
-#                   return.type = "GeneSetCollection")
-
-# res.zenith2 = zenith_gsa( fit, go.BioCarta, 
-#               coef = 'AD1')
-# ```
 
 
 
@@ -616,9 +602,6 @@ plotZenithResults(df_gs, 5, 1)
 # test
 ```{r test}
 plotForest(res_mash, "PTPRG") 
-
-
-
 plotForest(res_mash, "SPRY4-AS1") 
 plotForest(res_mash, "SPRY4") 
 plotForest(res_mash, "FGF1") 
@@ -629,7 +612,7 @@ get_lfsr(res_mash$model)['SPRY4',]
 df = extractData(res.proc, "Excitatory neuron")
 
 genes = c("SPRY4-AS1", "SPRY4", "FGF1")
-df[,genes]
+# df[,genes]
 
 
 df_controls = df[df$AD == 0,]
