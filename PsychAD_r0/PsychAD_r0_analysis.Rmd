@@ -558,7 +558,7 @@ res.zenith2 = zenith_gsa( fit, go.gs.en,
               n_genes_min=20)
 ```
 
-```{r plot.zenith2, fig.width=15, fig.height=16}
+```{r plot.zenith2, fig.width=15, fig.height=16, cache=FALSE}
 res.zenith2$assay = factor(res.zenith2$assay, names(fit))
 plotZenithResults(res.zenith2, 3, 1) 
 ```
