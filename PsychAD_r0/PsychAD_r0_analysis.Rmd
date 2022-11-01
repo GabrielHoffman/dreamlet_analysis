@@ -526,15 +526,18 @@ plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")
 
 
 
-SPRY4
 
 ## Gene set analysis
 ```{r zenith}
 # Load Gene Ontology database 
 go.gs = get_GeneOntology(to="SYMBOL")
 
+# remove set with > 1000 genes
+go.gs = go.gs[sapply(go.gs, function(x)length(geneIds(x))) > 1000]
+
+
 # zenith analysis
-res.gsa = zenith_gsa(fit, go.gs, coefs="AD1", n_genes_min=30)
+res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
 ```
 
 ```{r zenith.heatmap.1, fig.width=10, fig.height=18, cache=FALSE} 
