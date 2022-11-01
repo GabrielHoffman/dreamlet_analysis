@@ -359,14 +359,14 @@ ggplot(df_sex2, aes(XIST, UTY, color=Sex)) + geom_point() + theme_classic() + sc
 
 
 
-
+## Variance Partitioning Analysis
 ```{r varPart}
 form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + (1|AD)
 
 res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
 ```
 
-```{r vp.plot, fig.height=15, fig.width=10}
+```{r vp.plot, fig.height=12, fig.width=10}
 colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "batch"] = 'Batch'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
@@ -562,6 +562,30 @@ plotZenithResults(res.zenith2, 3, 1)
 # cell types in estimating coefficients' posterior distribution
 res_mash = run_mash(fit, coef='AD1')
 ```
+
+```{r mashr.summary}
+# how many gene-by-celltype tests are significant
+# i.e.  if a gene is significant in 2 celltypes, it is counted twice
+table(get_lfsr(res_mash$model) < 0.05, useNA="ifany")
+
+# how many genes are significant in at least one cell type
+table( apply(get_lfsr(res_mash$model), 1, min, na.rm=TRUE) < 0.05)
+
+# how many genes are significant in each cell type
+apply(get_lfsr(res_mash$model), 2, function(x) sum(x < 0.05, na.rm=TRUE))
+
+get_pm(res_mash$model)[genes,]
+```
+
+```{r mashr.zenith}
+df_gs = zenith_gsa(res_mash, go.gs.en)
+```
+
+```{r mashr.zenith.plot, fig.width=15, fig.height=16}
+df_gs$assay = factor(df_gs$assay, names(fit))
+plotZenithResults(df_gs, 5, 1)
+```
+
 
 
 
