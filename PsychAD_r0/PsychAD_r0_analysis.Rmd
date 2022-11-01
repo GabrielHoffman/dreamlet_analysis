@@ -533,7 +533,7 @@ plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")
 go.gs = get_GeneOntology(to="SYMBOL")
 
 # remove set with > 1000 genes
-go.gs = go.gs[sapply(go.gs, function(x)length(geneIds(x))) > 1000]
+go.gs = go.gs[sapply(go.gs, function(x)length(geneIds(x))) < 1000]
 
 
 # zenith analysis
@@ -554,7 +554,7 @@ go.gs.en = getGenesets( org = "hsa",
                   return.type = "GeneSetCollection")
 
 # remove set with > 1000 genes
-go.gs.en = go.gs.en[sapply(go.gs.en, function(x)length(geneIds(x))) > 1000]
+go.gs.en = go.gs.en[sapply(go.gs.en, function(x)length(geneIds(x))) < 1000]
 
 res.zenith2 = zenith_gsa( fit, go.gs.en, 
               coef = 'AD1', 
