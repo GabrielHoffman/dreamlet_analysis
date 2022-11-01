@@ -524,6 +524,10 @@ fig2 = df_vp %>%
 plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")    
 ```
 
+
+
+SPRY4
+
 ## Gene set analysis
 ```{r zenith}
 # Load Gene Ontology database 
@@ -546,6 +550,9 @@ go.gs.en = getGenesets( org = "hsa",
                   gene.id.type = "SYMBOL", 
                   return.type = "GeneSetCollection")
 
+# remove set with > 1000 genes
+go.gs.en = go.gs.en[sapply(go.gs.en, function(x)length(geneIds(x))) > 1000]
+
 res.zenith2 = zenith_gsa( fit, go.gs.en, 
               coef = 'AD1', 
               n_genes_min=20)
@@ -553,7 +560,7 @@ res.zenith2 = zenith_gsa( fit, go.gs.en,
 
 ```{r plot.zenith2, fig.width=15, fig.height=16}
 res.zenith2$assay = factor(res.zenith2$assay, names(fit))
-plotZenithResults(res.zenith2, 3, 1)
+plotZenithResults(res.zenith2, 3, 1) 
 ```
 
 # Mashr Analysis
@@ -586,7 +593,51 @@ df_gs$assay = factor(df_gs$assay, names(fit))
 plotZenithResults(df_gs, 5, 1)
 ```
 
+# test
+```{r test}
+plotForest(res_mash, "PTPRG") 
 
+
+
+plotForest(res_mash, "SPRY4-AS1") 
+plotForest(res_mash, "SPRY4") 
+plotForest(res_mash, "FGF1") 
+
+
+get_lfsr(res_mash$model)['SPRY4',]
+
+df = extractData(res.proc, "Excitatory neuron")
+
+genes = c("SPRY4-AS1", "SPRY4", "FGF1")
+df[,genes]
+
+
+df_controls = df[df$AD == 0,]
+
+df_cor = t(cor(df_controls[,"SPRY4-AS1",drop=FALSE], df_controls[,-c(1:8)]))
+df_cor = df_cor[order(abs(df_cor), decreasing=TRUE),,drop=FALSE]
+
+head(df_cor, 10)
+
+cutoff = .6
+ngenes = sum(abs(df_cor) >= cutoff) - 1
+
+df_cor %>%  
+  as.data.frame %>%
+  rownames_to_column %>%
+  rename(gene = rowname , correlation = `SPRY4-AS1`) %>% 
+  filter(correlation >= cutoff) %>%
+  filter(gene != "SPRY4-AS1") %>%
+  mutate(gene = factor(gene, rev(gene))) %>%
+  ggplot(aes(x=1, y=gene, fill = correlation)) +
+  geom_tile() +
+  theme_classic() +
+  theme(aspect.ratio=ngenes, 
+    axis.title.x=element_blank(),
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank()) + 
+  scale_fill_gradient2(low="blue", mid="white", high="red", limits=c(-1,1))
+```
 
 
 
