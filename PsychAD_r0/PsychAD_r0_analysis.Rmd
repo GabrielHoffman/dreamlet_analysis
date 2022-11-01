@@ -572,7 +572,7 @@ get_pm(res_mash$model)[genes,]
 df_gs = zenith_gsa(res_mash, go.gs)
 ```
 
-```{r mashr.zenith.plot, fig.width=15, fig.height=16}
+```{r mashr.zenith.plot, fig.width=15, fig.height=16, cache=FALSE}
 df_gs$assay = factor(df_gs$assay, names(fit))
 plotZenithResults(df_gs, 5, 1) 
 ```
