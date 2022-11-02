@@ -1,6 +1,7 @@
 ---
 title: |
-  ![](https://icahn.mssm.edu/sites/ismms/assets/images/IcahnLogo.png){width=1in} "Analysis of Alzheimer's Disease in [PsychAD](https://adknowledgeportal.synapse.org/Explore/Projects/DetailsPage?Grant%20Number=R01AG067025)"
+  ![](https://icahn.mssm.edu/sites/ismms/assets/images/IcahnLogo.png){width=1in} 
+  "Analysis of Alzheimer's Disease in [PsychAD](https://adknowledgeportal.synapse.org/Explore/Projects/DetailsPage?Grant%20Number=R01AG067025)"
 subtitle: 'Public Release 0'
 author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
 date: "Run on `r Sys.time()`"
