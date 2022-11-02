@@ -127,7 +127,7 @@ ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + 
 
 
 ## Summarize cell counts
-```{r summarize.cell.counts}
+```{r summarize.cell.counts, fig.width=6}
 # cells per Channel
 colData(sce)$Channel %>% 
   table %>% 
