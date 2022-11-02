@@ -371,7 +371,7 @@ colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "batch"] = 'Batch'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
 
-plotVarPart( sortCols(res.vp), label.angle=45 )
+plotVarPart( sortCols(res.vp), label.angle=45 ) + theme_classic()
 ```
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
@@ -415,7 +415,7 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 
 ## Volcano
 ```{r volcano, fig.height=10, fig.width=10}
-plotVolcano(fit, "AD1")
+plotVolcano(fit, "AD1") + theme_classic()
 ```
 
 ## Highlight genes
