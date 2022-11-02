@@ -125,14 +125,15 @@ ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + 
 ```{r umap6, dev="png", fig.height=12, fig.width=12}
 df %>%
 filter(celltype9 == 'Oligodendrocyte') %>%
+droplevels %>%
 ggplot(aes(V1, V2, color=anno)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
 ```
 
- 
+
 
 ```{r exit333, cache=FALSE}
 knitr::knit_exit()
-````
+```
 
 ## Summarize cell counts
 ```{r summarize.cell.counts, fig.width=5}
