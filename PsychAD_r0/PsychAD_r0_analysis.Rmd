@@ -94,7 +94,7 @@ sce$celltype9 = recode_factor(sce$subtype,
 
 ```
 
-Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$batch))` 10X batches, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
+Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$batch))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) batches, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
 
 # Summarize data
 ## UMAP
