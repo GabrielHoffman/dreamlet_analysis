@@ -271,6 +271,7 @@ df = unique(data.frame(Dx = pb$dx, Donor = pb$SubID))
 sort(table(df$dx), decreasing=TRUE) %>% kbl() %>% kable_styling(full_width=FALSE)
 ```
 
+# Process data: log2 CPM + voom precision weights
 ```{r voom}
 # Normalize and apply voom
 form = ~ 1
@@ -349,7 +350,7 @@ ggplot(df_sex2, aes(XIST, UTY, color=Sex)) + geom_point() + theme_classic() + sc
 
 
 
-## Variance Partitioning Analysis
+# Variance Partitioning Analysis
 ```{r varPart}
 form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + (1|AD)
 
@@ -396,7 +397,7 @@ source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses
 eval_within_across_donor( res.proc, "SubID" )
 ```
 
-# dreamlet
+# Differential expression: dreamlet analysis
 ```{r dreamlet}
 form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + AD
 
