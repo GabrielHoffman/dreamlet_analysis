@@ -291,7 +291,7 @@ res.proc
 ```
 
 ```{r voom.plot, fig.height=10, fig.width=10, cache=TRUE}
-plotVoom( res.proc ) 
+plotVoom( res.proc ) + theme_classic()
 ```
 
 
@@ -371,7 +371,7 @@ colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "batch"] = 'Batch'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
 
-plotVarPart( sortCols(res.vp), label.angle=45 ) + theme_classic()
+plotVarPart( sortCols(res.vp), label.angle=45 )
 ```
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
