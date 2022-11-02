@@ -376,7 +376,7 @@ plotVarPart( sortCols(res.vp), label.angle=45 )
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
 # Show variance fractions at the gene-level for each cell type
-genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1',"XIST", 'C1D')
+genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1', "PDE10A", "XIST", 'C1D')
 
 # res.vp %>%
 #  as_tibble %>%
@@ -535,16 +535,13 @@ go.gs = get_GeneOntology(to="SYMBOL")
 # remove set with > 1000 genes
 go.gs = go.gs[sapply(go.gs, function(x) length(geneIds(x))) < 1000]
 
-# zenith analysis
+# zenith analysis 
 res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
 ```
 
 ```{r zenith.heatmap.1, fig.width=10, fig.height=18, cache=FALSE} 
 plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
 ```
-
-
-
 
 
 # Mashr Analysis
@@ -582,7 +579,8 @@ plotZenithResults(df_gs, 5, 1)
 plotForest(res_mash, "PTPRG") 
 plotForest(res_mash, "SPRY4-AS1") 
 plotForest(res_mash, "SPRY4") 
-plotForest(res_mash, "FGF1") 
+plotForest(res_mash, "PDE10A") 
+
 
 
 get_lfsr(res_mash$model)['SPRY4',]
