@@ -133,6 +133,10 @@ df %>%
  dim
 
 
+```{r exist3, cache=FALSE}
+knitr::knit_exit()
+```
+
 
 
 ## Summarize cell counts
@@ -297,41 +301,6 @@ res.proc
 ```{r voom.plot, fig.height=10, fig.width=10, cache=TRUE}
 plotVoom( res.proc ) + theme_classic()
 ```
-
-
-### Sex expression based on XIST and UTY
-```{r plot.sex} 
-df_gene =  AnnotationDbi::select(org.Hs.eg.db, keys=c("XIST", "UTY"), keytype="SYMBOL", columns="ENSEMBL")
-
-df_sex = lapply( names(res.proc), function(CT){
-  geneExpr = res.proc[[CT]]
-  df = NULL
-  if( sum(df_gene$SYMBOL %in% rownames(geneExpr)) == 2){
-    df = data.frame(cellType = CT, IDS = colnames(geneExpr$E), XIST = geneExpr$E['XIST',], UTY = geneExpr$E['UTY',])
-  }
-  df
-}) 
-df_sex = do.call(rbind, df_sex)
-
-df_sex = merge(df_sex, colData(pb)[,"Sex",drop=FALSE], by.x="IDS", by.y="row.names")
-
-ggplot(as.data.frame(df_sex), aes(XIST, UTY, color=Sex)) + geom_point() + theme_classic() + facet_wrap(~cellType) + theme(aspect.ratio=1)
-
-df_sex %>%
-  as_tibble %>%
-  group_by(IDS, cellType) %>% 
-  summarize(XIST = log2(sum(2^XIST)), UTY = log2(sum(2^UTY)), Sex) %>% 
-  ggplot(aes(XIST, UTY, color=Sex)) + 
-    geom_point() + 
-    theme_classic() + 
-    theme(aspect.ratio=1)
-```
-
-
-
-
-
-
 
 
 # Variance Partitioning Analysis
