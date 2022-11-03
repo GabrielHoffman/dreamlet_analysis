@@ -31,12 +31,10 @@ library(zellkonverter)
 library(dreamlet)
 library(zenith)
 library(DelayedArray)
-
 library(GSEABase)
 library(muscat)
 library(cowplot)
 library(scater)
-
 library(tidyverse)
 library(kableExtra)
 library(qvalue)
@@ -129,11 +127,13 @@ mutate(anno = droplevels(anno)) %>%
 ggplot(aes(V1, V2, color=anno)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
 ```
 
+df %>%
+ mutate(annoMod = gsub("^(.*)-.*$", "\\1", anno)) %>%
+ filter(annoMod != celltype) %>%
+ dim
 
 
-```{r exit333, cache=FALSE}
-knitr::knit_exit()
-```
+
 
 ## Summarize cell counts
 ```{r summarize.cell.counts, fig.width=5}
@@ -299,15 +299,13 @@ plotVoom( res.proc ) + theme_classic()
 ```
 
 
+### Sex expression based on XIST and UTY
 ```{r plot.sex} 
 df_gene =  AnnotationDbi::select(org.Hs.eg.db, keys=c("XIST", "UTY"), keytype="SYMBOL", columns="ENSEMBL")
 
 df_sex = lapply( names(res.proc), function(CT){
   geneExpr = res.proc[[CT]]
   df = NULL
-  # if( sum(df_gene$ENSEMBL %in% rownames(geneExpr)) == 2){  
-  #   df = data.frame(cellType = CT, IDS = colnames(geneExpr$E), XIST = geneExpr$E[df_gene$ENSEMBL[1],], UTY = geneExpr$E[df_gene$ENSEMBL[2],])
-  # }
   if( sum(df_gene$SYMBOL %in% rownames(geneExpr)) == 2){
     df = data.frame(cellType = CT, IDS = colnames(geneExpr$E), XIST = geneExpr$E['XIST',], UTY = geneExpr$E['UTY',])
   }
@@ -318,47 +316,20 @@ df_sex = do.call(rbind, df_sex)
 df_sex = merge(df_sex, colData(pb)[,"Sex",drop=FALSE], by.x="IDS", by.y="row.names")
 
 ggplot(as.data.frame(df_sex), aes(XIST, UTY, color=Sex)) + geom_point() + theme_classic() + facet_wrap(~cellType) + theme(aspect.ratio=1)
+
+df_sex %>%
+  as_tibble %>%
+  group_by(IDS, cellType) %>% 
+  summarize(XIST = log2(sum(2^XIST)), UTY = log2(sum(2^UTY)), Sex) %>% 
+  ggplot(aes(XIST, UTY, color=Sex)) + 
+    geom_point() + 
+    theme_classic() + 
+    theme(aspect.ratio=1)
 ```
 
-Sex expression based on XIST and UTY
-```{r sex.combine, eval=FALSE}
-# get total reads
-totalReads = DelayedMatrixStats::colSums2(assay(sceCombine, "X"))
-df_totalReads = data.frame(totalReads, Channel=sceCombine$Channel) %>%
-  group_by(Channel) %>%
-  summarise(LibSize = sum(totalReads))
 
-rm(totalReads) 
-gc()
 
-# sum across cells for each Donor
-counts = assay(sceCombine[df_gene$ENSEMBL,], "X")
 
-setAutoBlockSize(1e8)
-grid = colAutoGrid(counts, ncol=100000)
-
-df = dreamlet:::colsum_fast(counts, droplevels(sceCombine$Channel), grid=grid)
-
-# merge expression with metadata
-df_meta_uniq = unique(colData(sceCombine)[,c("Channel", "Sex")])
-df_meta_uniq = merge(df_meta_uniq, df_totalReads, by="Channel")
-
-df_sex = merge(df_meta_uniq, as.matrix(t(df)), by.x="Channel", by.y="row.names")
-
-rm(df, df_meta_uniq)
-gc()
-
-colnames(df_sex)[colnames(df_sex) == df_gene$ENSEMBL[1]] = df_gene$SYMBOL[1] 
-colnames(df_sex)[colnames(df_sex) == df_gene$ENSEMBL[2]] = df_gene$SYMBOL[2]
-
-df_sex2 = df_sex %>% 
-          group_by(Channel) %>%
-          summarise(Sex = unique(Sex),
-                    UTY = log2(sum(UTY) + 0.25) - log2(sum(LibSize)) + log2(1e6),
-                    XIST= log2(sum(XIST) + 0.25) - log2(sum(LibSize)) + log2(1e6))
-
-ggplot(df_sex2, aes(XIST, UTY, color=Sex)) + geom_point() + theme_classic() + scale_color_manual(values=c("red", "blue", "green"))
-```
 
 
 
@@ -549,83 +520,6 @@ res.gsa$Geneset = gsub("^GO\\S+ ", "", res.gsa$Geneset)
 
 plotZenithResults(res.gsa, 10, 3) +theme(legend.position="bottom") 
 ```
-
-
-# Mashr Analysis
-```{r mashr}
-# run mashr model to borrow information across genes and
-# cell types in estimating coefficients' posterior distribution
-res_mash = run_mash(fit, coef='AD1')
-```
-
-```{r mashr.summary}
-# how many gene-by-celltype tests are significant
-# i.e.  if a gene is significant in 2 celltypes, it is counted twice
-table(get_lfsr(res_mash$model) < 0.05, useNA="ifany")
-
-# how many genes are significant in at least one cell type
-table( apply(get_lfsr(res_mash$model), 1, min, na.rm=TRUE) < 0.05)
-
-# how many genes are significant in each cell type
-apply(get_lfsr(res_mash$model), 2, function(x) sum(x < 0.05, na.rm=TRUE))
-
-get_pm(res_mash$model)[genes,]
-```
-
-```{r mashr.zenith}
-df_gs = zenith_gsa(res_mash, go.gs)
-```
-
-```{r mashr.zenith.plot, fig.width=15, fig.height=16, cache=FALSE}
-df_gs$assay = factor(df_gs$assay, names(fit))
-plotZenithResults(df_gs, 5, 1) 
-```
-
-# test
-```{r test}
-plotForest(res_mash, "PTPRG") 
-plotForest(res_mash, "SPRY4-AS1") 
-plotForest(res_mash, "SPRY4") 
-plotForest(res_mash, "PDE10A") 
-
-
-
-get_lfsr(res_mash$model)['SPRY4',]
-
-df = extractData(res.proc, "Excitatory neuron")
-
-genes = c("SPRY4-AS1", "SPRY4", "FGF1")
-# df[,genes]
-
-
-df_controls = df[df$AD == 0,]
-
-df_cor = t(cor(df_controls[,"SPRY4-AS1",drop=FALSE], df_controls[,-c(1:8)]))
-df_cor = df_cor[order(abs(df_cor), decreasing=TRUE),,drop=FALSE]
-
-head(df_cor, 10)
-
-cutoff = .6
-ngenes = sum(abs(df_cor) >= cutoff) - 1
-
-df_cor %>%  
-  as.data.frame %>%
-  rownames_to_column %>%
-  rename(gene = rowname , correlation = `SPRY4-AS1`) %>% 
-  filter(correlation >= cutoff) %>%
-  filter(gene != "SPRY4-AS1") %>%
-  mutate(gene = factor(gene, rev(gene))) %>%
-  ggplot(aes(x=1, y=gene, fill = correlation)) +
-  geom_tile() +
-  theme_classic() +
-  theme(aspect.ratio=ngenes, 
-    axis.title.x=element_blank(),
-    axis.text.x=element_blank(),
-    axis.ticks.x=element_blank()) + 
-  scale_fill_gradient2(low="blue", mid="white", high="red", limits=c(-1,1))
-```
-
-
 
 # Session Info
 <details>
