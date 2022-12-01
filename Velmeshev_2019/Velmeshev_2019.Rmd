@@ -1,0 +1,145 @@
+---
+title: "Analysis of single cell RNA-seq in autism"
+subtitle: '[Velmeshev, et al. 2019](https://www.science.org/doi/10.1126/science.aav8130)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+  toc: true
+  smart: false
+---
+
+
+
+<!---
+
+cd /sc/arion/projects/CommonMind/hoffman/crumblr_analysis/Velmeshev_2019
+ml git
+R
+
+system("git pull"); rmarkdown::render("Velmeshev_2019.Rmd")
+
+
+
+https://hoffmg01.hpc.mssm.edu/crumblr_analysis/Velmeshev_2019/Velmeshev_2019.html
+
+--->
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  cache = TRUE,
+  package.startup.message = FALSE,
+  cache.lazy = FALSE)
+```
+
+# Load packages
+```{r pkgs, cache=FALSE}
+library(zellkonverter)
+library(SingleCellExperiment)
+library(dreamlet)
+library(ggplot2)
+library(tidyverse)
+library(aplot)
+library(ggtree)
+library(scattermore)
+library(zenith)
+library(crumblr)
+library(ggcorrplot)
+library(BiocParallel)
+
+library(DelayedArray)
+setAutoBlockSize(1e9)
+```
+
+# Load data
+```{r load.data}
+# read H5AD files
+file = "/sc/arion/projects/CommonMind/hoffman/crumblr_analysis/Velmeshev_2019/data/Velmeshev_2019.h5ad"
+sce = readH5AD(file, use_hdf5=TRUE)
+
+sce$diagnosis = factor(sce$diagnosis, c("Control", "ASD"))
+
+pb <- aggregateToPseudoBulk(sce,
+    assay = "counts",     
+    cluster_id = "cluster",  
+    sample_id = "sample", 
+    BPPARAM = SnowParam(6, progressbar=TRUE))
+```
+
+## tNSE
+```{r tsne}
+reducedDim(sce, "tSNE") %>%
+  as_tibble %>%
+  cbind( cluster = sce$cluster) %>% 
+  ggplot(aes(tsne1,tsne2, color=cluster)) +
+    geom_scattermore() +
+    theme_void() +
+    theme(aspect.ratio=1)
+```
+    
+
+```{r cca}
+form = ~ individual + region + age + sex + diagnosis + Capbatch + Seqbatch + post.mortem.interval..hours. + RNA.Integrity.Number
+
+C = canCorPairs(form, colData(pb) )
+ggcorrplot(C, hc.order = TRUE)
+```
+
+
+
+# dreamlet
+```{r dreamlet}
+form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
+res.proc = processAssays( pb, form, BPPARAM = SnowParam(6))
+```
+
+
+```{r voom, fig.height=12}
+plotVoom( res.proc)
+```
+
+```{r vp}
+form = ~ (1|individual) + (1|region) + age + (1|sex) + (1|diagnosis) + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
+vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6))
+```
+
+
+
+```{r plotVarPart, fig.height=12, fig.width=9}
+plotVarPart(vp.lst, label.angle=60) 
+```
+
+
+```{r run.de}
+form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
+res.dl = dreamlet( res.proc, form, BPPARAM = SnowParam(6) )
+```
+
+
+```{r plotVolcano, fig.height=12, fig.width=9}
+plotVolcano( res.dl, coef = 'diagnosisASD' )
+```
+
+```{r zenith}
+# Load Gene Ontology database 
+go.gs = get_GeneOntology(to="ENSEMBL")
+   
+# Run zenith gene set analysis on result of dreamlet
+res_zenith = zenith_gsa(res.dl, coef = 'diagnosisASD', go.gs)
+```
+
+
+```{r plotZenithResults, fig.height=16, fig.width=10}
+plotZenithResults(res_zenith, 5, 1)
+```
+
+
+
