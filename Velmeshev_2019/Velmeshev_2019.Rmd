@@ -52,6 +52,7 @@ library(ggtree)
 library(scattermore)
 library(zenith)
 library(crumblr)
+library(GSEABase)
 library(ggcorrplot)
 library(BiocParallel)
 
