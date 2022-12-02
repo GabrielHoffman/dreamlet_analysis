@@ -14,7 +14,7 @@ output:
 
 <!---
 
-cd /sc/arion/projects/CommonMind/hoffman/crumblr_analysis/Velmeshev_2019
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Velmeshev_2019
 ml git
 R
 
@@ -22,7 +22,7 @@ system("git pull"); rmarkdown::render("Velmeshev_2019.Rmd")
 
 
 
-https://hoffmg01.hpc.mssm.edu/crumblr_analysis/Velmeshev_2019/Velmeshev_2019.html
+https://hoffmg01.hpc.mssm.edu/dreamlet_analysis/Velmeshev_2019/Velmeshev_2019.html
 
 --->
 
@@ -37,8 +37,7 @@ knitr::opts_chunk$set(
   dev = c("png", "pdf"),
   cache = TRUE,
   package.startup.message = FALSE,
-  cache.lazy = FALSE)
-```
+  cache.lazy = FALSE)```
 
 # Load packages
 ```{r pkgs, cache=FALSE}
@@ -141,5 +140,18 @@ res_zenith = zenith_gsa(res.dl, coef = 'diagnosisASD', go.gs)
 plotZenithResults(res_zenith, 5, 1)
 ```
 
+
+
+## Gene set with FDr < 5%
+```{r plotZenithResults.FDR, fig.height=16, fig.width=10}
+# get genesets with FDR < 5%
+gs = unique(res_zenith$Geneset[res_zenith$FDR < 0.05])
+
+# keep only results of these genesets
+df = res_zenith[res_zenith$Geneset %in% gs,]
+
+# plot results, but with no limit based on the highest/lowest t-statistic
+plotZenithResults(df, Inf, Inf)
+```
 
 
