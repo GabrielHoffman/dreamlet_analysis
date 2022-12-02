@@ -37,7 +37,8 @@ knitr::opts_chunk$set(
   dev = c("png", "pdf"),
   cache = TRUE,
   package.startup.message = FALSE,
-  cache.lazy = FALSE)```
+  cache.lazy = FALSE)
+```
 
 # Load packages
 ```{r pkgs, cache=FALSE}
