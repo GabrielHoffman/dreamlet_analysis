@@ -25,7 +25,7 @@ colnames(genes) = c("ENSEMBL", "SYMBOL")
 rownames(genes) = gene$ENSEMBL
 
 colnames(counts) = barcodes$V1
-rownames(counts) = genes$V1
+rownames(counts) = genes$ENSEMBL
 
 df_tsne = read.table("tMinusSNE.coords.tsv.gz", row.names=1)
 colnames(df_tsne) = c( "tsne1", "tsne2")
@@ -41,6 +41,8 @@ sce = SingleCellExperiment( assays = list(counts = counts),
 							colData = meta,
 							rowData = genes,
 							reducedDims = list(tSNE = df_tsne)  )
+
+sce$diagnosis = factor(sce$diagnosis, c("Control", "ASD"))
 
 writeH5AD(sce, file="Velmeshev_2019.h5ad", compression="lzf", verbose=TRUE)
 

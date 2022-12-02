@@ -59,7 +59,6 @@ library(BiocParallel)
 library(DelayedArray)
 setAutoBlockSize(1e9)
 
-
 trimGenesets = function(x){
   x %>%
     gsub("^(ER\\d+)_", "", .) %>% 
@@ -74,7 +73,10 @@ trimGenesets = function(x){
 file = "/sc/arion/projects/CommonMind/hoffman/crumblr_analysis/Velmeshev_2019/data/Velmeshev_2019.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE)
 
-sce$diagnosis = factor(sce$diagnosis, c("Control", "ASD"))
+# keep only features with unique gene symbols
+keep = ! duplicated(rowData(sce)$SYMBOL)
+sce = sce[keep,]
+rownames(sce) = rowData(sce)$SYMBOL
 
 pb <- aggregateToPseudoBulk(sce,
     assay = "counts",     
