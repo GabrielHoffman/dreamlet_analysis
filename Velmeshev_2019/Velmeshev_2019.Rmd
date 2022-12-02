@@ -58,6 +58,14 @@ library(BiocParallel)
 
 library(DelayedArray)
 setAutoBlockSize(1e9)
+
+
+trimGenesets = function(x){
+  x %>%
+    gsub("^(ER\\d+)_", "", .) %>% 
+    gsub("_\\(GO.*\\)$", "", .) %>% 
+    gsub("_", " ", .)
+}
 ```
 
 # Load data
