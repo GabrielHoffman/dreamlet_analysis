@@ -19,7 +19,10 @@ library(Matrix)
 
 counts = readMM("matrix.mtx")
 barcodes = read.table("barcodes.tsv")
+
 genes = read.table("genes.tsv")
+colnames(genes) = c("ENSEMBL", "SYMBOL")
+rownames(genes) = gene$ENSEMBL
 
 colnames(counts) = barcodes$V1
 rownames(counts) = genes$V1
@@ -36,6 +39,7 @@ identical(colnames(counts), rownames(meta))
 
 sce = SingleCellExperiment( assays = list(counts = counts),
 							colData = meta,
+							rowData = genes,
 							reducedDims = list(tSNE = df_tsne)  )
 
 writeH5AD(sce, file="Velmeshev_2019.h5ad", compression="lzf", verbose=TRUE)
