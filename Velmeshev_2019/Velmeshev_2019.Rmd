@@ -160,6 +160,7 @@ plotZenithResults(df, Inf, Inf)
 
 ### Highlight specific genesets
 ```{r panels3, fig.height=3, fig.width=8}
+CT = "L2/3"
 gs1 = "GO0099172: presynapse organization"
 plotGeneHeatmap( res.dl, coef="diagnosisASD", genes=geneIds(go.gs[[gs1]]), assays=CT, transpose=TRUE) + 
   ggtitle(trimGenesets(gs1)) + 
