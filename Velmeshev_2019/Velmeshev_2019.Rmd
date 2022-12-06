@@ -141,15 +141,15 @@ plotVolcano( res.dl, coef = 'diagnosisASD' )
 
 ```{r zenith}
 # Load Gene Ontology database 
-go.gs = get_GeneOntology(to="ENSEMBL")
-   
+go.gs = get_GeneOntology(to="SYMBOL")
+    
 # Run zenith gene set analysis on result of dreamlet
 res_zenith = zenith_gsa(res.dl, coef = 'diagnosisASD', go.gs)
 ```
 
 
 ```{r plotZenithResults, fig.height=16, fig.width=10}
-plotZenithResults(res_zenith, 5, 1)
+plotZenithResults(res_zenith, 5, 1) 
 ```
 
 
@@ -159,7 +159,7 @@ plotZenithResults(res_zenith, 5, 1)
 # get genesets with FDR < 5%
 gs = unique(res_zenith$Geneset[res_zenith$FDR < 0.05])
 
-# keep only results of these genesets
+# keep only results of these genesets 
 df = res_zenith[res_zenith$Geneset %in% gs,]
 
 # plot results, but with no limit based on the highest/lowest t-statistic
@@ -174,7 +174,7 @@ CT = "L2/3"
 gs1 = "GO0099172: presynapse organization"
 plotGeneHeatmap( res.dl, coef="diagnosisASD", genes=geneIds(go.gs[[gs1]]), assays=CT, transpose=TRUE) + 
   ggtitle(trimGenesets(gs1)) + 
-  theme(legend.position = "bottom",
+  theme(legend.position = "bottom", 
     axis.text.x=element_text(size=10, angle=30),
     axis.text.y=element_text(size=10)) + 
   xlab('') + ylab('') 
