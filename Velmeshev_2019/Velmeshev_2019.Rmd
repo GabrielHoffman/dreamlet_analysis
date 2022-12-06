@@ -299,8 +299,8 @@ gs1 = "GO0099172: presynapse organization"
 plotGeneHeatmap( res.dl, coef="diagnosisASD", genes=geneIds(go.gs[[gs1]]), assays=CT, transpose=TRUE) + 
   ggtitle(trimGenesets(gs1)) + 
   theme(legend.position = "bottom", 
-    axis.text.x=element_text(size=6, angle=90),
-    axis.text.y=element_text(size=6)) + 
+    axis.text.x=element_text(size=7.5, angle=90),
+    axis.text.y=element_text(size=7.5)) + 
   xlab('') + ylab('') 
 ```
 
