@@ -139,6 +139,11 @@ plotVarPart(vp.lst2, label.angle=90, ncol=4)
 ```
 
 
+```{r plotVarPart2, fig.height=4, fig.width=4}
+plotVarPart(vp.lst2[vp.lst2$assay == "L2/3",], label.angle=90) 
+```
+
+
 ```{r run.de}
 form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
 res.dl = dreamlet( res.proc, form, BPPARAM = SnowParam(6) )
