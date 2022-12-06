@@ -107,17 +107,18 @@ ggcorrplot(C, hc.order = TRUE)
 
 
 
-# dreamlet
+# Process assays
 ```{r dreamlet}
 form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
 res.proc = processAssays( pb, form, BPPARAM = SnowParam(6))
 ```
-
-
+## Mean variance trend
 ```{r voom, fig.height=12}
 plotVoom( res.proc)
 ```
 
+
+# Variance partitioning analysis
 ```{r vp}
 form = ~ (1|individual) + (1|region) + age + (1|sex) + (1|diagnosis) + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
 vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6))
@@ -145,60 +146,10 @@ vp = vp.lst2[vp.lst2$assay == "L2/3",]
 plotVarPart( sortCols(vp), label.angle=90) 
 ```
 
+## Interpreting variance partitioning analysis
+Observe that fraction of variation across batches correlates with GC content of the corresponding gene. Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in ‘shot noise’ due to low counts.
 
-```{r run.de}
-form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
-res.dl = dreamlet( res.proc, form, BPPARAM = SnowParam(6) )
-```
-
-
-### Summarize differential expression 
-```{r plot.pi, fig.height=5, fig.width=17}
-tab = topTable(res.dl, coef = 'diagnosisASD', number=Inf) %>%
-  as_tibble %>% 
-  group_by(assay) %>%
-  summarize( nDE = sum(adj.P.Val < 0.05), 
-            pi1 = 1 - pi0est(P.Value)$pi0,
-            nGenes = length(adj.P.Val)) %>%
-  mutate(assay = factor(assay, assayNames(pb)))
-
-fig1 = ggplot(tab, aes(nGenes, assay, fill=assay)) + 
-    geom_bar(stat="identity") + 
-    theme_classic() +
-    theme(aspect.ratio=1, legend.position="none") +
-    scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
-    xlab("# genes expressed") +
-    ylab("Cell type") 
-
-fig2 = ggplot(tab, aes(nDE, assay, fill=assay)) + 
-    geom_bar(stat="identity") + 
-    theme_classic() +
-    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank(), legend.position="none") +
-    scale_x_continuous(limits=c(0,1000), expand=c(0,0)) +
-    xlab("# genes with FDR < 5%") +
-    ylab("Cell type")
-
-fig3 = ggplot(tab, aes(pi1, assay, fill=assay)) + 
-    geom_bar(stat="identity") + 
-    theme_classic() +
-    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank(), legend.position="none") +
-    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
-    xlab(bquote(pi[1])) +
-    ylab("Cell type")
-
-plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
-```    
-
-
-```{r plotVolcano, fig.height=12, fig.width=9}
-plotVolcano( res.dl, coef = 'diagnosisASD', ncol=4 )
-```
-
-
-### Interpreting variance partitioning analysis
-Observe that fraction of variation across batches correlates with GC content of the corresponding gene.  Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in 'shot noise' due to low counts.
-
-```{r gc.content, fig.height=5, fig.width=12}
+```{r gc, fig.height=5, fig.width=12}
 # read GC content
 path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/"
 file = paste0(path, '/misc/GRCh38.104_gc_content.tsv.gz')
@@ -262,10 +213,58 @@ fig2 = df_vp %>%
     ylab("Spearman correlation between Donor % and CPM") +
     coord_flip() 
 
-plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")    
+plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr") 
+```
+# Differential expression
+```{r run.de}
+form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
+res.dl = dreamlet( res.proc, form, BPPARAM = SnowParam(6) )
 ```
 
 
+```{r plotVolcano, fig.height=12, fig.width=9}
+plotVolcano( res.dl, coef = 'diagnosisASD', ncol=4 )
+```
+
+## Summarize differential expression 
+```{r plot.pi, fig.height=5, fig.width=17}
+tab = topTable(res.dl, coef = 'diagnosisASD', number=Inf) %>%
+  as_tibble %>% 
+  group_by(assay) %>%
+  summarize( nDE = sum(adj.P.Val < 0.05), 
+            pi1 = 1 - pi0est(P.Value)$pi0,
+            nGenes = length(adj.P.Val)) %>%
+  mutate(assay = factor(assay, assayNames(pb)))
+
+fig1 = ggplot(tab, aes(nGenes, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
+    xlab("# genes expressed") +
+    ylab("Cell type") 
+
+fig2 = ggplot(tab, aes(nDE, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank(), legend.position="none") +
+    scale_x_continuous(limits=c(0,1000), expand=c(0,0)) +
+    xlab("# genes with FDR < 5%") +
+    ylab("Cell type")
+
+fig3 = ggplot(tab, aes(pi1, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank(), legend.position="none") +
+    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
+    xlab(bquote(pi[1])) +
+    ylab("Cell type")
+
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
+```    
+
+
+# Gene set analysis
 ```{r zenith}
 # Load Gene Ontology database 
 go.gs = get_GeneOntology(to="SYMBOL")
