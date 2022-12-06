@@ -114,7 +114,7 @@ res.proc = processAssays( pb, form, BPPARAM = SnowParam(6))
 ```
 ## Mean variance trend
 ```{r voom, fig.height=12}
-plotVoom( res.proc)
+plotVoom( res.proc, ncol=4)
 ```
 
 
