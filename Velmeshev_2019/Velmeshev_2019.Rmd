@@ -230,6 +230,7 @@ cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
 
 fig1 = df_vp %>%
   group_by(assay) %>%
+  mutate(batch = Capbatch + Seqbatch) %>%
   summarize(cor.se(batch, GC, method="spearman")) %>%
   ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
@@ -248,7 +249,7 @@ df_vp = merge(as.data.frame(vp.lst), tab, by.x=c("assay", "gene"), by.y=c("assay
 fig2 = df_vp %>% 
   as_tibble %>%
   group_by(assay) %>%
-  summarize(cor.se(donor, AveExpr, method="spearman")) %>%
+  summarize(cor.se(individual, AveExpr, method="spearman")) %>%
   ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
