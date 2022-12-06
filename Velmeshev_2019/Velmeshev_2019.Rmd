@@ -139,7 +139,7 @@ plotVarPart(vp.lst2, label.angle=90, ncol=4)
 ```
 
 
-```{r plotVarPart2, fig.height=4, fig.width=4}
+```{r plotVarPart3, fig.height=4, fig.width=4}
 plotVarPart(vp.lst2[vp.lst2$assay == "L2/3",], label.angle=90) 
 ```
 
