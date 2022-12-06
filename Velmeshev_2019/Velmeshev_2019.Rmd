@@ -299,7 +299,8 @@ plotZenithResults(df, Inf, Inf)
 ```{r panels3, fig.height=3, fig.width=8}
 CT = c("L2/3", "IN-PV", "IN-SST", "IN-SV2C", "IN-VIP", "L2/3", "L4", "L5/6", "L5/6-CC")     
 # CT = assayNames(res.dl)
-gs1 = "GO0099172: presynapse organization"
+# gs1 = "GO0099172: presynapse organization"
+gs1 = "GO0007416: synapse assembly"
 plotGeneHeatmap( res.dl, coef="diagnosisASD", 
   genes = sort(geneIds(go.gs[[gs1]])), 
   assays=CT, transpose=TRUE) + 
