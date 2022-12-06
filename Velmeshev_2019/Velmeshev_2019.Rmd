@@ -113,12 +113,14 @@ form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) 
 res.proc = processAssays( pb, form, BPPARAM = SnowParam(6))
 ```
 ## Mean variance trend
-```{r voom, fig.height=12}
+```{r voom, fig.height=10}
 plotVoom( res.proc, ncol=4)
 ```
 
 
 # Variance partitioning analysis
+
+## Including batch variables
 ```{r vp}
 form = ~ (1|individual) + (1|region) + age + (1|sex) + (1|diagnosis) + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
 vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6))
@@ -132,6 +134,7 @@ plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)
 ```
 
 
+## Dropping batch variables
 ```{r vp2}
 form = ~ (1|individual) + (1|region) + age + (1|sex) + (1|diagnosis) + post.mortem.interval..hours. + RNA.Integrity.Number
 vp.lst2 = fitVarPart( res.proc, form, BPPARAM = SnowParam(6))
