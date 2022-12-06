@@ -53,6 +53,7 @@ library(scattermore)
 library(zenith)
 library(crumblr)
 library(GSEABase)
+library(qvalue)
 library(ggcorrplot)
 library(BiocParallel)
 
@@ -151,9 +152,118 @@ res.dl = dreamlet( res.proc, form, BPPARAM = SnowParam(6) )
 ```
 
 
+### Summarize differential expression 
+```{r plot.pi, fig.height=5, fig.width=17}
+tab = topTable(res.dl, coef = 'diagnosisASD', number=Inf) %>%
+  as_tibble %>% 
+  group_by(assay) %>%
+  summarize( nDE = sum(adj.P.Val < 0.05), 
+            pi1 = 1 - pi0est(P.Value)$pi0,
+            nGenes = length(adj.P.Val)) %>%
+  mutate(assay = factor(assay, assayNames(pb)))
+
+fig1 = ggplot(tab, aes(nGenes, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,NA), expand=c(0,10)) +
+    xlab("# genes expressed") +
+    ylab("Cell type") 
+
+fig2 = ggplot(tab, aes(nDE, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank(), legend.position="none") +
+    scale_x_continuous(limits=c(0,1000), expand=c(0,0)) +
+    xlab("# genes with FDR < 5%") +
+    ylab("Cell type")
+
+fig3 = ggplot(tab, aes(pi1, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, axis.text.y=element_blank(), axis.ticks.y = element_blank(), legend.position="none") +
+    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
+    xlab(bquote(pi[1])) +
+    ylab("Cell type")
+
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
+```    
+
+
 ```{r plotVolcano, fig.height=12, fig.width=9}
 plotVolcano( res.dl, coef = 'diagnosisASD', ncol=4 )
 ```
+
+
+### Interpreting variance partitioning analysis
+Observe that fraction of variation across batches correlates with GC content of the corresponding gene.  Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in 'shot noise' due to low counts.
+
+```{r gc.content, fig.height=5, fig.width=12}
+# read GC content
+path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/"
+file = paste0(path, '/misc/GRCh38.104_gc_content.tsv.gz')
+df_GC = read.table(file, header=TRUE)
+
+df_vp = merge(as.data.frame(vp.lst), df_GC, by.x="gene", by.y="SYMBOL")
+
+# Compute correlation and standard error for Pearson and Spearman
+cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
+
+  method = match.arg(method)
+
+  if( method == "pearson"){
+    df <- cor.test(x,y, method=method,...) %>%
+      tidy %>%
+      mutate(se = sqrt((1 - estimate^2)/parameter))
+    res = data.frame(rho = df$estimate, rho.se = df$se)
+  }else if(method == "spearman"){
+    # https://stats.stackexchange.com/questions/18887/how-to-calculate-a-confidence-interval-for-spearmans-rank-correlation
+    rho <- cor(x,y, method=method,...)
+    n <- sum(complete.cases(x, y))
+    rho.se <- sqrt((1+rho^2/2)/(n-3))
+
+    res <- data.frame(rho = rho, rho.se = rho.se)
+  }
+
+  return(res) 
+}
+
+fig1 = df_vp %>%
+  group_by(assay) %>%
+  summarize(cor.se(batch, GC, method="spearman")) %>%
+  ggplot(aes(assay, rho, fill=assay)) +
+    geom_bar(stat="identity") + 
+    geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
+    theme_classic() +
+    theme(aspect.ratio=1, 
+      legend.position="none") +
+    xlab("Cell type") +
+    ylab("Spearman correlation between batch % and GC content") +
+    coord_flip() 
+
+tab = topTable(res.dl, 'diagnosisASD', number=Inf)
+
+df_vp = merge(as.data.frame(vp.lst), tab, by.x=c("assay", "gene"), by.y=c("assay", "ID") )
+
+fig2 = df_vp %>% 
+  as_tibble %>%
+  group_by(assay) %>%
+  summarize(cor.se(donor, AveExpr, method="spearman")) %>%
+  ggplot(aes(assay, rho, fill=assay)) +
+    geom_bar(stat="identity") + 
+    geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
+    theme_classic() +
+    theme(aspect.ratio=1, 
+      axis.text.y=element_blank(), 
+      axis.ticks.y=element_blank(), 
+      legend.position="none") +
+    xlab("Cell type") +
+    ylab("Spearman correlation between Donor % and CPM") +
+    coord_flip() 
+
+plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")    
+```
+
 
 ```{r zenith}
 # Load Gene Ontology database 
