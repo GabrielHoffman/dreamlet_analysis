@@ -124,7 +124,7 @@ vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6))
 
 
 ```{r plotVarPart, fig.height=12, fig.width=9}
-plotVarPart(vp.lst, label.angle=60) 
+plotVarPart(sortCols(vp.lst), label.angle=60) 
 ```
 
 
@@ -135,12 +135,13 @@ vp.lst2 = fitVarPart( res.proc, form, BPPARAM = SnowParam(6))
 
 
 ```{r plotVarPart2, fig.height=12, fig.width=9}
-plotVarPart(vp.lst2, label.angle=90, ncol=4) 
+plotVarPart( sortCols(vp.lst2), label.angle=90, ncol=4) 
 ```
 
 
 ```{r plotVarPart3, fig.height=4, fig.width=4}
-plotVarPart(vp.lst2[vp.lst2$assay == "L2/3",], label.angle=90) 
+vp = vp.lst2[vp.lst2$assay == "L2/3",]
+plotVarPart( sortCols(vp), label.angle=90) 
 ```
 
 
