@@ -136,7 +136,7 @@ res.dl = dreamlet( res.proc, form, BPPARAM = SnowParam(6) )
 
 
 ```{r plotVolcano, fig.height=12, fig.width=9}
-plotVolcano( res.dl, coef = 'diagnosisASD' )
+plotVolcano( res.dl, coef = 'diagnosisASD', ncol=4 )
 ```
 
 ```{r zenith}
@@ -148,14 +148,14 @@ res_zenith = zenith_gsa(res.dl, coef = 'diagnosisASD', go.gs)
 ```
 
 
-```{r plotZenithResults, fig.height=16, fig.width=10}
+```{r plotZenithResults, fig.height=12, fig.width=10}
 plotZenithResults(res_zenith, 5, 1) 
 ```
 
 
 
-## Gene set with FDr < 5%
-```{r plotZenithResults.FDR, fig.height=16, fig.width=10}
+## Gene set with FDR < 5%
+```{r plotZenithResults.FDR, fig.height=12, fig.width=10}
 # get genesets with FDR < 5%
 gs = unique(res_zenith$Geneset[res_zenith$FDR < 0.05])
 
