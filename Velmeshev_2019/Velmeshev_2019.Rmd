@@ -128,7 +128,7 @@ vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6))
 ```{r plotVarPart, fig.height=12, fig.width=9}
 colnames(vp.lst)[colnames(vp.lst)=='post.mortem.interval..hours.'] = 'PMI'
 colnames(vp.lst)[colnames(vp.lst)=='RNA.Integrity.Number'] = 'RIN'
-plotVarPart(sortCols(vp.lst), label.angle=60) 
+plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4) 
 ```
 
 
@@ -147,7 +147,7 @@ plotVarPart( sortCols(vp.lst2), label.angle=90, ncol=4)
 
 ```{r plotVarPart3, fig.height=4, fig.width=4}
 vp = vp.lst2[vp.lst2$assay == "L2/3",]   
-plotVarPart( sortCols(vp), label.angle=90) 
+plotVarPart( sortCols(vp)) 
 ```
 
 ## Interpreting variance partitioning analysis
@@ -219,6 +219,7 @@ fig2 = df_vp %>%
 
 plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr") 
 ```
+
 # Differential expression
 ```{r run.de}
 form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
@@ -277,14 +278,7 @@ go.gs = get_GeneOntology(to="SYMBOL")
 res_zenith = zenith_gsa(res.dl, coef = 'diagnosisASD', go.gs)
 ```
 
-
-```{r plotZenithResults, fig.height=12, fig.width=10}
-plotZenithResults(res_zenith, 5, 1) 
-```
-
-
-
-## Gene set with FDR < 5%
+## Gene sets with FDR < 5%
 ```{r plotZenithResults.FDR, fig.height=12, fig.width=10}
 # get genesets with FDR < 5%
 gs = unique(res_zenith$Geneset[res_zenith$FDR < 0.05])
