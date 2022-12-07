@@ -117,6 +117,9 @@ res.proc = processAssays( pb, form, BPPARAM = SnowParam(6))
 plotVoom( res.proc, ncol=4)
 ```
 
+```{r voom_3, fig.height=4, fig.width=4}
+plotVoom( res.proc[["L2/3"]] )
+```
 
 # Variance partitioning analysis
 
