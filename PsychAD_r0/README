@@ -9,5 +9,51 @@ system("git pull"); rmarkdown::render("PsychAD_r0_analysis.Rmd");
 
 # https://hoffmg01.hpc.mssm.edu/dreamlet_analysis/
 
+# rm -rf PsychAD_r0_analysis_cache
+
 
 SPRY4-AS1
+
+
+Clean up UMAP
+Highlight PDE10A
+	confirm right direction
+Zoom into subpopulations for In/Ex neurons
+
+PTPRG is known marker of Mg activation
+endosome: recycling from cell membrane
+
+cytotoxicity in Olig 
+
+
+library(tidyverse)
+tab = topTable(res.dl, coef=[XXX], number=Inf)
+
+# compute FDR within each cell type
+res = tab %>%
+	as_tibble %>%
+	group_by(assay) 
+
+# counts results
+table(res$adj.P.Val < 0.05)
+table(res$FDR.within < 0.05)
+
+with(res, plot(-log10(adj.P.Val), -log10(FDR.within)))
+abline(0, 1)
+
+df = fit %>%
+  topTable(coef='AD1', number=Inf) %>%
+    as_tibble %>% 
+    group_by(assay) %>%
+	mutate(FDR.within = p.adjust(P.Value, "fdr"))%>% 
+    summarise( 
+      nGenes = length(adj.P.Val), 
+      nDE = sum(adj.P.Val < 0.05),
+      nDE.within = sum(FDR.within < 0.05)) 
+
+
+
+
+
+
+
