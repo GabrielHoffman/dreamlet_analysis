@@ -274,7 +274,7 @@ genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1
 #  summarize(gene[order(Batch, decreasing=TRUE)][1:5])
 
 
-df.vp.sub = sortCols(res.vp)[(res.vp$gene %in% genes) &(res.vp$assay=="Microglia"),]
+df.vp.sub = sortCols(res.vp)[(res.vp$gene %in% genes) &(res.vp$assay=="Micro_PVM"),]
 df.vp.sub$gene = factor(df.vp.sub$gene, rev(genes))
 df.vp.sub = df.vp.sub[order(df.vp.sub$gene, decreasing=TRUE),]
 
