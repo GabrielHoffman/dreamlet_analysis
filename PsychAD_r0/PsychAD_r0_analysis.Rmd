@@ -54,61 +54,26 @@ sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 ```
 
-Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$batch))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) batches, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
+Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) batches, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
 
 # Summarize data
 ## UMAP
 ```{r umap, dev="png"}
 # extract UMAP coordinates and annotations
 df = cbind(reducedDim(sce, "X_umap"), 
-    colData(sce)[,c("anno", "celltype", "celltype9", "class", "subtype")]) %>% 
+    colData(sce)[,c("class", "subclass", "subtype")]) %>% 
     as.data.frame
  
-ggplot(df, aes(V1, V2, color=celltype)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
+ggplot(df, aes(V1, V2, color=class)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
 ```
 
 ```{r umap3, dev="png"}
-ggplot(df, aes(V1, V2, color=class)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+ggplot(df, aes(V1, V2, color=subclass)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
 ```
 
 ```{r umap9, dev="png"}
-ggplot(df, aes(V1, V2, color=celltype9)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
-```
-
-
-
-```{r umap5, dev="png"}
 ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
 ```
-
-Class subclass subtype 
-
-```{r umap6, dev="png", fig.height=12, fig.width=12}
-df %>%
-filter(celltype9 == 'Oligodendrocyte') %>%
-mutate(anno = droplevels(anno)) %>%
-ggplot(aes(V1, V2, color=anno)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
-```
-
-c;lass, celltype, subtype
-
-xtabs(~ celltype + class, df)
-
-
-xtabs(~ subtype + class, df)
-
-
-
-df %>%
- mutate(annoMod = gsub("^(.*)-.*$", "\\1", anno)) %>%
- filter(annoMod != celltype) %>%
- dim
-
-
-```{r exist3, cache=FALSE, eval=FALSE}
-knitr::knit_exit()
-```
-
 
 
 ## Summarize cell counts
@@ -124,10 +89,10 @@ colData(sce)$SubID %>%
 
 # Number of cells observed per Channel
 colData(sce) %>%
-  xtabs( ~ Channel + celltype9,.) %>%
+  xtabs( ~ Channel + subclass,.) %>%
   as_tibble %>%
   pivot_longer(cols=Channel) %>%
-  ggplot(aes(celltype9, n, fill=celltype9)) + 
+  ggplot(aes(subclass, n, fill=subclass)) + 
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
@@ -140,10 +105,10 @@ colData(sce) %>%
 
 # Number of cells observed per Subject
 colData(sce) %>%
-  xtabs( ~ SubID + celltype9,.) %>%
+  xtabs( ~ SubID + subclass,.) %>%
   as_tibble %>%
   pivot_longer(cols=SubID) %>%
-  ggplot(aes(celltype9, n, fill=celltype9)) + 
+  ggplot(aes(subclass, n, fill=subclass)) + 
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
@@ -163,7 +128,7 @@ setAutoBlockSize(1e9)
 # Create pseudo-bulk SingleCellExperiment
 pb = aggregateToPseudoBulk(sce,
     assay = "counts", 
-    cluster_id = "celltype9",
+    cluster_id = "subclass",
     sample_id = "Channel",
     BPPARAM = SnowParam(6))
 ```
@@ -180,7 +145,7 @@ df_counts = lapply( assayNames(pb), function(x){
 })
 df_counts = do.call(rbind, df_counts)
 
-ggplot(df_counts, aes(celltype, readCounts, fill=celltype)) +  
+ggplot(df_counts, aes(subclass, readCounts, fill=subclass)) +  
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
@@ -199,8 +164,8 @@ df_rate = cellCounts(pb) %>%
             pivot_longer(cols=-ID, values_to="ncells", names_to="celltype")
 
 # plot reads per cell
-inner_join(df_counts, df_rate, by=c("celltype", "ID")) %>%
-  ggplot(aes(celltype, readCounts/ncells, fill=celltype)) +  
+inner_join(df_counts, df_rate, by=c("subclass", "ID")) %>%
+  ggplot(aes(celltype, readCounts/ncells, fill=subclass)) +  
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
