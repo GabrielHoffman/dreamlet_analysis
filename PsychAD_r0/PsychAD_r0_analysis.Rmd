@@ -164,7 +164,7 @@ df_rate = cellCounts(pb) %>%
             pivot_longer(cols=-ID, values_to="ncells", names_to="celltype")
 
 # plot reads per cell
-inner_join(df_counts, df_rate, by=c("subclass", "ID")) %>%
+inner_join(df_counts, df_rate, by=c("celltype", "ID")) %>%
   ggplot(aes(celltype, readCounts/ncells, fill=celltype)) +  
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
