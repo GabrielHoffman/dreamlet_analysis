@@ -54,7 +54,7 @@ sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 ```
 
-Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) batches, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
+Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) pools, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
 
 # Summarize data
 ## UMAP
@@ -242,14 +242,14 @@ plotVoom( res.proc ) + theme_classic()
 
 # Variance Partitioning Analysis
 ```{r varPart}
-form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + (1|AD)
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|AD)
 
 res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
 ```
 
 ```{r vp.plot, fig.height=12, fig.width=10}
 colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
-colnames(res.vp)[colnames(res.vp) == "batch"] = 'Batch'
+colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
 
 plotVarPart( sortCols(res.vp), label.angle=45 )
@@ -289,7 +289,7 @@ eval_within_across_donor( res.proc, "SubID" )
 
 # Differential expression: dreamlet analysis
 ```{r dreamlet}
-form = ~ (1|SubID) + (1|batch) + (1|Sex) + scale(Age) + AD
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + AD
 
 fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 ```
@@ -370,7 +370,7 @@ df_vp = merge(as.data.frame(res.vp), df_GC, by.x="gene", by.y="SYMBOL")
 
 fig1 = df_vp %>%
   group_by(assay) %>%
-  summarize(cor.se(Batch, GC, method="spearman")) %>%
+  summarize(cor.se(poolID, GC, method="spearman")) %>%
   ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
