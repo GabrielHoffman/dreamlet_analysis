@@ -145,7 +145,7 @@ df_counts = lapply( assayNames(pb), function(x){
 })
 df_counts = do.call(rbind, df_counts)
 
-ggplot(df_counts, aes(subclass, readCounts, fill=subclass)) +  
+ggplot(df_counts, aes(celltype, readCounts, fill=celltype)) +  
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
@@ -165,7 +165,7 @@ df_rate = cellCounts(pb) %>%
 
 # plot reads per cell
 inner_join(df_counts, df_rate, by=c("subclass", "ID")) %>%
-  ggplot(aes(celltype, readCounts/ncells, fill=subclass)) +  
+  ggplot(aes(celltype, readCounts/ncells, fill=celltype)) +  
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
     theme_classic() + 
