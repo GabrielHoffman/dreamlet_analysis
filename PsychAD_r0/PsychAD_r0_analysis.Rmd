@@ -305,7 +305,7 @@ plotVolcano(fit, "AD1", ncol=4) + theme_classic()
 
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
-c("HNMT", "PTPRG", 'NPNT', 'DYPD', 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7')
+genes = c("HNMT", "PTPRG", 'NPNT', 'DYPD', 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7')
 plotGeneHeatmap( fit, coef="AD1", genes=genes)
 ```
 
