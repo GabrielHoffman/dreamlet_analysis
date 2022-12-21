@@ -236,8 +236,8 @@ res.proc = processAssays( pb, form,
 res.proc
 ```
 
-```{r voom.plot, fig.height=10, fig.width=10, cache=TRUE}
-plotVoom( res.proc ) + theme_classic()
+```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE}
+plotVoom( res.proc, ncol=4 ) + theme_classic()
 ```
 
 
@@ -248,7 +248,7 @@ form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|AD)
 res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
 ```
 
-```{r vp.plot, fig.height=12, fig.width=10}
+```{r vp.plot, fig.height=15, fig.width=10}
 colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
@@ -296,8 +296,8 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 ```
 
 ## Volcano
-```{r volcano, fig.height=10, fig.width=10}
-plotVolcano(fit, "AD1") + theme_classic()
+```{r volcano, fig.height=15, fig.width=10}
+plotVolcano(fit, "AD1", ncol=4) + theme_classic()
 ```
 
 ## Highlight genes
@@ -421,7 +421,7 @@ go.gs = go.gs[sapply(go.gs, function(x) length(geneIds(x))) < 1000]
 res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
 ```
 
-```{r zenith.heatmap.1, fig.width=10, fig.height=18, cache=FALSE} 
+```{r zenith.heatmap.1, fig.width=10, fig.height=25, cache=FALSE} 
 # remove "GO0022625: " from gene set name
 res.gsa$Geneset = gsub("^GO\\S+ ", "", res.gsa$Geneset)
 
