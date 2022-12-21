@@ -430,10 +430,10 @@ plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom")
 
 ```{r zenith.heatmap.2, fig.width=10, fig.height=25, cache=FALSE} 
 # get genesets with FDR < 5%
-gs = unique(res_zenith$Geneset[res_zenith$FDR < 0.05])
+gs = unique(res.gsa$Geneset[res.gsa$FDR < 0.05])
 
 # keep only results of these genesets
-df = res_zenith[res_zenith$Geneset %in% gs,]
+df = res.gsa[res.gsa$Geneset %in% gs,]
 
 # plot results, but with no limit based on the highest/lowest t-statistic
 plotZenithResults(df, Inf, Inf) 
