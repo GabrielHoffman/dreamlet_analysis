@@ -309,7 +309,6 @@ plotGeneHeatmap( fit, coef="AD1", genes=genes)
 ```
 
 ```{r plotForest, fig.height=8, fig.width=12, cache=FALSE}
-genes = c("PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1')
 figList = lapply(genes, function(g){
   plotForest( fit, coef = 'AD1', gene = g) +
     theme(aspect.ratio=1, legend.position="none")
