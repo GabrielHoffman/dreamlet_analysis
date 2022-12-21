@@ -285,7 +285,10 @@ plotPercentBars(df.vp.sub) + theme(aspect.ratio=1)
 ```{r within_btw, fig.height=10, fig.width=10}
 source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses.R")
  
-eval_within_across_donor( res.proc, "SubID" )
+fig = eval_within_across_donor( res.proc, "SubID" )
+
+fig + theme(panel.grid.minor = element_blank(),
+            panel.grid.minor.y = element_blank())
 ```
 
 # Differential expression: dreamlet analysis
