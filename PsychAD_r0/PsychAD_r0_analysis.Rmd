@@ -253,7 +253,7 @@ colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
 
-plotVarPart( sortCols(res.vp), label.angle=45 )
+plotVarPart( sortCols(res.vp), label.angle=45, ncol=4 )
 ```
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
@@ -301,22 +301,22 @@ plotVolcano(fit, "AD1", ncol=4) + theme_classic()
 ```
 
 ## Highlight genes
-```{r genehatmap, fig.height=4, fig.width=6, cache=FALSE}
+```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
 plotGeneHeatmap( fit, coef="AD1", genes=genes)
 ```
 
-```{r plotForest, fig.height=6, fig.width=12, cache=FALSE}
+```{r plotForest, fig.height=8, fig.width=12, cache=FALSE}
 genes = c("PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1')
 figList = lapply(genes, function(g){
   plotForest( fit, coef = 'AD1', gene = g) +
     theme(aspect.ratio=1, legend.position="none")
 })
-plot_grid(plotlist=figList, ncol=4)
+plot_grid(plotlist=figList, ncol=3)
 ```
 
 
 ### Summarize differential expression 
-```{r plot.pi, fig.height=5, fig.width=12}
+```{r plot.pi, fig.height=4, fig.width=12}
 # Summarize differential expression for each coef and assay
 df = fit %>%
   topTable(coef='AD1', number=Inf) %>%
@@ -425,8 +425,20 @@ res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
 # remove "GO0022625: " from gene set name
 res.gsa$Geneset = gsub("^GO\\S+ ", "", res.gsa$Geneset)
 
-plotZenithResults(res.gsa, 10, 3) +theme(legend.position="bottom") 
+plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
 ```
+
+```{r zenith.heatmap.1, fig.width=10, fig.height=25, cache=FALSE} 
+# get genesets with FDR < 5%
+gs = unique(res_zenith$Geneset[res_zenith$FDR < 0.05])
+
+# keep only results of these genesets
+df = res_zenith[res_zenith$Geneset %in% gs,]
+
+# plot results, but with no limit based on the highest/lowest t-statistic
+plotZenithResults(df, Inf, Inf) 
+```
+
 
 # Session Info
 <details>
