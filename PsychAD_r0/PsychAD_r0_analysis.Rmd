@@ -258,7 +258,7 @@ plotVarPart( sortCols(res.vp), label.angle=45, ncol=4 )
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
 # Show variance fractions at the gene-level for each cell type
-genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1', "PDE10A", "XIST", 'C1D')
+genes = c("HNMT", "PTPRG", 'NPNT', 'DYPD', 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7')
 
 # res.vp %>%
 #  as_tibble %>%
