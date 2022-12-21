@@ -428,7 +428,7 @@ res.gsa$Geneset = gsub("^GO\\S+ ", "", res.gsa$Geneset)
 plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
 ```
 
-```{r zenith.heatmap.1, fig.width=10, fig.height=25, cache=FALSE} 
+```{r zenith.heatmap.2, fig.width=10, fig.height=25, cache=FALSE} 
 # get genesets with FDR < 5%
 gs = unique(res_zenith$Geneset[res_zenith$FDR < 0.05])
 
