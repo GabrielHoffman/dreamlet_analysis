@@ -309,6 +309,8 @@ genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH
 plotGeneHeatmap( fit, coef="AD1", genes=genes)
 ```
 
+Add stars here?
+
 ```{r plotForest, fig.height=8, fig.width=12, cache=FALSE}
 figList = lapply(genes, function(g){
   plotForest( fit, coef = 'AD1', gene = g) +
@@ -316,6 +318,29 @@ figList = lapply(genes, function(g){
 })
 plot_grid(plotlist=figList, ncol=3)
 ```
+
+```{r boxplot}
+gene_CT = c("PTPRG" = "Micro_PVM", 'NPNT' = "Astro", 'DPYD'= "Micro_PVM", 'SPRY4-AS1' = "EN_L3_5_IT_3", "PDE10A" = "EN_L6_IT", "NCAM2" = "EN_L3_5_IT_2", 'PCDH7' = "IN_LAMP5")
+
+figList = lapply( names(gene_CT), function(g){
+
+  df = extractData(res.proc, gene_CT[g])
+
+  df = df[,c('AD', g)]
+  colnames(df)[colnames(df)==g] = "expr"
+
+  ggplot(df, aes(AD, expr, fill=AD)) +
+          geom_boxplot() +
+          theme_classic() +
+          theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5), legend.position="none") +
+          ggtitle(paste0(gene_CT[g], ": ", g)) +
+          ylab(bquote(log[2]~CPM)) +
+          scale_fill_manual(values=c("grey50", "red3"))
+})
+
+plot_grid(plotlist=figList, ncol=4)
+```
+
 
 
 ### Summarize differential expression 
