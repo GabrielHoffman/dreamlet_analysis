@@ -49,10 +49,10 @@ library(EnrichmentBrowser)
 
 ```{r load.data}
 folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
-file = paste0(folder, "PsychAD_r0_Dec_19_2022.h5ad")
+file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
-sce$AD = factor(sce$AD, c(0,1))
+sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
 ```
 
 Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) pools, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
@@ -243,7 +243,7 @@ plotVoom( res.proc, ncol=4 ) + theme_classic()
 
 # Variance Partitioning Analysis
 ```{r varPart}
-form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|AD)
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
 
 res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
 ```
@@ -293,27 +293,27 @@ fig + theme(panel.grid.minor = element_blank(),
 
 # Differential expression: dreamlet analysis
 ```{r dreamlet}
-form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + AD
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + Dx
 
 fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 ```
 
 ## Volcano
 ```{r volcano, fig.height=15, fig.width=10}
-plotVolcano(fit, "AD1", ncol=4) + theme_classic()
+plotVolcano(fit, "DxAD", ncol=4) + theme_classic()
 ```
 
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
 genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7')
-plotGeneHeatmap( fit, coef="AD1", genes=genes)
+plotGeneHeatmap( fit, coef="DxAD", genes=genes)
 ```
 
 Add stars here?
 
 ```{r plotForest, fig.height=10, fig.width=12, cache=FALSE}
 figList = lapply(genes, function(g){
-  plotForest( fit, coef = 'AD1', gene = g) +
+  plotForest( fit, coef = 'DxAD', gene = g) +
     theme(aspect.ratio=1, legend.position="none")
 })
 plot_grid(plotlist=figList, ncol=3)
@@ -326,10 +326,10 @@ figList = lapply( names(gene_CT), function(g){
 
   df = extractData(res.proc, gene_CT[g])
 
-  df = df[,c('AD', g)]
+  df = df[,c('Dx', g)]
   colnames(df)[colnames(df)==g] = "expr"
 
-  ggplot(df, aes(AD, expr, fill=AD)) +
+  ggplot(df, aes(Dx, expr, fill=Dx)) +
           geom_boxplot() +
           theme_classic() +
           theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5), legend.position="none") +
@@ -347,7 +347,7 @@ plot_grid(plotlist=figList, ncol=3)
 ```{r plot.pi, fig.height=4, fig.width=12}
 # Summarize differential expression for each coef and assay
 df = fit %>%
-  topTable(coef='AD1', number=Inf) %>%
+  topTable(coef='DxAD', number=Inf) %>%
     as_tibble %>% 
     group_by(assay) %>% 
     summarise( 
@@ -410,7 +410,7 @@ fig1 = df_vp %>%
     ylab("Spearman correlation between batch % and GC content") +
     coord_flip() 
 
-tab = topTable(fit, coef='AD1', number=Inf)
+tab = topTable(fit, coef='DxAD', number=Inf)
 
 df_vp = merge(as.data.frame(res.vp), tab, by.x=c("assay", "gene"), by.y=c("assay", "ID") )
 
@@ -446,7 +446,7 @@ go.gs = get_GeneOntology(to="SYMBOL")
 go.gs = go.gs[sapply(go.gs, function(x) length(geneIds(x))) < 1000]
 
 # zenith analysis 
-res.gsa = zenith_gsa(fit, go.gs, coefs="AD1")
+res.gsa = zenith_gsa(fit, go.gs, coefs="DxAD")
 ```
 
 ```{r zenith.heatmap.1, fig.width=10, fig.height=25, cache=FALSE} 
@@ -483,7 +483,45 @@ knitr::knit_exit()
 
 
 
+# Write residuals
+```{r write.residuals, eval=FALSE}
+# extract residuals for each assay
+resMatList = lapply( assayNames(fit.for.resid), function(CT){
 
+  # get residuals for assay CT
+  resMat = residuals(assay(fit.for.resid, CT))
+
+  # extra colData for there samples
+  idx = match(colnames(resMat), rownames(colData(res.proc)))
+  info = droplevels(colData(res.proc)[idx,])
+  # identical(colnames(resMat), rownames(info))
+
+  # for each Donor, report mean expression
+  resMatCollapse = lapply( unique(info$SubID), function(grpid){
+    idx = which(info$SubID == grpid)
+
+    rowMeans(resMat[,idx,drop=FALSE])
+    })
+  resMatCollapse = do.call(cbind, resMatCollapse)
+  colnames(resMatCollapse) = unique(info$SubID)
+
+  resMatCollapse
+})
+names(resMatList) = assayNames(fit.for.resid)
+
+library(R.utils)
+outPath = paste0("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/residuals/public_release0_", Sys.Date())
+if(! dir.exists(outPath) ){
+  dir.create(outPath)
+}
+
+for( CT in names(resMatList) ){
+  file = paste0(outPath, "/", gsub(' ', '_',CT), '.tsv')
+  data = format(resMatList[[CT]], digits=5)
+  write.table( data, file=file, quote=FALSE, sep="\t")
+  gzip(file, overwrite=TRUE)
+}
+```
 
 
 
