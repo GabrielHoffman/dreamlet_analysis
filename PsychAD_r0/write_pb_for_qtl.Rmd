@@ -1,0 +1,212 @@
+---
+title: "Write pseudobulk for eQTl analysis"
+subtitle: 'Public Release 0'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+output: 
+  html_document:
+    toc: true
+    smart: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  package.startup.message = FALSE,
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+## Load libraries
+```{r load.packages, cache=FALSE}
+suppressPackageStartupMessages({
+library(SingleCellExperiment)
+library(zellkonverter)
+library(dreamlet)
+library(DelayedArray)
+library(tidyverse)
+})
+```
+
+# Collapse samples late
+```{r load.data}
+folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
+file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
+sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
+assayNames(sce)[1] = "counts"
+sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
+
+# rename to combine neuronal subsets
+sce$Celltype = recode(sce$subclass,  EN_L2_3_IT = "EN", EN_L3_5_IT_1="EN", EN_L3_5_IT_2="EN", EN_L3_5_IT_3="EN", EN_L5_6_NP="EN", EN_L6_CT="EN", EN_L6_IT="EN", EN_NF="EN",
+  IN_ADARB2="IN", IN_LAMP5="IN", IN_PVALB="IN", IN_PVALB_CHC="IN", IN_SST="IN", IN_VIP="IN")
+
+# filter out cells withj low counts
+tab = table(sce$Celltype)
+keep = names(tab)[tab > 20000]
+sce = sce[,sce$Celltype %in% keep]
+```
+
+
+```{r combineData, message=TRUE}
+# update block size for reading h5ad file from disk
+setAutoBlockSize(1e9)
+
+# Create pseudo-bulk SingleCellExperiment
+pb = aggregateToPseudoBulk(sce,
+    assay = "counts", 
+    cluster_id = "Celltype",
+    sample_id = "Channel",
+    BPPARAM = SnowParam(6))
+```
+
+
+## Process data: log2 CPM + voom precision weights
+```{r voom}
+# Normalize and apply voom
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
+
+res.proc = processAssays( pb, form, 
+  BPPARAM = SnowParam(12))
+```
+
+
+## Differential expression: dreamlet analysis
+```{r dreamlet}
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + Dx
+
+fit = dreamlet( res.proc, form, BPPARAM = SnowParam(12))
+```
+
+
+## Write residuals
+```{r write.residuals}
+# extract residuals for each assay
+resMatList = lapply( assayNames(fit), function(CT){
+
+  # get residuals for assay CT
+  resMat = residuals(assay(fit, CT))
+
+  # extra colData for there samples
+  idx = match(colnames(resMat), rownames(colData(res.proc)))
+  info = droplevels(colData(res.proc)[idx,])
+  # identical(colnames(resMat), rownames(info))
+
+  # for each Donor, report mean expression
+  resMatCollapse = lapply( unique(info$SubID), function(grpid){
+    idx = which(info$SubID == grpid)
+
+    rowMeans(resMat[,idx,drop=FALSE])
+    })
+  resMatCollapse = do.call(cbind, resMatCollapse)
+  colnames(resMatCollapse) = unique(info$SubID)
+
+  resMatCollapse
+})
+names(resMatList) = assayNames(fit)
+
+library(R.utils)
+outPath = paste0("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/residuals/public_release0_", Sys.Date())
+if(! dir.exists(outPath) ){
+  dir.create(outPath)
+}
+
+for( CT in names(resMatList) ){
+  file = paste0(outPath, "/", gsub(' ', '_',CT), '.tsv')
+  data = format(resMatList[[CT]], digits=5)
+  write.table( data, file=file, quote=FALSE, sep="\t")
+  gzip(file, overwrite=TRUE)
+}
+```
+
+# Collapse samples early
+
+```{r combineData.early, message=TRUE}
+# update block size for reading h5ad file from disk
+setAutoBlockSize(1e9)
+
+# Create pseudo-bulk SingleCellExperiment
+pb = aggregateToPseudoBulk(sce,
+    assay = "counts", 
+    cluster_id = "Celltype",
+    sample_id = "SubID",
+    BPPARAM = SnowParam(6))
+```
+
+
+## Process data: log2 CPM + voom precision weights
+```{r voom.early}
+# Normalize and apply voom
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + (1|Dx)
+
+res.proc = processAssays( pb, form, 
+  BPPARAM = SnowParam(12))
+```
+
+
+## Differential expression: dreamlet analysis
+```{r dreamlet.early}
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx
+
+fit = dreamlet( res.proc, form, BPPARAM = SnowParam(12))
+```
+
+
+## Write residuals
+```{r write.residuals.early}
+# extract residuals for each assay
+resMatList = lapply( assayNames(fit), function(CT){
+
+  # get residuals for assay CT
+  resMat = residuals(assay(fit, CT))
+
+  # extra colData for there samples
+  idx = match(colnames(resMat), rownames(colData(res.proc)))
+  info = droplevels(colData(res.proc)[idx,])
+  # identical(colnames(resMat), rownames(info))
+
+  # for each Donor, report mean expression
+  resMatCollapse = lapply( unique(info$SubID), function(grpid){
+    idx = which(info$SubID == grpid)
+
+    rowMeans(resMat[,idx,drop=FALSE])
+    })
+  resMatCollapse = do.call(cbind, resMatCollapse)
+  colnames(resMatCollapse) = unique(info$SubID)
+
+  resMatCollapse
+})
+names(resMatList) = assayNames(fit)
+
+library(R.utils)
+outPath = paste0("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/residuals/public_release0_", Sys.Date(), '_early')
+if(! dir.exists(outPath) ){
+  dir.create(outPath)
+}
+
+for( CT in names(resMatList) ){
+  file = paste0(outPath, "/", gsub(' ', '_',CT), '.tsv')
+  data = format(resMatList[[CT]], digits=5)
+  write.table( data, file=file, quote=FALSE, sep="\t")
+  gzip(file, overwrite=TRUE)
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
