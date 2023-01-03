@@ -134,7 +134,7 @@ pb = aggregateToPseudoBulk(sce,
     BPPARAM = SnowParam(6))
 ```
 
-```{write.pb}
+```{write.pb, eval=FALSE}
 folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
 file = paste0(folder, "PsychAD_r0_Dec_28_2022_pseudobulk.RDS")
 

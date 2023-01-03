@@ -142,7 +142,7 @@ pb = aggregateToPseudoBulk(sce,
 ## Process data: log2 CPM + voom precision weights
 ```{r voom.early}
 # Normalize and apply voom
-form = ~ (1|SubID) + (1|Sex) + scale(Age) + (1|Dx)
+form = ~ (1|Sex) + scale(Age) + (1|Dx)
 
 res.proc = processAssays( pb, form, 
   BPPARAM = SnowParam(12))
@@ -151,14 +151,14 @@ res.proc = processAssays( pb, form,
 
 ## Differential expression: dreamlet analysis
 ```{r dreamlet.early}
-form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx
+form = ~ (1|Sex) + scale(Age) + Dx
 
 fit = dreamlet( res.proc, form, BPPARAM = SnowParam(12))
 ```
 
 
 ## Write residuals
-```{r write.residuals.early}
+```{r write.residuals.early, eval=FALSE}
 # extract residuals for each assay
 resMatList = lapply( assayNames(fit), function(CT){
 
