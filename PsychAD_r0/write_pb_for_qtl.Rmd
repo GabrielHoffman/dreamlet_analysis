@@ -158,28 +158,12 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(12))
 
 
 ## Write residuals
-```{r write.residuals.early, eval=FALSE}
+```{r write.residuals.early}
 # extract residuals for each assay
 resMatList = lapply( assayNames(fit), function(CT){
 
   # get residuals for assay CT
-  resMat = residuals(assay(fit, CT))
-
-  # extra colData for there samples
-  idx = match(colnames(resMat), rownames(colData(res.proc)))
-  info = droplevels(colData(res.proc)[idx,])
-  # identical(colnames(resMat), rownames(info))
-
-  # for each Donor, report mean expression
-  resMatCollapse = lapply( unique(info$SubID), function(grpid){
-    idx = which(info$SubID == grpid)
-
-    rowMeans(resMat[,idx,drop=FALSE])
-    })
-  resMatCollapse = do.call(cbind, resMatCollapse)
-  colnames(resMatCollapse) = unique(info$SubID)
-
-  resMatCollapse
+  residuals(assay(fit, CT))
 })
 names(resMatList) = assayNames(fit)
 
