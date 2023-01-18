@@ -248,7 +248,7 @@ res.proc = processAssays( pb, form,
 ```
 
 ```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE}
-plotVoom( res.proc, ncol=4 ) + theme_classic()
+plotVoom( res.proc, ncol=4, assays=ctorder ) + theme_classic()
 ```
 
 
@@ -311,20 +311,18 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(12))
 
 ## Volcano
 ```{r volcano, fig.height=15, fig.width=10}
-plotVolcano(fit, "DxAD", ncol=4) + theme_classic()
+plotVolcano(fit, "DxAD", ncol=4, assays=ctorder) + theme_classic()
 ```
 
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
 genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7')
-plotGeneHeatmap( fit, coef="DxAD", genes=genes)
+plotGeneHeatmap( fit, coef="DxAD", genes=genes, assays=ctorder)
 ```
-
-Add stars here?
 
 ```{r plotForest, fig.height=10, fig.width=12, cache=FALSE}
 figList = lapply(genes, function(g){ 
-  plotForest( fit, coef = 'DxAD', gene = g) +
+  plotForest( fit, coef = 'DxAD', gene = g, assays=ctorder) +
     theme(aspect.ratio=1, legend.position="none")
 })
 plot_grid(plotlist=figList, ncol=3)
@@ -364,7 +362,8 @@ df = fit %>%
     summarise( 
       nGenes = length(adj.P.Val), 
       nDE = sum(adj.P.Val < 0.05),
-      pi1 = 1 - qvalue(P.Value)$pi0) 
+      pi1 = 1 - qvalue(P.Value)$pi0) %>%
+  mutate(assay = factor(assay, ctorder))
 
 ymax = 1.05*max(df$nGenes)
 fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
@@ -463,6 +462,7 @@ res.gsa = zenith_gsa(fit, go.gs, coefs="DxAD")
 ```{r zenith.heatmap.1, fig.width=10, fig.height=25, cache=FALSE} 
 # remove "GO0022625: " from gene set name
 res.gsa$Geneset = gsub("^GO\\S+ ", "", res.gsa$Geneset)
+res.gsa$assay = factor(res.gsa$assay, ctorder)
 
 plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
 ```
