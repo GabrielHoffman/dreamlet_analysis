@@ -310,14 +310,14 @@ plotVolcano(fit, "DxAD", ncol=4) + theme_classic()
 
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
-genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7')
+genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7')
 plotGeneHeatmap( fit, coef="DxAD", genes=genes)
 ```
 
 Add stars here?
 
 ```{r plotForest, fig.height=10, fig.width=12, cache=FALSE}
-figList = lapply(genes, function(g){
+figList = lapply(genes, function(g){ 
   plotForest( fit, coef = 'DxAD', gene = g) +
     theme(aspect.ratio=1, legend.position="none")
 })
