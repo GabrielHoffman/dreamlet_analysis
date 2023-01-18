@@ -79,6 +79,9 @@ ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + 
 
 ## Summarize cell counts
 ```{r summarize.cell.counts, fig.width=5}
+# cell type order
+ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'Endo', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Astro', 'CD8_T', 'Micro_PVM', 'OPC', 'Oligo', 'PC', 'VLMC')
+
 # cells per Channel
 colData(sce)$Channel %>% 
   table %>% 
@@ -93,6 +96,7 @@ colData(sce) %>%
   xtabs( ~ Channel + subclass,.) %>%
   as_tibble %>%
   pivot_longer(cols=Channel) %>%
+  mutate(subclass = factor(subclass, ctorder)) %>%
   ggplot(aes(subclass, n, fill=subclass)) + 
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
@@ -109,6 +113,7 @@ colData(sce) %>%
   xtabs( ~ SubID + subclass,.) %>%
   as_tibble %>%
   pivot_longer(cols=SubID) %>%
+  mutate(subclass = factor(subclass, ctorder)) %>%
   ggplot(aes(subclass, n, fill=subclass)) + 
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
@@ -148,9 +153,9 @@ df_counts = lapply( assayNames(pb), function(x){
   data = assay(pb, x)
 
   data.frame(celltype = x, ID = colnames(data), readCounts = colSums(data))
-
 })
 df_counts = do.call(rbind, df_counts)
+df_counts$celltype = factor(df_counts$celltype, ctorder)
 
 ggplot(df_counts, aes(celltype, readCounts, fill=celltype)) +  
     geom_violin(color = NA) + 
@@ -168,7 +173,8 @@ ggplot(df_counts, aes(celltype, readCounts, fill=celltype)) +
 df_rate = cellCounts(pb) %>%
             as.data.frame %>%
             mutate(ID = rownames(.))  %>% 
-            pivot_longer(cols=-ID, values_to="ncells", names_to="celltype")
+            pivot_longer(cols=-ID, values_to="ncells", names_to="celltype") %>%
+            mutate(celltype = factor(celltype, ctorder))
 
 # plot reads per cell
 inner_join(df_counts, df_rate, by=c("celltype", "ID")) %>%
@@ -189,7 +195,7 @@ inner_join(df_counts, df_rate, by=c("celltype", "ID")) %>%
 ```{r cellTypeSpecificity}
 df = cellTypeSpecificity( pb )
  
-plotViolin(df)
+plotViolin(df, assays=ctorder)
 ```
 
 ### Show cell markers
@@ -220,7 +226,7 @@ plotPercentBars(df, genes=unique(genes))
 ```
 
 ```{r heatmap, fig.height=7, fig.width=7}
-dreamlet::plotHeatmap(df, genes=unique(genes))
+dreamlet::plotHeatmap(df, genes=unique(genes), assays=ctorder)
 ```
 
 
