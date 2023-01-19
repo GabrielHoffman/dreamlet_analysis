@@ -57,6 +57,11 @@ sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
 
 Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) pools, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
 
+```{r ctorder}
+# cell type order
+ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Astro', 'CD8_T', 'Endo', 'Micro_PVM', 'OPC', 'Oligo', 'PC', 'VLMC')
+```
+
 # Summarize data
 ## UMAP
 ```{r umap, dev="png"}
@@ -69,7 +74,9 @@ ggplot(df, aes(V1, V2, color=class)) + geom_scattermore() + theme_classic() + th
 ```
 
 ```{r umap3, dev="png"}
-ggplot(df, aes(V1, V2, color=subclass)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+df %>% 
+ mutate(subclass = factor(subclass, ctorder)) %>%
+ ggplot(aes(V1, V2, color=subclass)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
 ```
 
 ```{r umap9, dev="png"}
@@ -79,9 +86,6 @@ ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + 
 
 ## Summarize cell counts
 ```{r summarize.cell.counts, fig.width=5}
-# cell type order
-ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'Endo', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Astro', 'CD8_T', 'Micro_PVM', 'OPC', 'Oligo', 'PC', 'VLMC')
-
 # cells per Channel
 colData(sce)$Channel %>% 
   table %>% 
