@@ -230,8 +230,6 @@ dreamlet::plotHeatmap(df, genes=unique(genes), assays=ctorder)
 ```
 
 
-
-
 ```{r Dx.summary, eval=FALSE}
 df = unique(data.frame(Dx = pb$dx, Donor = pb$SubID))
 
@@ -409,7 +407,8 @@ df_vp = merge(as.data.frame(res.vp), df_GC, by.x="gene", by.y="SYMBOL")
 
 fig1 = df_vp %>%
   group_by(assay) %>%
-  summarize(cor.se(poolID, GC, method="spearman")) %>%
+  summarize(cor.se(poolID, GC, method="spearman"))  %>%
+  mutate(assay = factor(assay, ctorder)) %>%
   ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
@@ -427,7 +426,8 @@ df_vp = merge(as.data.frame(res.vp), tab, by.x=c("assay", "gene"), by.y=c("assay
 fig2 = df_vp %>% 
   as_tibble %>%
   group_by(assay) %>%
-  summarize(cor.se(Subject, AveExpr, method="spearman")) %>%
+  summarize(cor.se(Subject, AveExpr, method="spearman"))  %>%
+  mutate(assay = factor(assay, ctorder)) %>%
   ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
