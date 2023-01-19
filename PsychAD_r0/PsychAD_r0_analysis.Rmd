@@ -222,8 +222,6 @@ df_sub = df[rownames(df) %in% df_genes$ENSEMBL,]
 idx = match(rownames(df_sub), df_genes$ENSEMBL)
 rownames(df_sub) = df_genes$SYMBOL[idx]
 
-df = df[,c("totalCPM", assays)]
-
 plotPercentBars(df, genes=unique(genes), assays=ctorder)
 ```
 
