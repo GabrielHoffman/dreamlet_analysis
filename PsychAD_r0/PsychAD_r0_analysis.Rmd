@@ -224,7 +224,7 @@ rownames(df_sub) = df_genes$SYMBOL[idx]
 
 df = df[,c("totalCPM", assays)]
 
-plotPercentBars(df, genes=unique(genes))
+plotPercentBars(df, genes=unique(genes), assays=ctorder)
 ```
 
 ```{r heatmap, fig.height=7, fig.width=7}
@@ -266,7 +266,7 @@ colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
 
-plotVarPart( sortCols(res.vp), label.angle=45, ncol=4 )
+plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder )
 ```
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
@@ -291,7 +291,7 @@ df.vp.sub = sortCols(res.vp)[(res.vp$gene %in% genes) &(res.vp$assay=="Micro_PVM
 df.vp.sub$gene = factor(df.vp.sub$gene, rev(genes))
 df.vp.sub = df.vp.sub[order(df.vp.sub$gene, decreasing=TRUE),]
 
-plotPercentBars(df.vp.sub) + theme(aspect.ratio=1)
+plotPercentBars(df.vp.sub, assays=ctorder) + theme(aspect.ratio=1)
 ```
 
 # Correlation with and between donors
