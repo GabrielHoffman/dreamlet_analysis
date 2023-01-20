@@ -59,7 +59,7 @@ Public release 0 includes `r length(table(sce$Channel))` samples, `r length(tabl
 
 ```{r ctorder}
 # cell type order
-ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Astro', 'CD8_T', 'Endo', 'Micro_PVM', 'OPC', 'Oligo', 'PC', 'VLMC')
+ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Oligo', 'OPC', 'Astro', 'Micro_PVM', 'CD8_T', 'PC', 'VLMC','Endo')
 ```
 
 # Summarize data
@@ -75,7 +75,7 @@ ggplot(df, aes(V1, V2, color=class)) + geom_scattermore() + theme_classic() + th
 
 ```{r umap3, dev="png"}
 df %>% 
- mutate(subclass = factor(subclass, ctorder)) %>%
+ mutate(subclass = factor(subclass, ctorder)) %>% 
  ggplot(aes(V1, V2, color=subclass)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
 ```
 
@@ -100,7 +100,7 @@ colData(sce) %>%
   xtabs( ~ Channel + subclass,.) %>%
   as_tibble %>%
   pivot_longer(cols=Channel) %>%
-  mutate(subclass = factor(subclass, ctorder)) %>% 
+  mutate(subclass = factor(subclass, ctorder)) %>%  
   ggplot(aes(subclass, n, fill=subclass)) + 
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
@@ -117,7 +117,7 @@ colData(sce) %>%
   xtabs( ~ SubID + subclass,.) %>%
   as_tibble %>%
   pivot_longer(cols=SubID) %>%
-  mutate(subclass = factor(subclass, ctorder)) %>% 
+  mutate(subclass = factor(subclass, ctorder)) %>%  
   ggplot(aes(subclass, n, fill=subclass)) + 
     geom_violin(color = NA) + 
     geom_boxplot(width=.1, outlier.size=.1) +
@@ -159,7 +159,7 @@ df_counts = lapply( assayNames(pb), function(x){
   data.frame(celltype = x, ID = colnames(data), readCounts = colSums(data))
 })
 df_counts = do.call(rbind, df_counts)
-df_counts$celltype = factor(df_counts$celltype, ctorder) 
+df_counts$celltype = factor(df_counts$celltype, ctorder)  
 
 ggplot(df_counts, aes(celltype, readCounts, fill=celltype)) +  
     geom_violin(color = NA) + 
@@ -178,7 +178,7 @@ df_rate = cellCounts(pb) %>%
             as.data.frame %>%
             mutate(ID = rownames(.))  %>% 
             pivot_longer(cols=-ID, values_to="ncells", names_to="celltype") %>%
-            mutate(celltype = factor(celltype, ctorder)) 
+            mutate(celltype = factor(celltype, ctorder))  
 
 # plot reads per cell
 inner_join(df_counts, df_rate, by=c("celltype", "ID")) %>%
@@ -199,7 +199,7 @@ inner_join(df_counts, df_rate, by=c("celltype", "ID")) %>%
 ```{r cellTypeSpecificity}
 df = cellTypeSpecificity( pb )
  
-plotViolin(df, assays=ctorder) 
+plotViolin(df, assays=ctorder)  
 ```
 
 ### Show cell markers
@@ -226,11 +226,11 @@ df_sub = df[rownames(df) %in% df_genes$ENSEMBL,]
 idx = match(rownames(df_sub), df_genes$ENSEMBL)
 rownames(df_sub) = df_genes$SYMBOL[idx]
 
-plotPercentBars(df, genes=unique(genes), assays=ctorder) 
+plotPercentBars(df, genes=unique(genes), assays=ctorder)  
 ```
 
 ```{r heatmap, fig.height=7, fig.width=7}
-dreamlet::plotHeatmap(df, genes=unique(genes), assays=ctorder) 
+dreamlet::plotHeatmap(df, genes=unique(genes), assays=ctorder)  
 ```
 
 
@@ -250,7 +250,7 @@ res.proc = processAssays( pb, form,
 ```
 
 ```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE}
-plotVoom( res.proc, ncol=4, assays=ctorder ) + theme_classic() 
+plotVoom( res.proc, ncol=4, assays=ctorder ) + theme_classic()  
 ```
 
 
@@ -266,7 +266,7 @@ colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
 
-plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder ) 
+plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder )  
 ```
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
@@ -290,8 +290,8 @@ genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1
 df.vp.sub = sortCols(res.vp)[(res.vp$gene %in% genes) &(res.vp$assay=="Micro_PVM"),]
 df.vp.sub$gene = factor(df.vp.sub$gene, rev(genes))
 df.vp.sub = df.vp.sub[order(df.vp.sub$gene, decreasing=TRUE),]
-
-plotPercentBars(df.vp.sub, assays=ctorder) + theme(aspect.ratio=1) 
+ 
+plotPercentBars(df.vp.sub, assays=ctorder) + theme(aspect.ratio=1)
 ```
 
 # Correlation with and between donors
@@ -313,17 +313,17 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(12))
 
 ## Volcano
 ```{r volcano, fig.height=15, fig.width=10}
-plotVolcano(fit, "DxAD", ncol=4, assays=ctorder) + theme_classic() 
+plotVolcano(fit, "DxAD", ncol=4, assays=ctorder) + theme_classic()
 ```
 
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
-genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7')
+genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7') 
 plotGeneHeatmap( fit, coef="DxAD", genes=genes, assays=ctorder) 
 ```
 
 ```{r plotForest, fig.height=10, fig.width=12, cache=FALSE}
-figList = lapply(genes, function(g){ 
+figList = lapply(genes, function(g){  
   plotForest( fit, coef = 'DxAD', gene = g, assays=ctorder) +
     theme(aspect.ratio=1, legend.position="none") 
 })
@@ -365,7 +365,7 @@ df = fit %>%
       nGenes = length(adj.P.Val), 
       nDE = sum(adj.P.Val < 0.05),
       pi1 = 1 - qvalue(P.Value)$pi0) %>%
-  mutate(assay = factor(assay, ctorder)) 
+  mutate(assay = factor(assay, ctorder))  
 
 ymax = 1.05*max(df$nGenes)
 fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
@@ -412,7 +412,7 @@ df_vp = merge(as.data.frame(res.vp), df_GC, by.x="gene", by.y="SYMBOL")
 fig1 = df_vp %>%
   group_by(assay) %>%
   summarize(cor.se(poolID, GC, method="spearman"))  %>%
-  mutate(assay = factor(assay, ctorder)) %>% 
+  mutate(assay = factor(assay, ctorder)) %>%
   ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
@@ -431,7 +431,7 @@ fig2 = df_vp %>%
   as_tibble %>%
   group_by(assay) %>%
   summarize(cor.se(Subject, AveExpr, method="spearman"))  %>%
-  mutate(assay = factor(assay, ctorder)) %>% 
+  mutate(assay = factor(assay, ctorder)) %>%
   ggplot(aes(assay, rho, fill=assay)) +
     geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
@@ -466,7 +466,7 @@ res.gsa = zenith_gsa(fit, go.gs, coefs="DxAD")
 ```{r zenith.heatmap.1, fig.width=10, fig.height=25, cache=FALSE} 
 # remove "GO0022625: " from gene set name
 res.gsa$Geneset = gsub("^GO\\S+ ", "", res.gsa$Geneset)
-res.gsa$assay = factor(res.gsa$assay, ctorder) 
+res.gsa$assay = factor(res.gsa$assay, ctorder)  
 
 plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
 ```
