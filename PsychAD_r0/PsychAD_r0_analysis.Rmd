@@ -71,16 +71,23 @@ df = cbind(reducedDim(sce, "X_umap"),
     as.data.frame
  
 ggplot(df, aes(V1, V2, color=class)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
+
+
+plotProjection(sce, "X_umap", "class", legend.position="right", text=FALSE)
 ```
 
 ```{r umap3, dev="png"}
-df %>% 
- mutate(subclass = factor(subclass, ctorder)) %>% 
- ggplot(aes(V1, V2, color=subclass)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+# df %>% 
+#  mutate(subclass = factor(subclass, ctorder)) %>% 
+#  ggplot(aes(V1, V2, color=subclass)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+
+plotProjection(sce, "X_umap", "subclass", order=ctorder)
 ```
 
 ```{r umap9, dev="png"}
-ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+# ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
+
+plotProjection(sce, "X_umap", "subtype")
 ```
 
 
@@ -269,6 +276,8 @@ colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
 plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder )  
 ```
 
+
+
 ```{r plotPercentBars, fig.height=6, fig.width=10}
 # Show variance fractions at the gene-level for each cell type
 genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1', "PDE10A", "XIST", 'C1D')
@@ -352,6 +361,19 @@ figList = lapply( names(gene_CT), function(g){
 plot_grid(plotlist=figList, ncol=3)
 ```
 
+## Combine plots
+```{r combine}
+
+fig = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="EN_L3_5_IT_3" ) 
+file = "~/www/EN_L3_5_IT_3.pdf"
+ggsave(file, fig, height=5, width=5)
+
+
+# Plot UMAP
+fig = plotProjection(sce, "X_umap", "subclass", order=ctorder)
+
+fig
+```
 
 
 ### Summarize differential expression 
