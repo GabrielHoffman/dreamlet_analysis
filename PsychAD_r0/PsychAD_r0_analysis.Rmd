@@ -62,32 +62,24 @@ Public release 0 includes `r length(table(sce$Channel))` samples, `r length(tabl
 ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Oligo', 'OPC', 'Astro', 'Micro_PVM', 'CD8_T', 'PC', 'VLMC','Endo')
 ```
 
+
 # Summarize data
 ## UMAP
-```{r umap, dev="png"}
-# extract UMAP coordinates and annotations
-df = cbind(reducedDim(sce, "X_umap"), 
-    colData(sce)[,c("class", "subclass", "subtype")]) %>% 
-    as.data.frame
- 
-ggplot(df, aes(V1, V2, color=class)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2")
-
-
+```{r umap}
 plotProjection(sce, "X_umap", "class", legend.position="right", text=FALSE)
 ```
 
-```{r umap3, dev="png"}
-# df %>% 
-#  mutate(subclass = factor(subclass, ctorder)) %>% 
-#  ggplot(aes(V1, V2, color=subclass)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
-
+```{r umap3}
 plotProjection(sce, "X_umap", "subclass", order=ctorder)
 ```
 
-```{r umap9, dev="png"}
-# ggplot(df, aes(V1, V2, color=subtype)) + geom_scattermore() + theme_classic() + theme(aspect.ratio=1) + guides(colour = guide_legend(override.aes = list(size = 1.5))) + xlab("UMAP1") + ylab("UMAP2") 
-
+```{r umap9}
 plotProjection(sce, "X_umap", "subtype")
+```
+
+
+```{r sdf, cache=FALSE}
+knitr::knit_exit()
 ```
 
 
