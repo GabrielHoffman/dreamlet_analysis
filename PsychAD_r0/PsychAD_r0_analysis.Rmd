@@ -66,20 +66,15 @@ ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5
 # Summarize data
 ## UMAP
 ```{r umap}
-plotProjection(sce, "X_umap", "class", legend.position="right", text=FALSE)
+plotProjection(sce, "X_umap", "class", legend.position="right", text=FALSE) + ggtitle("class")
 ```
 
 ```{r umap3}
-plotProjection(sce, "X_umap", "subclass", order=ctorder)
+plotProjection(sce, "X_umap", "subclass", order=ctorder)  + ggtitle("subclass")
 ```
 
 ```{r umap9}
-plotProjection(sce, "X_umap", "subtype")
-```
-
-
-```{r sdf, cache=FALSE}
-knitr::knit_exit()
+plotProjection(sce, "X_umap", "subtype")  + ggtitle("subtype")
 ```
 
 
@@ -354,17 +349,27 @@ plot_grid(plotlist=figList, ncol=3)
 ```
 
 ## Combine plots
-```{r combine}
-
-fig = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="EN_L3_5_IT_3" ) 
-file = "~/www/EN_L3_5_IT_3.pdf"
-ggsave(file, fig, height=5, width=5)
-
+```{r combine, eval=FALSE}
 
 # Plot UMAP
-fig = plotProjection(sce, "X_umap", "subclass", order=ctorder)
+fig_UMAP = plotProjection(sce, "X_umap", "subclass", order=ctorder)
 
-fig
+
+# Mean variance trend
+fig_bp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="EN_L3_5_IT_3" ) 
+
+
+UMAP
+Variance partitioning
+Percent bars
+variance partitioning and eQTLs
+Batch effects and gene sets
+Gene set analysis
+
+
+
+
+
 ```
 
 
