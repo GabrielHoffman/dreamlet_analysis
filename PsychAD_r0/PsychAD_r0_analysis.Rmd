@@ -107,7 +107,7 @@ colData(sce) %>%
     xlab('')
 
 # Number of cells observed per Subject
-colData(sce) %>%
+fig.cells_subject = colData(sce) %>%
   xtabs( ~ SubID + subclass,.) %>%
   as_tibble %>%
   pivot_longer(cols=SubID) %>%
@@ -122,6 +122,7 @@ colData(sce) %>%
     coord_flip() +
     ylab("Number of cells observed per Subject") +
     xlab('')
+fig.cells_subject    
 ```
 
 
@@ -282,12 +283,12 @@ genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1
 #  filter(assay=="Microglia") %>%
 #  summarize(gene[order(Batch, decreasing=TRUE)][1:5])
 
-
 df.vp.sub = sortCols(res.vp)[(res.vp$gene %in% genes) &(res.vp$assay=="Micro_PVM"),]
 df.vp.sub$gene = factor(df.vp.sub$gene, rev(genes))
 df.vp.sub = df.vp.sub[order(df.vp.sub$gene, decreasing=TRUE),]
  
-plotPercentBars(df.vp.sub, assays=ctorder) + theme(aspect.ratio=1)
+fig.percent = plotPercentBars(df.vp.sub, assays=ctorder) + theme(aspect.ratio=1)
+fig.percent
 ```
 
 # Correlation with and between donors
@@ -315,7 +316,8 @@ plotVolcano(fit, "DxAD", ncol=4, assays=ctorder) + theme_classic()
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
 genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7') 
-plotGeneHeatmap( fit, coef="DxAD", genes=genes, assays=ctorder) 
+fig.gene_heatmap = plotGeneHeatmap( fit, coef="DxAD", genes=genes, assays=ctorder) 
+fig.gene_heatmap
 ```
 
 ```{r plotForest, fig.height=10, fig.width=12, cache=FALSE}
@@ -323,6 +325,7 @@ figList = lapply(genes, function(g){
   plotForest( fit, coef = 'DxAD', gene = g, assays=ctorder) +
     theme(aspect.ratio=1, legend.position="none") 
 })
+names(figList) = genes
 plot_grid(plotlist=figList, ncol=3)
 ```
 
@@ -344,39 +347,16 @@ figList = lapply( names(gene_CT), function(g){
           ylab(bquote(log[2]~CPM)) +
           scale_fill_manual(values=c("grey50", "red3"))
 })
+names(figList) = names(gene_CT)
 
 plot_grid(plotlist=figList, ncol=3)
-```
-
-## Combine plots
-```{r combine, eval=FALSE}
-
-# Plot UMAP
-fig_UMAP = plotProjection(sce, "X_umap", "subclass", order=ctorder)
-
-
-# Mean variance trend
-fig_bp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="EN_L3_5_IT_3" ) 
-
-
-UMAP
-Variance partitioning
-Percent bars
-variance partitioning and eQTLs
-Batch effects and gene sets
-Gene set analysis
-
-
-
-
-
 ```
 
 
 ### Summarize differential expression 
 ```{r plot.pi, fig.height=4, fig.width=12}
 # Summarize differential expression for each coef and assay
-df = fit %>%
+df_de = fit %>%
   topTable(coef='DxAD', number=Inf) %>%
     as_tibble %>% 
     group_by(assay) %>% 
@@ -386,8 +366,8 @@ df = fit %>%
       pi1 = 1 - qvalue(P.Value)$pi0) %>%
   mutate(assay = factor(assay, ctorder))  
 
-ymax = 1.05*max(df$nGenes)
-fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
+ymax = 1.05*max(df_de$nGenes)
+fig1 = ggplot(df_de, aes(nGenes, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, legend.position="none") +
@@ -395,8 +375,8 @@ fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) +
     xlab("# genes expressed") +
     ylab("Cell type") 
 
-ymax = max(1.05*max(df$nDE), 100)
-fig2 = ggplot(df, aes(nDE, assay, fill=assay)) + 
+ymax = max(1.05*max(df_de$nDE), 100)
+fig2 = ggplot(df_de, aes(nDE, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, legend.position="none", axis.text.y=element_blank()) +
@@ -404,7 +384,7 @@ fig2 = ggplot(df, aes(nDE, assay, fill=assay)) +
     xlab("# genes with FDR < 5%") +
     ylab('')
 
-fig3 = ggplot(df, aes(pi1, assay, fill=assay)) + 
+fig3 = ggplot(df_de, aes(pi1, assay, fill=assay)) + 
     geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, legend.position="none", axis.text.y=element_blank()) +
@@ -415,6 +395,16 @@ fig3 = ggplot(df, aes(pi1, assay, fill=assay)) +
 plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
 ```    
 
+```{r frac.de}
+ggplot(df_de, aes(2, assay)) +
+        geom_tile(fill="white") +
+        geom_point(aes(color=nDE, size=nDE/nGenes)) +
+        scale_color_gradient(name = "# genes\n< 5% FDR", low = "blue",  high = "red", lim=c(0, NA)) +
+        scale_size_continuous(name = "Fraction of genes\n< 5% FDR") +
+        theme_classic() +
+        theme(aspect.ratio=nrow(df_de), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
+        xlab('') + ylab('') 
+```
 
 ### Interpreting variance partitioning analysis
 Observe that fraction of variation across batches correlates with GC content of the corresponding gene.  Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in 'shot noise' due to low counts.
@@ -428,7 +418,7 @@ df_GC = read.table(file, header=TRUE)
 
 df_vp = merge(as.data.frame(res.vp), df_GC, by.x="gene", by.y="SYMBOL")
 
-fig1 = df_vp %>%
+fig_batch_GC = df_vp %>%
   group_by(assay) %>%
   summarize(cor.se(poolID, GC, method="spearman"))  %>%
   mutate(assay = factor(assay, ctorder)) %>%
@@ -464,9 +454,8 @@ fig2 = df_vp %>%
     scale_y_continuous(limits=c(0, .7), expand=c(0,0)) +
     coord_flip() 
 
-plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")    
+plot_grid(fig_batch_GC, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")    
 ```
-
 
 
 
@@ -500,6 +489,72 @@ df = res.gsa[res.gsa$Geneset %in% gs,]
 # plot results, but with no limit based on the highest/lowest t-statistic
 plotZenithResults(df, Inf, Inf) 
 ```
+
+
+
+# Combine plots
+```{r combine, eval=FALSE}
+file = '/sc/arion/projects/psychAD/NPS-AD/public_release_0/res.vp.RDS'
+saveRDS(res.vp, file=file)
+
+# Plot UMAP
+fig_UMAP = plotProjection(sce, "X_umap", "subclass", order=ctorder)
+
+# Mean variance trend
+fig_mv = plotVoom( res.proc[['Micro_PVM']] ) + 
+            theme_classic() +
+            theme(aspect.ratio=1)
+
+# Variance partitioning 
+fig_vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PVM" ) 
+
+
+
+# variance partitioning and eQTLs
+# Batch effects and gene sets
+# Gene set analysis
+
+fig_batch_GC_mod = fig_batch_GC + 
+  theme(axis.text.y=element_blank(), axis.ticks.y=element_blank()) +
+  coord_flip(ylim=c(0,0.155), expand=FALSE) +
+  ylab('Corr of batch effect\nand GC content') +
+  xlab('')
+
+figF = ggplot() + annotate("text", x=0, y=0, label="Differ, expressed genes") + theme_void()
+
+fig = plot_grid(fig_UMAP, fig_mv, fig_vp, fig.percent + theme(legend.position="bottom"), fig.cells_subject, fig_batch_GC_mod, figF, figG, labels=LETTERS, ncol=4, axis="tblr" , align="hv")
+
+  
+
+file = '~/www/test.png'
+ggsave(file=file, fig, width=12)
+
+
+
+
+# Last figure
+#############
+fig.volcano = plotVolcano(fit[['Micro_PVM']], "DxAD", ncol=4) + theme_classic() + theme(aspect.ratio=1, legend.position="none")
+
+fig.forest = plotForest( fit, coef = 'DxAD', gene = 'PTPRG', assays=ctorder) + theme(aspect.ratio=1, legend.position="none")
+
+
+fig = plot_grid(fig.volcano, fig.gene_heatmap + theme(legend.position="bottom"), fig.forest, figList[['PTPRG']],
+  labels=LETTERS, ncol=4, axis="tblr" , align="hv")
+
+file = '~/www/test.png'
+ggsave(file=file, fig, width=12)
+
+# Add 
+# Gene set analysis
+# Focus on a geneset
+
+
+
+```
+
+
+
 
 
 # Session Info
