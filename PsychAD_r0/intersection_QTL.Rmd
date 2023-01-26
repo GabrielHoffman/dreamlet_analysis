@@ -1,0 +1,58 @@
+
+#### Variance partitioning and eQTLs
+Variance partitioning corresponds to genetic regulation of gene expression.  Genes with high variation across Donor have high variation explained by cis SNPs.  Genes with high variation explained by batch are inversely related to genetic R2.
+```{r vp.eqtl}
+
+library(data.table)
+library(tidyverse)
+library(S4Vectors)
+library(dreamlet)
+library(broom)
+
+file = '/sc/arion/projects/psychAD/NPS-AD/public_release_0/res.vp.RDS'
+res.vp = readRDS(file=file)
+
+synapser::synLogin()
+
+df_eqtl_r2 = as.data.frame(fread(synapser::synGet('syn17083748')$path))
+
+res.vp.augment = res.vp %>%
+  as_tibble %>%
+  mutate( Donor.augment = Subject + Dx + Sex + Age)
+
+# merge with R^2 for each gene 
+df = res.vp.augment %>% 
+  pivot_longer(colnames(res.vp.augment)[-c(1,2)]) 
+
+df = df %>% 
+  inner_join(df_eqtl_r2, by=c('gene' = 'hgnc_symbol')) %>% 
+  group_by(assay, name) %>% 
+  group_modify(~ tidy(cor.test(.x$value, .x$CMC_R2, method="spearman"))) %>%
+  mutate(fdr = p.adjust(p.value, "fdr")) %>%
+  inner_join( df %>% group_by(assay, name) %>% tally) %>%
+  mutate(se = sqrt((1-estimate^2)/(n-2)))
+
+zmax = max(abs(df$estimate))
+
+df %>%
+  ggplot(aes(assay, name, fill=estimate, label=ifelse(fdr < 0.05, "  #", ''))) +
+  geom_tile() + geom_text() + scale_fill_gradient2(low="blue", mid="white", high="red", limits=c(-zmax, zmax)) + theme_classic() + theme(axis.text.x = element_text(angle = 75, vjust = 1, hjust=1))
+
+df %>%
+  # filter(name %in% c("poolID", "Donor.augment")) %>%
+  # filter(name %in% c("poolID", "Donor.augment")) %>%
+  # mutate(name = recode_factor(name, batch = "Batch", Donor.augment="Donor.augment")) %>%
+  ggplot(aes(assay, estimate, fill=name, label=ifelse(fdr < 0.05, "  #", ''))) +
+    geom_bar(stat="identity") +
+    geom_errorbar(aes(ymin = estimate - 1.96*se, ymax = estimate + 1.96*se), width=0) +
+    facet_wrap(~name) + 
+    geom_text(y = .15) + 
+    theme_classic() +
+    coord_flip() +
+    ylab("Spearman correlation") +
+    xlab("Cell type") +
+    theme(aspect.ratio=1, legend.position="none")
+
+
+
+```
