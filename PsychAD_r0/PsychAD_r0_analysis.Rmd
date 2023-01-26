@@ -536,10 +536,15 @@ ggsave(file=file, fig, width=12)
 #############
 fig.volcano = plotVolcano(fit[['Micro_PVM']], "DxAD", ncol=4) + theme_classic() + theme(aspect.ratio=1, legend.position="none")
 
-fig.forest = plotForest( fit, coef = 'DxAD', gene = 'PTPRG', assays=ctorder) + theme(aspect.ratio=1, legend.position="none")
+fig.PTPRG = plotForest( fit, coef = 'DxAD', gene = 'PTPRG', assays=ctorder) + theme(aspect.ratio=1, legend.position="none")
+
+fig.PDE10A = plotForest( fit, coef = 'DxAD', gene = 'PDE10A', assays=ctorder) + theme(aspect.ratio=1, legend.position="none")
 
 
-fig = plot_grid(fig.volcano, fig.gene_heatmap + theme(legend.position="bottom"), fig.forest, figList[['PTPRG']],
+figE = ggplot() + annotate("text", x=0, y=0, label="Geneset by cell type\n2x wide") + theme_void()
+figE = ggplot() + annotate("text", x=0, y=0, label="Geneset by cell type\n2x wide") + theme_void()
+
+fig = plot_grid(fig.volcano, fig.gene_heatmap + theme(legend.position="bottom"), fig.PTPRG, figList[['PTPRG']], fig.PDE10A, figF, 
   labels=LETTERS, ncol=4, axis="tblr" , align="hv")
 
 file = '~/www/test.png'
