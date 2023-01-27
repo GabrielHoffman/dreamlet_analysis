@@ -43,13 +43,14 @@ library(corrplot)
 library(dplyr)
 library(org.Hs.eg.db)
 library(EnrichmentBrowser)
+library(ggrepel)
 })
 ```
 
 
 ```{r load.data}
 folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
-file = paste0(folder, "PsychAD_r0_Jan_25_2023.h5ad")
+file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
@@ -419,12 +420,13 @@ df_GC = read.table(file, header=TRUE)
 df_vp = merge(as.data.frame(res.vp), df_GC, by.x="gene", by.y="SYMBOL")
 
 fig_batch_GC = df_vp %>%
+  as_tibble %>%
+  mutate(assay = factor(assay, ctorder)) %>%
   group_by(assay) %>%
   summarize(cor.se(poolID, GC, method="spearman"))  %>%
-  mutate(assay = factor(assay, ctorder)) %>%
   ggplot(aes(assay, rho, fill=assay)) +
-    geom_bar(stat="identity") + 
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
+    geom_bar(stat="identity") + 
     theme_classic() +
     theme(aspect.ratio=1, 
       legend.position="none") +
@@ -455,6 +457,45 @@ fig2 = df_vp %>%
     coord_flip() 
 
 plot_grid(fig_batch_GC, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr")    
+```
+
+
+```{r vp.ncells}
+# Number of cells observed per Subject
+df = colData(sce) %>%
+  xtabs( ~ SubID + subclass,.) %>%
+  as_tibble %>%
+  pivot_longer(cols=SubID) %>%
+  group_by(assay) %>%
+  summarize(sum.cells = sum(n)) 
+
+df2 = df_vp %>%
+      as_tibble %>%
+      mutate(Donor = Dx + Sex + Subject + Age) %>%
+      group_by(assay) %>%
+      summarize(mean.vp = mean(Donor))
+
+df3 = inner_join(df, df2, by='assay') %>%
+        inner_join(details(res.proc) %>% as_tibble) %>%
+        mutate(assay = factor(assay, ctorder)) 
+
+fit = lm(mean.vp ~ log10(sum.cells/n_retained), df3, weights=df3$n_retained)
+# summary(fit)
+pv = coef(summary(fit))[2,4]
+pv = format(pv, digits=2)
+
+fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retained, mean.vp, color=assay, size=n_retained, label=assay)) +
+  geom_abline(intercept=coef(fit)[1], slope=coef(fit)[2], color="grey30") +
+  geom_point() +
+  scale_x_log10() +
+  theme_classic() +
+  theme(aspect.ratio=1) + 
+  scale_size(name="# Subjects") +
+  xlab("Mean # cells per Subject") +
+  ylab("Mean % variance across Subject") +
+  geom_text_repel(size=4, box.padding =.5, min.segment.length=1) +guides(color = "none", size="none") +
+  annotate("text", x=40, y=.7, label=bquote(p==.(pv)))
+fig.vp_ncells
 ```
 
 
@@ -513,21 +554,25 @@ fig_vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PV
 # variance partitioning and eQTLs
 # Batch effects and gene sets
 # Gene set analysis
-
+#
+# axis.text.y=element_blank()
 fig_batch_GC_mod = fig_batch_GC + 
-  theme(axis.text.y=element_blank(), axis.ticks.y=element_blank()) +
-  coord_flip(ylim=c(0,0.155), expand=FALSE) +
+  theme(, axis.ticks.y=element_blank()) +
+  coord_flip(ylim=c(0,0.18), expand=FALSE) +
   ylab('Corr of batch effect\nand GC content') +
   xlab('')
 
 figF = ggplot() + annotate("text", x=0, y=0, label="Differ, expressed genes") + theme_void()
+figG = ggplot() + annotate("text", x=0, y=0, label="Differ, expressed genes") + theme_void()
 
-fig = plot_grid(fig_UMAP, fig_mv, fig_vp, fig.percent + theme(legend.position="bottom"), fig.cells_subject, fig_batch_GC_mod, figF, figG, labels=LETTERS, ncol=4, axis="tblr" , align="hv")
-
-  
+# fig.cells_subject
+fig = plot_grid(fig_UMAP, fig_mv, fig_vp, fig.percent + theme(legend.position="bottom"), fig_batch_GC_mod, fig.vp_ncells, figG, labels=LETTERS, ncol=4, axis="tblr" , align="hv")
 
 file = '~/www/test.png'
-ggsave(file=file, fig, width=12)
+ggsave(file=file, fig, width=16, height=8)
+
+
+
 
 
 

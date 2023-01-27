@@ -7,6 +7,9 @@ R --vanilla
 system("git pull"); rmarkdown::render("PsychAD_r0_analysis.Rmd");
 
 
+system("git pull"); rmarkdown::render("write_pb_for_qtl.Rmd");
+
+
 # https://hoffmg01.hpc.mssm.edu/dreamlet_analysis/
 
 # rm -rf PsychAD_r0_analysis_cache
