@@ -480,9 +480,9 @@ df3 = inner_join(df, df2, by='assay') %>%
         inner_join(details(res.proc) %>% as_tibble) %>%
         mutate(assay = factor(assay, ctorder)) 
 
-fit = lm(mean.vp ~ log10(sum.cells/n_retained), df3, weights=df3$n_retained)
+fit_n.cells = lm(mean.vp ~ log10(sum.cells/n_retained), df3, weights=df3$n_retained)
 # summary(fit)
-pv = coef(summary(fit))[2,4]
+pv = coef(summary(fit_n.cells))[2,4]
 pv = format(pv, digits=2)
 
 fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retained, mean.vp, color=assay, size=n_retained, label=assay)) +
