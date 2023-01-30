@@ -39,6 +39,7 @@ library(tidyverse)
 library(kableExtra)
 library(qvalue)
 library(scattermore)
+library(RColorBrewer)
 library(corrplot)
 library(dplyr)
 library(org.Hs.eg.db)
@@ -288,7 +289,8 @@ df.vp.sub = sortCols(res.vp)[(res.vp$gene %in% genes) &(res.vp$assay=="Micro_PVM
 df.vp.sub$gene = factor(df.vp.sub$gene, rev(genes))
 df.vp.sub = df.vp.sub[order(df.vp.sub$gene, decreasing=TRUE),]
  
-fig.percent = plotPercentBars(df.vp.sub, assays=ctorder) + theme(aspect.ratio=1)
+col = c(brewer.pal(ncol(df.vp.sub)-3, "Set1"), "grey85")
+fig.percent = plotPercentBars(df.vp.sub, assays=ctorder, col=col) + theme(aspect.ratio=1)
 fig.percent
 ```
 
@@ -399,13 +401,31 @@ plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv"
 ```{r frac.de}
 ggplot(df_de, aes(2, assay)) +
         geom_tile(fill="white") +
-        geom_point(aes(color=nDE, size=nDE/nGenes)) +
-        scale_color_gradient(name = "# genes\n< 5% FDR", low = "blue",  high = "red", lim=c(0, NA)) +
-        scale_size_continuous(name = "Fraction of genes\n< 5% FDR") +
+        geom_point(aes(color=nDE/nGenes*100, size=nGenes)) +
+        scale_color_viridis(name = "% genes\npassing FDR", lim=c(0, NA)) +
+        scale_size_continuous(name = "# genes", breaks=c(1, 4, 8, 12, 16)*1000) +
         theme_classic() +
         theme(aspect.ratio=nrow(df_de), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
         xlab('') + ylab('') 
 ```
+
+
+```{r frac.de2}
+df_de %>%
+  mutate(frac.DE = nDE / nGenes) %>%
+  mutate(frac.null = 1 - frac.DE) %>%
+  select(assay, frac.DE, frac.null, nGenes) %>%
+  pivot_longer(cols=c('frac.DE', 'frac.null'), values_to='fraction') %>%
+  ggplot(aes(x=nGenes/2, y=fraction, group=name, fill=name, width=nGenes)) +
+    geom_bar(stat = "identity") +
+    coord_polar("y", start=0) + 
+    facet_wrap(.~ assay) + theme_void() +
+    theme(legend.position="none")
+```
+
+
+
+
 
 ### Interpreting variance partitioning analysis
 Observe that fraction of variation across batches correlates with GC content of the corresponding gene.  Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in 'shot noise' due to low counts.
@@ -480,13 +500,13 @@ df3 = inner_join(df, df2, by='assay') %>%
         inner_join(details(res.proc) %>% as_tibble) %>%
         mutate(assay = factor(assay, ctorder)) 
 
-fit_n.cells = lm(mean.vp ~ log10(sum.cells/n_retained), df3, weights=df3$n_retained)
-# summary(fit)
+fit_n.cells = lm(mean.vp ~ log10(sum.cells/n_retained), df3)#, weights=df3$n_retained)
+# summary(fit_n.cells)
 pv = coef(summary(fit_n.cells))[2,4]
 pv = format(pv, digits=2)
 
 fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retained, mean.vp, color=assay, size=n_retained, label=assay)) +
-  geom_abline(intercept=coef(fit)[1], slope=coef(fit)[2], color="grey30") +
+  geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
   geom_point() +
   scale_x_log10() +
   theme_classic() +
@@ -494,7 +514,7 @@ fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retained, mean.vp, color=assay, size
   scale_size(name="# Subjects") +
   xlab("Mean # cells per Subject") +
   ylab("Mean % variance across Subject") +
-  geom_text_repel(size=4, box.padding =.5, min.segment.length=1) +guides(color = "none", size="none") +
+  geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) +guides(color = "none", size="none") +
   annotate("text", x=40, y=.7, label=bquote(p==.(pv)))
 fig.vp_ncells
 ```
@@ -536,8 +556,8 @@ plotZenithResults(df, Inf, Inf)
 
 # Combine plots
 ```{r combine, eval=FALSE}
-file = '/sc/arion/projects/psychAD/NPS-AD/public_release_0/res.vp.RDS'
-saveRDS(res.vp, file=file)
+# file = '/sc/arion/projects/psychAD/NPS-AD/public_release_0/res.vp.RDS'
+# saveRDS(res.vp, file=file)
 
 # Plot UMAP
 fig_UMAP = plotProjection(sce, "X_umap", "subclass", order=ctorder)
@@ -550,8 +570,6 @@ fig_mv = plotVoom( res.proc[['Micro_PVM']] ) +
 # Variance partitioning 
 fig_vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PVM" ) 
 
-
-
 # variance partitioning and eQTLs
 # Batch effects and gene sets
 # Gene set analysis
@@ -563,13 +581,13 @@ fig_batch_GC_mod = fig_batch_GC +
   ylab('Corr of batch effect\nand GC content') +
   xlab('')
 
-figF = ggplot() + annotate("text", x=0, y=0, label="Differ, expressed genes") + theme_void()
+figA = ggplot() + annotate("text", x=0, y=0, label="Diagram") + theme_void()
 figG = ggplot() + annotate("text", x=0, y=0, label="Differ, expressed genes") + theme_void()
 
 # fig.cells_subject
-fig = plot_grid(fig_UMAP, fig_mv, fig_vp, fig.percent + theme(legend.position="bottom"), fig_batch_GC_mod, fig.vp_ncells, figG, labels=LETTERS, ncol=4, axis="tblr" , align="hv")
+fig = plot_grid(figA, fig_UMAP, fig_mv, fig_vp, fig.percent + theme(legend.position="bottom"), fig_batch_GC_mod, fig.vp_ncells, figG, labels=LETTERS, ncol=4, axis="tblr" , align="hv")
 
-file = '~/www/test.png'
+file = '~/www/test.pdf'
 ggsave(file=file, fig, width=16, height=8)
 
 
@@ -588,12 +606,12 @@ fig.PDE10A = plotForest( fit, coef = 'DxAD', gene = 'PDE10A', assays=ctorder) + 
 
 
 figE = ggplot() + annotate("text", x=0, y=0, label="Geneset by cell type\n2x wide") + theme_void()
-figE = ggplot() + annotate("text", x=0, y=0, label="Geneset by cell type\n2x wide") + theme_void()
+figF = ggplot() + annotate("text", x=0, y=0, label="Geneset by cell type\n2x wide") + theme_void()
 
 fig = plot_grid(fig.volcano, fig.gene_heatmap + theme(legend.position="bottom"), fig.PTPRG, figList[['PTPRG']], fig.PDE10A, figF, 
   labels=LETTERS, ncol=4, axis="tblr" , align="hv")
 
-file = '~/www/test.png'
+file = '~/www/test.pdf'
 ggsave(file=file, fig, width=12)
 
 # Add 
