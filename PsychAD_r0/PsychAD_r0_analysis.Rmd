@@ -466,6 +466,7 @@ df = colData(sce) %>%
   xtabs( ~ SubID + subclass,.) %>%
   as_tibble %>%
   pivot_longer(cols=SubID) %>%
+  mutate(assay = subclass) %>%
   group_by(assay) %>%
   summarize(sum.cells = sum(n)) 
 
