@@ -355,10 +355,38 @@ res.vp %>%
     scale_x_continuous(expand=c(0,0))
 ```
 
+### Batch effect for NXPE1
+```{r NXPE1}
+res.vp %>%
+  as_tibble %>%
+  mutate(assay = factor(assay, ctorder)) %>%
+  filter( gene == "NXPE1") %>%
+  ggplot(aes(poolID, assay, fill=assay)) +
+   geom_bar(stat="identity") +
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(expand=c(0,0)
 
+df = extractData(res.proc, "Micro_PVM")
 
+gene = "NXPE1"
+df = df[,c('poolID', gene)]
+colnames(df)[colnames(df)==gene] = "expr"
 
+df_ord = df %>%
+  group_by(poolID) %>%
+  summarize(mean = mean(expr)) %>%
+  arrange(mean)
 
+df %>%
+  mutate(poolID = factor(poolID, df_ord$poolID)) %>% 
+  ggplot(aes(poolID, expr)) +
+    geom_boxplot() +
+    theme_classic() +
+    theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5), legend.position="none", axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+    ggtitle(paste0("Micro_PVM: ", gene)) +
+    ylab(bquote(log[2]~CPM)) 
+```
 
 
 
