@@ -361,11 +361,12 @@ res.vp %>%
   as_tibble %>%
   mutate(assay = factor(assay, ctorder)) %>%
   filter( gene == "NXPE1") %>%
-  ggplot(aes(poolID, assay, fill=assay)) +
+  ggplot(aes(100*poolID, assay, fill=assay)) +
    geom_bar(stat="identity") +
     theme_classic() +
     theme(aspect.ratio=1, legend.position="none") +
-    scale_x_continuous(expand=c(0,0))
+    scale_x_continuous(expand=c(0,0), limits=c(0, 100)) +
+    xlab("Variance explained (%)") 
 
 df = extractData(res.proc, "Micro_PVM")
 
