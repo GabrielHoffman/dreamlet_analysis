@@ -60,6 +60,10 @@ sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
 
 Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) pools, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
 
+
+
+
+
 ```{r ctorder}
 # cell type order
 ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Oligo', 'OPC', 'Astro', 'Micro_PVM', 'CD8_T', 'PC', 'VLMC','Endo')
@@ -146,6 +150,52 @@ folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/"
 file = paste0(folder, "PsychAD_r0_Dec_28_2022_pseudobulk.RDS")
 
 saveRDS(pb, file)
+```
+
+# Summarize demographics
+```{r demo}
+library(gridExtra)
+library(grid)
+library(cowplot) 
+
+df = colData(pb) %>%
+  as_tibble %>%
+  select(SubID, Dx, Sex, Age) %>%
+  distinct
+
+xtabs( ~ Dx + Sex, df)
+
+figB = df %>%
+  ggplot(aes(Sex, Age, fill=Dx)) +
+    geom_boxplot() + 
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    scale_fill_manual("Diagnosis", values = c("dodgerblue", "red3"))
+
+t1 <- tableGrob(xtabs( ~ Dx + Sex, df), theme = ttheme_minimal())
+fig = plot_grid(t1, figB, ncol = 2, labels=LETTERS)
+fig
+# file = "~/www/test.pdf"
+# ggsave(file=file, fig, height=4)  
+
+# res.vp %>% 
+#   as_tibble %>% 
+#   filter(assay=="Micro_PVM") %>% 
+#   summarize(med = median(Subject + Dx + Sex + Age))
+
+res.vp %>% 
+  as_tibble %>% 
+  filter(assay=="Micro_PVM") %>% 
+  summarize(count = sum(Dx > 0.05))
+
+
+res.vp %>% 
+  as_tibble %>% 
+  filter(assay=="Micro_PVM") %>% 
+  summarize(count = sum(poolID > 0.05))
+
+
+
 ```
 
 ## Summarize read counts
@@ -271,15 +321,19 @@ plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder )
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
 # Show variance fractions at the gene-level for each cell type
-genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1', "PDE10A", "XIST", 'C1D')
+# genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1', "PDE10A", "XIST", 'C1D')
 
 # res.vp %>%
 #  as_tibble %>%
-#  filter(assay=="Microglia") %>%
-#  summarize(Age = gene[which.max(Age)],
+#  filter(assay=="Micro_PVM") %>%
+#  summarize(Dx = gene[which.max(Dx)],
+#    poolID = gene[which.max(poolID)],
+#    Sex = gene[which.max(Sex)],
+#     Age = gene[which.max(Age)],
 #    Subject = gene[which.max(Subject)],
-#    Batch = gene[which.max(Batch)],
 #    Residuals = gene[which.max(Residuals)])
+
+genes = c( "KCNMA1", "CECR2", "PTPRG","NXPE1", "XIST", "NDUFB6")
 
 # res.vp %>%
 #  as_tibble %>%
@@ -319,8 +373,8 @@ plotVolcano(fit, "DxAD", ncol=4, assays=ctorder) + theme_classic()
 
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
-genes = c("HNMT", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7') 
-fig.gene_heatmap = plotGeneHeatmap( fit, coef="DxAD", genes=genes, assays=ctorder) 
+genes = c("DUSP10", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7') 
+fig.gene_heatmap = plotGeneHeatmap( fit, coef="DxAD", genes=genes, assays=ctorder)  
 fig.gene_heatmap
 ```
 
@@ -328,7 +382,7 @@ fig.gene_heatmap
 figList = lapply(genes, function(g){  
   plotForest( fit, coef = 'DxAD', gene = g, assays=ctorder) +
     theme(aspect.ratio=1, legend.position="none") 
-})
+}) 
 names(figList) = genes
 plot_grid(plotlist=figList, ncol=3)
 ```
@@ -400,7 +454,7 @@ plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv"
 ```    
 
 ```{r frac.de}
-ggplot(df_de, aes(2, assay)) +
+fig_de_count = ggplot(df_de, aes(2, assay)) +
         geom_tile(fill="white") +
         geom_point(aes(color=nDE/nGenes*100, size=nGenes)) +
         scale_color_viridis(name = "% genes\npassing FDR", lim=c(0, NA)) +
@@ -408,21 +462,10 @@ ggplot(df_de, aes(2, assay)) +
         theme_classic() +
         theme(aspect.ratio=nrow(df_de), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
         xlab('') + ylab('') 
+fig_de_count
 ```
 
 
-```{r frac.de2}
-df_de %>%
-  mutate(frac.DE = nDE / nGenes) %>%
-  mutate(frac.null = 1 - frac.DE) %>%
-  select(assay, frac.DE, frac.null, nGenes) %>%
-  pivot_longer(cols=c('frac.DE', 'frac.null'), values_to='fraction') %>%
-  ggplot(aes(x=nGenes/2, y=fraction, group=name, fill=name, width=nGenes)) +
-    geom_bar(stat = "identity") +
-    coord_polar("y", start=0) + 
-    facet_wrap(.~ assay) + theme_void() +
-    theme(legend.position="none")
-```
 
 
 
@@ -444,10 +487,13 @@ fig_batch_GC = df_vp %>%
   as_tibble %>%
   mutate(assay = factor(assay, ctorder)) %>%
   group_by(assay) %>%
-  summarize(cor.se(poolID, GC, method="spearman"))  %>%
-  ggplot(aes(assay, rho, fill=assay)) +
+  summarize(cor.se(poolID, GC, method="spearman")) %>%
+  left_join( df_vp %>% group_by(assay) %>% summarize(tidy(cor.test(poolID, GC, method="spearman"))) %>% select(assay, p.value, estimate), by="assay") %>%
+  mutate(FDR = p.adjust(p.value, "fdr")) %>%
+  ggplot(aes(assay, rho, fill=assay, label=ifelse(FDR < 0.05, "#", ''))) +
     geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
     geom_bar(stat="identity") + 
+    geom_text(aes(y = rho + 3*rho.se)) +
     theme_classic() +
     theme(aspect.ratio=1, 
       legend.position="none") +
@@ -481,6 +527,11 @@ plot_grid(fig_batch_GC, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tbl
 ```
 
 
+
+
+
+
+
 ```{r vp.ncells}
 # Number of cells observed per Subject
 df = colData(sce) %>%
@@ -512,10 +563,10 @@ fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retained, mean.vp, color=assay, size
   scale_x_log10() +
   theme_classic() +
   theme(aspect.ratio=1) + 
-  scale_size(name="# Subjects") +
+  scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) +
   xlab("Mean # cells per Subject") +
   ylab("Mean % variance across Subject") +
-  geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) +guides(color = "none", size="none") +
+  geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
   annotate("text", x=40, y=.7, label=bquote(p==.(pv)))
 fig.vp_ncells
 ```
@@ -577,7 +628,7 @@ fig_vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PV
 #
 # axis.text.y=element_blank()
 fig_batch_GC_mod = fig_batch_GC + 
-  theme(, axis.ticks.y=element_blank()) +
+  theme(axis.ticks.y=element_blank()) +
   coord_flip(ylim=c(0,0.18), expand=FALSE) +
   ylab('Corr of batch effect\nand GC content') +
   xlab('')
@@ -592,32 +643,113 @@ file = '~/www/test.pdf'
 ggsave(file=file, fig, width=16, height=8)
 
 
-
-
-
-
-
 # Last figure
 #############
 fig.volcano = plotVolcano(fit[['Micro_PVM']], "DxAD", ncol=4) + theme_classic() + theme(aspect.ratio=1, legend.position="none")
 
 fig.PTPRG = plotForest( fit, coef = 'DxAD', gene = 'PTPRG', assays=ctorder) + theme(aspect.ratio=1, legend.position="none")
 
-fig.PDE10A = plotForest( fit, coef = 'DxAD', gene = 'PDE10A', assays=ctorder) + theme(aspect.ratio=1, legend.position="none")
+fig.PDE10A = plotForest( fit, coef = 'DxAD', gene = 'PDE10A', assays=ctorder, ylim=c(-1.3, 0.5)) + theme(aspect.ratio=1)
 
 
 figE = ggplot() + annotate("text", x=0, y=0, label="Geneset by cell type\n2x wide") + theme_void()
 figF = ggplot() + annotate("text", x=0, y=0, label="Geneset by cell type\n2x wide") + theme_void()
-
+ 
 fig = plot_grid(fig.volcano, fig.gene_heatmap + theme(legend.position="bottom"), fig.PTPRG, figList[['PTPRG']], fig.PDE10A, figF, 
   labels=LETTERS, ncol=4, axis="tblr" , align="hv")
 
 file = '~/www/test.pdf'
-ggsave(file=file, fig, width=12)
+ggsave(file=file, fig.gene_heatmap, height=5, width=5)
 
-# Add 
-# Gene set analysis
-# Focus on a geneset
+
+# Gene sets
+###########
+
+# get genesets with FDR < 5%
+gs = unique(res.gsa$Geneset[res.gsa$FDR < 0.05])
+
+
+gs = c("cholesterol biosynthetic process", "regulation of epidermal growth factor receptor signaling pathway",'release of sequestered calcium ion into cytosol by endoplasmic reticulum',
+'neurotransmitter receptor activity involved in regulation of postsynaptic membrane potential',
+'ionotropic glutamate receptor activity',
+'postsynaptic membrane',
+'glutamate receptor activity',
+'neuronal action potential',
+'presynapse organization',
+'regulation of synapse assembly',
+'tau protein binding',
+'synaptic vesicle endocytosis',
+'PDZ domain binding',
+'ephrin receptor signaling pathway',
+'sodium channel complex',
+'actin filament−based process',
+'ERBB signaling pathway',
+'neural nucleus development',
+'antigen processing and presentation of peptide antigen',
+'regulation of p38MAPK cascade',
+'synaptic cleft',
+'neuron projection fasciculation',
+'neuropeptide signaling pathway',
+'regulation of microtubule polymerization',
+'regulation of mRNA stability',
+'glucocorticoid receptor signaling pathway',
+'regulation of histone phosphorylation',
+'filopodium assembly',
+'GTPase activator activity',
+'oxidative phosphorylation')
+
+
+
+# keep only results of these genesets
+df = res.gsa[res.gsa$Geneset %in% gs,]
+
+# plot results, but with no limit based on the highest/lowest t-statistic
+fig = plotZenithResults(df, Inf, Inf)
+
+
+file = '~/www/test.pdf'
+ggsave(file=file, fig, width=12, height=40)
+
+
+
+### Highlight specific genesets
+gs1 = "peptidyl-tyrosine dephosphorylation"
+
+fig = plotGeneHeatmap( fit, coef="DxAD", genes=geneIds(go.gs[[gs1]]), transpose=TRUE) + #, assays='Micro_PVM'
+  ggtitle(gs1) + 
+  theme(legend.position = "bottom",
+    axis.text.x=element_text(size=10, angle=30),
+    axis.text.y=element_text(size=10)) + 
+  xlab('') + ylab('') 
+
+ggsave(file=file, fig, width=12, height=40)
+
+
+
+
+idx = which(sapply(go.gs, function(x) length(grep('DUSP10', geneIds(x))) > 0))
+
+go.gs[names(go.gs)[idx]]
+
+df = res.gsa[res.gsa$Geneset %in% gsub("^GO\\S+ ", "",names(go.gs)[idx]),]
+
+df[df$assay == "Micro_PVM",] %>% head
+
+
+
+
+res = zenith_gsa(fit, go.gs[names(go.gs)[idx]], coefs="DxAD")
+
+
+
+# PTPRG 
+# "GO0016791: phosphatase activity" 
+# "GO0010975: regulation of neuron projection development""
+
+ tab = topTable(fit, coef='DxAD', number=Inf)
+ tab[(tab$ID == "PTPRG") &(tab$assay == "Micro_PVM"),]
+
+topTable(fit[['Micro_PVM']], coef='DxAD', number=1)
 
 
 
