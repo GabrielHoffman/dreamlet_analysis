@@ -454,6 +454,7 @@ fig_de_count
 Observe that fraction of variation across batches correlates with GC content of the corresponding gene.  Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in 'shot noise' due to low counts.
 
 ```{r gc.content, fig.height=5, fig.width=12}
+library(broom)
 source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses.R")
 
 # read GC content
