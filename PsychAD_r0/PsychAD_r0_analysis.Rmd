@@ -175,27 +175,6 @@ figB = df %>%
 t1 <- tableGrob(xtabs( ~ Dx + Sex, df), theme = ttheme_minimal())
 fig = plot_grid(t1, figB, ncol = 2, labels=LETTERS)
 fig
-# file = "~/www/test.pdf"
-# ggsave(file=file, fig, height=4)  
-
-# res.vp %>% 
-#   as_tibble %>% 
-#   filter(assay=="Micro_PVM") %>% 
-#   summarize(med = median(Subject + Dx + Sex + Age))
-
-res.vp %>% 
-  as_tibble %>% 
-  filter(assay=="Micro_PVM") %>% 
-  summarize(count = sum(Dx > 0.05))
-
-
-res.vp %>% 
-  as_tibble %>% 
-  filter(assay=="Micro_PVM") %>% 
-  summarize(count = sum(poolID > 0.05))
-
-
-
 ```
 
 ## Summarize read counts
