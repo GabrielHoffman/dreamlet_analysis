@@ -328,6 +328,41 @@ fig.percent = plotPercentBars(df.vp.sub, assays=ctorder, col=col) + theme(aspect
 fig.percent
 ```
 
+## Batch effects for each cell type
+```{r batch.cell}
+res.vp %>%
+  as_tibble %>%
+  mutate(assay = factor(assay, ctorder)) %>%
+  ggplot(aes(100*poolID, assay)) + 
+    geom_violin(fill="#984EA3", scale="area") +
+    geom_boxplot(width=.1, outlier.color="#984EA3") +
+    theme_classic() +
+    theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
+    xlab("Variance explained (%)") +
+    ggtitle("10X pool")
+
+res.vp %>%
+  as_tibble %>%
+  mutate(assay = factor(assay, ctorder)) %>%
+  group_by(assay) %>%
+  summarize(N = sum(poolID > 0.05), percent = 100*sum(poolID > 0.05) / length(poolID)) %>%
+  pivot_longer(cols=c("N", "percent")) %>%
+  ggplot(aes(value, assay, fill=assay)) +
+    geom_bar(stat="identity") +
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    facet_wrap(~name, scales="free_x") +
+    scale_x_continuous(expand=c(0,0))
+```
+
+
+
+
+
+
+
+
+
 # Correlation with and between donors
 ```{r within_btw, fig.height=10, fig.width=10}
 source("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/nps_ad/common_analyses.R")
