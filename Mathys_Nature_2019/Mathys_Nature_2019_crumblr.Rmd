@@ -36,6 +36,7 @@ library(tidyverse)
 library(kableExtra)
 library(qvalue)
 library(dreamlet)
+library(variancePartition)
 library(cowplot)
 ```
 
@@ -79,6 +80,47 @@ pb$sequencingBatch = factor(pb$sequencingBatch)
 library(crumblr)
 
 cobj = crumblr(cellCounts(pb))
+
+form =  ~ (1|sequencingBatch) + (1|msex) + educ + pmi + Dx + age_death_numeric
+
+fit = dream(cobj, form, colData(pb))
+
+topTable(fit, coef="DxAD", number=Inf)
+
+topTable(fit, coef="age_death_numeric", number=Inf)
+
+
+
+
+
+
+form =  ~ (1|sequencingBatch) + educ + pmi + Dx*msex + age_death_numeric
+
+fit = dream(cobj, form, colData(pb))
+
+topTable(fit, coef="DxAD:msexM", number=Inf)
+
+
+topTable(fit, coef="DxAD:msexM", number=Inf)
+
+
+
+form =  ~ (1|sequencingBatch) + educ + pmi + Dx + msex + age_death_numeric
+
+fit = dream(cobj, form, colData(pb))
+
+topTable(fit, coef="msexM", number=Inf)
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
