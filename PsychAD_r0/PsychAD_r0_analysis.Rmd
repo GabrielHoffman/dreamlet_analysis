@@ -391,12 +391,17 @@ df %>%
 
 ```{r test.batch.effect}
 # test batch effect
-# form = ~ 0 + (1|SubID) + poolID + (1|Sex) + scale(Age) + Dx
-form = ~ 0 + poolID 
+form = ~ 0 + (1|SubID) + poolID + (1|Sex) + scale(Age) + Dx
 
-fit.batch = dreamlet( res.proc, form, BPPARAM = SnowParam(12), assays=assayNames(res.proc)[1])
+fit.batch = dreamlet( res.proc, form)
 ```
 
+``{r test.batch}
+coefs = coefs(fit.batch)[grep("poolID", coefs(fit.batch))]
+tab = topTable(fit.batch, coef=coefs, number=Inf)
+
+res.zen = zenith_gsa( fit.batch, go.gs, coef=coefs)
+```
 
 
 # Correlation with and between donors
