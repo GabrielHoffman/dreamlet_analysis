@@ -136,7 +136,7 @@ fig.cells_subject
 ```{r combineData, message=TRUE}
 # update block size for reading h5ad file from disk
 setAutoBlockSize(1e9)
-
+ 
 # Create pseudo-bulk SingleCellExperiment
 pb = aggregateToPseudoBulk(sce,
     assay = "counts", 
@@ -389,6 +389,13 @@ df %>%
     ylab(bquote(log[2]~CPM)) 
 ```
 
+```{r test.batch.effect}
+# test batch effect
+# form = ~ 0 + (1|SubID) + poolID + (1|Sex) + scale(Age) + Dx
+form = ~ 0 + poolID 
+
+fit.batch = dreamlet( res.proc, form, BPPARAM = SnowParam(12), assays=assayNames(res.proc)[1])
+```
 
 
 
