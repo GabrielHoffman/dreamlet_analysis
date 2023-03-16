@@ -2,7 +2,7 @@
 <img align="right" width="125" height="125" src="https://gabrielhoffman.github.io/dreamlet/logo.svg">
 
 
-# Analysis of single cell datasets using [dreamlet](http://diseaseneurogenomics.github.io/dreamlet/)
+# Analysis of single cell datasets using [dreamlet](http://diseaseneurogenomics.github.io/dreamlet/) software
 
 Here we present analysis code, data and results from 4 public datasets.
 
