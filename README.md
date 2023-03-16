@@ -1,5 +1,6 @@
 
-<img align="right" width="150" height="150" src="https://gabrielhoffman.github.io/dreamlet/logo.svg">
+<img align="right" width="125" height="125" src="https://gabrielhoffman.github.io/dreamlet/logo.svg">
+
 
 # Analysis of single cell datasets using [dreamlet](http://diseaseneurogenomics.github.io/dreamlet/)
 
