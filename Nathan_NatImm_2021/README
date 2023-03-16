@@ -1,0 +1,35 @@
+
+
+# GEH Sept 6, 2020
+
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Nathan_NatImm_2021
+ml git
+R
+
+# rm -rf Nathan_NatImm_2021_cache/
+
+system("git pull"); rmarkdown::render("Nathan_NatImm_2021.Rmd");
+
+
+rsync -zP sklar1:/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Nathan_NatImm_2021/Nathan_NatImm_2021.html ~/Downloads/
+
+open ~/Downloads/Nathan_NatImm_2021.html 
+
+
+# Note that meta-data is from Aparna Nathan.  GEO will be updated soon
+
+
+
+
+# https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Nathan_NatImm_2021.html
+
+
+# get himem instance to format data
+bsub -Is -q premium -R span[hosts=1] -R rusage[mem=8000] -W 12:00 -P acc_CommonMind -n 24 bash
+
+
+counts = read.sparseMatrix("test.tsv.gz", 10)
+
+
+cd /Users/gabrielhoffman/link
+sshfs sklar1:/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Nathan_NatImm_2021 .

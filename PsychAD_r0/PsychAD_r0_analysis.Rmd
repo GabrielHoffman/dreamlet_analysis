@@ -389,6 +389,75 @@ df %>%
     ylab(bquote(log[2]~CPM)) 
 ```
 
+```{r batch.examples, eval=FALSE}
+
+res.vp %>%
+  as_tibble %>%
+  mutate(assay = factor(assay, ctorder)) %>%
+  group_by(assay) %>%
+  filter(poolID > 0.05) %>%
+  summarize(N = length(unique(gene))) %>%
+  ggplot(aes(N, assay, fill=assay)) +
+    geom_bar(stat="identity") +
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") + 
+    xlab("# genes with poolID > 5%") +
+    scale_x_continuous(limits=c(0, NA), expand=c(0,0))
+
+
+genes = res.vp %>%
+  as_tibble %>%
+  filter(poolID > 0.05, assay=="Micro_PVM") %>%
+  select(gene)
+genes = genes$gene
+
+
+df = extractData(res.proc, "Micro_PVM")
+df = df[,c('poolID', genes)]
+  
+
+figList = lapply(colnames(df)[-1][1:60], function(geneid){  
+
+  df.tmp = df[,c('poolID', geneid)]
+  colnames(df.tmp)[colnames(df.tmp)==geneid] = "expr"
+
+  frac = res.vp %>%
+    as_tibble %>%
+    filter(assay=="Micro_PVM", gene==geneid) %>%
+    select(poolID) %>%
+    as.numeric
+
+  df_ord = df.tmp %>%
+    group_by(poolID) %>%
+    summarize(mean = mean(expr)) %>%
+    arrange(mean)
+
+  df.tmp %>%
+    mutate(poolID = factor(poolID, df_ord$poolID)) %>% 
+    ggplot(aes(poolID, expr)) +
+      geom_boxplot() +
+      theme_classic() +
+      theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5), legend.position="none", axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+      ylab('') + xlab('') + 
+      ggtitle(paste0(geneid, ": ", format(100*frac, digits=3), "%"))
+})
+
+file = "~/www/test.pdf"
+fig = plot_grid(plotlist = figList, align="hv", axis="tblr", ncol=4)
+ggsave(file, fig, height=49)
+
+# estimate number of clusters
+library(cluster)
+
+res = lapply( colnames(df)[-1], function(gene){
+  res = clusGap(df[,gene,drop=FALSE], FUNcluster = kmeans, K.max = 5, B=3)
+  data.frame(gene, Nclust = which.max(res$Tab[,3]))
+})
+res = do.call(rbind, res)
+
+ table(res$Nclust)
+
+```
 
 
 
@@ -614,6 +683,30 @@ fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retained, mean.vp, color=assay, size
   annotate("text", x=40, y=.7, label=bquote(p==.(pv)))
 fig.vp_ncells
 ```
+
+```{r de.ncells}
+df3 = inner_join(df, df_de, by='assay') %>%
+        inner_join(details(res.proc) %>% as_tibble) %>%
+        mutate(assay = factor(assay, ctorder)) 
+
+fit_n.cells = lm(nDE ~ log10(sum.cells/n_retained), df3)
+pv = coef(summary(fit_n.cells))[2,4]
+pv = format(pv, digits=2)
+
+fig.nDE_ncells = ggplot(df3, aes(sum.cells/n_retained, nDE, color=assay, size=n_retained, label=assay)) +
+  geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
+  geom_point() +
+  scale_x_log10() +
+  theme_classic() +
+  theme(aspect.ratio=1) + 
+  scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) +
+  xlab("Mean # nuclei per Subject") +
+  ylab("Mean % variance across Subject") +
+  geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
+  annotate("text", x=1000, y=.7, label=bquote(p==.(pv)))
+fig.nDE_ncells
+```
+
 
 
 

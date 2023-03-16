@@ -1,0 +1,22 @@
+
+
+
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_Nature_2019
+ml git
+R
+
+
+
+system("git pull"); rmarkdown::render("Mathys_Nature_2019_get_data.Rmd");
+
+
+
+
+
+system("git pull"); rmarkdown::render("Mathys_Nature_2019.Rmd");
+
+
+
+system("git pull"); rmarkdown::render("Mathys_Nature_2019_crumblr.Rmd");
+
+

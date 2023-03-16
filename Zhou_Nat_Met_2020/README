@@ -1,0 +1,22 @@
+
+
+
+
+
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Zhou_Nat_Met_2020
+ml git
+R
+
+
+
+system("git pull"); rmarkdown::render("Zhou_Nat_Met_2020_get_data.Rmd");
+
+
+
+
+
+system("git pull"); rmarkdown::render("Zhou_Nat_Met_2020.Rmd");
+
+
+
+rsync -zP sklar1:/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Zhou_Nat_Met_2020/Zhou_Nat_Met_2020.html ~/Downloads/
