@@ -1,6 +1,9 @@
 
 # Download data
 ###############
+
+<!---
+# Run in shell
 cd /sc/arion/projects/CommonMind/hoffman/crumblr_analysis/Velmeshev_2019/data
 
 wget --no-check-certificate https://cells.ucsc.edu/autism/rawMatrix.zip
@@ -9,6 +12,7 @@ wget --no-check-certificate https://cells.ucsc.edu/autism/tMinusSNE.coords.tsv.g
 
 unzip rawMatrix.zip
 gzip matrix.mtx
+--->
 
 # Load data into R
 ##################
