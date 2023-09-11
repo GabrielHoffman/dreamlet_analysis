@@ -85,11 +85,11 @@ write.table(df_counts, file=file, sep="\t", quote=FALSE, row.names=FALSE)
 # plot
 #######
 
-files = dir("./", pattern="df_counts_.*tsv", full.names=TRUE)
-df_counts = lapply(files, function(file){
-	read.table(file, header=TRUE)
-	})
-df_counts = do.call(rbind, df_counts)
+# files = dir("./", pattern="df_counts_.*tsv", full.names=TRUE)
+# df_counts = lapply(files, function(file){
+# 	read.table(file, header=TRUE)
+# 	})
+# df_counts = do.call(rbind, df_counts)
 
 # ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Oligo', 'OPC', 'Astro', 'Micro_PVM', 'CD8_T', 'PC', 'VLMC','Endo')
 
