@@ -37,7 +37,8 @@ assayNames(sce)[1] = "counts"
 
 CT = commandArgs()[6]
 
-df_grd = expand.grid(ncells = c(5, 8, 10, 20, 25, 40, 50, 75, 100, 150, 200, 300), CT = CT)
+# , 20, 25, 40, 50, 75, 100, 150, 200, 300
+df_grd = expand.grid(ncells = c(5, 8, 10), CT = CT)
 
 df_counts = lapply( seq(nrow(df_grd)), function(i){
 
