@@ -12,7 +12,7 @@
 # CELLS=('EN_L2_3_IT' 'EN_L3_5_IT_1' 'EN_L3_5_IT_2' 'EN_L3_5_IT_3' 'EN_L5_6_NP' 'EN_L6_CT' 'EN_L6_IT' 'EN_NF' 'IN_ADARB2' 'IN_LAMP5' 'IN_PVALB' 'IN_PVALB_CHC' 'IN_SST' 'IN_VIP' 'Oligo' 'OPC' 'Astro' 'Micro_PVM' 'CD8_T' 'PC' 'VLMC' 'Endo')
 
 # for CT in ${CELLS[@]}; do
-# 	bsub -q premium -R span[hosts=1] -W 12:00 -P acc_CommonMind -n 24 "cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0; ml purge; ml R/4.3.0; cat subsample_cells.R | Rscript --args $CT"
+# 	bsub -q premium -R span[hosts=1] -W 12:00 -P acc_CommonMind -n 24 "cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0; ml purge; ml R/4.3.0; cat subsample_cells.R | Rscript --args $CT $CT"
 # done
 
 
@@ -37,7 +37,7 @@ file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 
-CT = commandArgs()[6]
+CT = commandArgs()[7]
 
 # , 20, 25, 40, 50, 75, 100, 150, 200, 300
 df_grd = expand.grid(ncells = c(5, 8, 10), CT = CT)
