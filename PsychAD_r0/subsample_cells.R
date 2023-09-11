@@ -20,11 +20,13 @@
 
 # R script
 ##########
+suppressPackageStartupMessages({
 library(SingleCellExperiment)
 library(zellkonverter)
 library(dreamlet)
 library(ggplot2)
 library(DelayedArray)
+})
 
 # update block size for reading h5ad file from disk
 setAutoBlockSize(1e9)
@@ -77,7 +79,7 @@ df_counts = lapply( seq(nrow(df_grd)), function(i){
 df_counts = do.call(rbind, df_counts)
 
 # save results to file
-file = paset0("df_counts_", CT, ".tsv")
+file = paset0("/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/results/df_counts_", CT, ".tsv")
 write.table(df_counts, file=file, sep="\t", quote=FALSE, row.names=FALSE)
 
 # plot
