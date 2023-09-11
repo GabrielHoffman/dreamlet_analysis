@@ -5,7 +5,7 @@
 # How many genes are retained after subsampling cells
 
 # cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0
-# ml python git
+# ml git python gcc/11.2.0
 # git pull
 # R --vanilla
 # source("subsample_cells.R")
@@ -25,7 +25,7 @@ file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 
-df_grd = expand.grid(ncells = c(3, 5, 8, 10, 20, 25, 40, 50, 75, 100, 150, 200, 300),
+df_grd = expand.grid(ncells = c(5, 8, 10, 20, 25, 40, 50, 75, 100, 150, 200, 300),
 						CT = "Astro")
 
 df_counts = lapply( seq(nrow(df_grd)), function(i){
