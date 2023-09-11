@@ -4,6 +4,12 @@
 #
 # How many genes are retained after subsampling cells
 
+# cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0
+# ml python git
+# git pull
+# R --vanilla
+# source("subsample_cells.R")
+
 library(SingleCellExperiment)
 library(zellkonverter)
 library(dreamlet)
