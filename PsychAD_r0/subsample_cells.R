@@ -79,7 +79,7 @@ df_counts = lapply( seq(nrow(df_grd)), function(i){
 df_counts = do.call(rbind, df_counts)
 
 # save results to file
-file = paset0("/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/results/df_counts_", CT, ".tsv")
+file = paste0("/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/results/df_counts_", CT, ".tsv")
 write.table(df_counts, file=file, sep="\t", quote=FALSE, row.names=FALSE)
 
 # plot
