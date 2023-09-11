@@ -7,9 +7,19 @@
 # cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0
 # ml git python gcc/11.2.0
 # git pull
-# R --args Astro
-# source("subsample_cells.R")
 
+# Launch jobs in bash
+# CELLS=('EN_L2_3_IT' 'EN_L3_5_IT_1' 'EN_L3_5_IT_2' 'EN_L3_5_IT_3' 'EN_L5_6_NP' 'EN_L6_CT' 'EN_L6_IT' 'EN_NF' 'IN_ADARB2' 'IN_LAMP5' 'IN_PVALB' 'IN_PVALB_CHC' 'IN_SST' 'IN_VIP' 'Oligo' 'OPC' 'Astro' 'Micro_PVM' 'CD8_T' 'PC' 'VLMC' 'Endo')
+
+# for CT in ${CELLS[@]}; do
+# 	bsub -q premium -R span[hosts=1] -W 12:00 -P acc_CommonMind -n 24 "cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0; ml purge; ml R/4.3.0; cat subsample_cells.R | Rscript --args $CT"
+# done
+
+
+
+
+# R script
+##########
 library(SingleCellExperiment)
 library(zellkonverter)
 library(dreamlet)
@@ -71,6 +81,12 @@ write.table(df_counts, file=file, sep="\t", quote=FALSE, row.names=FALSE)
 
 # plot
 #######
+
+files = dir("./", pattern="df_counts_.*tsv", full.names=TRUE)
+df_counts = lapply(files, function(file){
+	read.table(file, header=TRUE)
+	})
+df_counts = do.call(rbind, df_counts)
 
 # ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Oligo', 'OPC', 'Astro', 'Micro_PVM', 'CD8_T', 'PC', 'VLMC','Endo')
 
