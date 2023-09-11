@@ -84,7 +84,9 @@ write.table(df_counts, file=file, sep="\t", quote=FALSE, row.names=FALSE)
 # plot
 #######
 
-# files = dir("./", pattern="df_counts_.*tsv", full.names=TRUE)
+# library(ggplot2)
+
+# files = dir("/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/results", pattern="df_counts_.*tsv", full.names=TRUE)
 # df_counts = lapply(files, function(file){
 # 	read.table(file, header=TRUE)
 # 	})
@@ -94,12 +96,12 @@ write.table(df_counts, file=file, sep="\t", quote=FALSE, row.names=FALSE)
 
 # df_counts$CT = factor(df_counts$CT, ctorder)
 
-# ymax = max(df_counts$ngenes) * 1.03
+# ymax = max(df_counts$ngenes) * 1.05
 
 # fig = ggplot(df_counts, aes(ncells, ngenes, color=CT)) +
 # 	geom_line() +
 # 	geom_point() +
-# 	theme_classic() +
+# 	theme_bw() +
 # 	theme(aspect.ratio=1, legend.position="none") +
 # 	facet_wrap(~ CT) +
 # 	scale_y_continuous(expand=c(0,0), limits=c(0, ymax)) +
@@ -107,8 +109,7 @@ write.table(df_counts, file=file, sep="\t", quote=FALSE, row.names=FALSE)
 # 	xlab("# of cells") +
 # 	ylab("# of genes passing filter")
 
-# ggsave(fig, file="ngenes_subsampling.pdf")
-
+# ggsave(fig, file="./ngenes_subsampling.pdf", height=9, width=9)
 
 
 
