@@ -681,12 +681,12 @@ df3 = inner_join(df, df2, by='assay') %>%
         inner_join(details(res.proc) %>% as_tibble) %>%
         mutate(assay = factor(assay, ctorder)) 
 
-fit_n.cells = lm(mean.vp ~ log10(sum.cells/n_retained), df3)#, weights=df3$n_retained)
+fit_n.cells = lm(mean.vp ~ log10(sum.cells/n_retain), df3)#, weights=df3$n_retain)
 # summary(fit_n.cells)
 pv = coef(summary(fit_n.cells))[2,4]
 pv = format(pv, digits=2)
 
-fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retained, mean.vp, color=assay, size=n_retained, label=assay)) +
+fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retain, mean.vp, color=assay, size=n_retain, label=assay)) +
   geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
   geom_point() +
   scale_x_log10() +
@@ -705,11 +705,11 @@ df3 = inner_join(df, df_de, by='assay') %>%
         inner_join(details(res.proc) %>% as_tibble) %>%
         mutate(assay = factor(assay, ctorder)) 
 
-fit_n.cells = lm(nDE ~ log10(sum.cells/n_retained), df3)
+fit_n.cells = lm(nDE ~ log10(sum.cells/n_retain), df3)
 pv = coef(summary(fit_n.cells))[2,4]
 pv = format(pv, digits=2)
 
-fig.nDE_ncells = ggplot(df3, aes(sum.cells/n_retained, nDE, color=assay, size=n_retained, label=assay)) +
+fig.nDE_ncells = ggplot(df3, aes(sum.cells/n_retain, nDE, color=assay, size=n_retain, label=assay)) +
   geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
   geom_point() +
   scale_x_log10() +
