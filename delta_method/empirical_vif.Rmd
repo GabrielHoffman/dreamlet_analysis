@@ -16,9 +16,12 @@ output:
 <!---
 
 cd /Users/gabrielhoffman/workspace/repos/dreamlet_analysis/delta_method
+# cd /hpc/users/hoffmg01/www/dreamlet_analysis/delta_method
 
+ml python git pandoc 
+ml gcc/11.2.0
+git pull 
 
-# laptop
 rmarkdown::render("empirical_vif.Rmd")
 
 
@@ -66,8 +69,54 @@ pb <- aggregateToPseudoBulk(sce,
 
 # compute weights
 weightsList <- pbWeights(sce,
-  sample_id = "ID",
   cluster_id = "cells", 
+  sample_id = "ID",
+  details=TRUE)
+
+# process expression to get genes with sufficient expression
+res.proc <- processAssay(pb, ~1)
+```
+
+# Nathan_NatImm_2021
+```{r Nathan}
+path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021/"
+file = paste0(path, "/Nathan_NatImm_2021.h5ad")
+sce = readH5AD(file, use_hdf5=TRUE)   
+
+# get only single-cell RNA-seq
+# rest is CITE-seq proteins
+only_rna = grep("prot", rownames(sce), invert=TRUE)
+
+# create variable that distinguishes cells from the same donor
+# but different batches
+sce$donor_batch = with(colData(sce), paste(donor, batch))
+sce$batch = factor(sce$batch)
+sce$season = factor(sce$season)
+sce$TB_status = factor(sce$TB_status, c("CONTROL", "CASE"))
+
+# sort cell clusters by name
+sce = sce[only_rna,sce$cluster_name != "NA"]
+colData(sce) = droplevels(colData(sce))
+tab = colData(sce) %>%
+  as_tibble %>%
+  group_by(cluster_ids, cluster_name) %>%
+  filter(row_number()==1) %>%
+  summarise(cluster_ids, cluster_name) %>%
+  arrange(as.numeric(gsub("C-", '', cluster_ids)))
+
+sce$cluster_name = factor(sce$cluster_name, unique(tab$cluster_name))
+sce$cluster_ids = factor(sce$cluster_ids, unique(tab$cluster_ids))
+
+# create pseudobulk 
+pb <- aggregateToPseudoBulk(sce,
+    assay = "counts",     
+    cluster_id = "cluster_name",  
+    sample_id = "donor_batch")
+
+# compute weights
+weightsList <- pbWeights(sce,
+  cluster_id = "cluster_name",
+  sample_id = "donor_batch", 
   details=TRUE)
 
 # process expression to get genes with sufficient expression
@@ -75,6 +124,30 @@ res.proc <- processAssay(pb, ~1)
 ```
 
 
+# PsychAD pr0
+```{r Nathan}
+folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
+file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
+sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
+assayNames(sce)[1] = "counts"
+sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
+
+# Create pseudo-bulk SingleCellExperiment
+pb = aggregateToPseudoBulk(sce,
+    assay = "counts", 
+    cluster_id = "subclass",
+    sample_id = "Channel",
+    BPPARAM = SnowParam(6))
+
+# compute weights
+weightsList <- pbWeights(sce,
+  cluster_id = "subclass", 
+  sample_id = "Channel",
+  details=TRUE)
+
+# process expression to get genes with sufficient expression
+res.proc <- processAssay(pb, ~1)
+```
 
 
 
