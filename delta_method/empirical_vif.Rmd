@@ -1,0 +1,96 @@
+---
+title: "Empirical estimates of variance inflation factors"
+subtitle: 'Examine 4 dataset'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+  toc: true
+  smart: false
+  self_contained: false
+---
+
+
+
+<!---
+
+cd /Users/gabrielhoffman/workspace/repos/dreamlet_analysis/delta_method
+
+
+# laptop
+rmarkdown::render("empirical_vif.Rmd")
+
+
+--->
+ 
+
+```{r knitr, echo=FALSE, message=FALSE}
+suppressPackageStartupMessages(library(knitr))
+options(xtable.type="html")
+
+knitr::opts_chunk$set(
+  echo=TRUE,
+  warning=FALSE,
+  message=TRUE,
+  error = FALSE,
+  tidy = FALSE,
+  cache = TRUE,
+  cache.lazy = FALSE,
+  dev = c("png", "pdf"), 
+  fig.width=7, fig.height=7)
+```
+
+```{r library, cache=FALSE}
+library(SingleCellExperiment)
+library(zellkonverter)
+library(ggplot2)
+library(dreamlet)
+library(DelayedArray)
+```
+
+# Kfoury_CancerCell_2021
+```{r Kfoury}
+setAutoBlockSize(1e9)
+
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021.h5ad"
+sce = readH5AD(file, use_hdf5=TRUE)   
+
+sce$cells = factor(sce$cells, sort(levels(sce$cells)))
+
+# create pseudobulk 
+pb <- aggregateToPseudoBulk(sce,
+    assay = "counts",     
+    cluster_id = "cells",  
+    sample_id = "ID")
+
+# compute weights
+weightsList <- pbWeights(sce,
+  sample_id = "ID",
+  cluster_id = "cells", 
+  details=TRUE)
+
+# process expression to get genes with sufficient expression
+res.proc <- processAssay(pb, ~1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
