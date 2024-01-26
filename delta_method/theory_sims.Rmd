@@ -1,0 +1,218 @@
+---
+title: "Delta approx. of variance of pseudobulk statistics"
+subtitle: 'Theory vs simulations'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+  toc: true
+  smart: false
+  self_contained: false
+---
+
+
+
+<!---
+
+cd /Users/gabrielhoffman/Dropbox/projects/dreamlet/theory_sims
+
+
+# laptop
+rmarkdown::render("theory_sims.Rmd")
+
+
+--->
+
+Perform simulations to test the theoretically derived sampling variance for the mean and variance of CPM and log CPM.  Note that the number of cells observed per sample is plotted on the x-axis on a log scale, and the variances are plotted on the y-axis on a log scale.
+
+We note that a constant prior count  of 0.05 is used for all cases here for simplicity.  This causes a small bias in the estimates of the mean values.  Dreamlet implements an adaptive prior count approach, so this is not an issue in real data.    
+
+```{r knitr, echo=FALSE, message=FALSE}
+library(ggplot2)
+suppressPackageStartupMessages(library(knitr))
+options(xtable.type="html")
+
+knitr::opts_chunk$set(
+  echo=TRUE,
+  warning=FALSE,
+  message=TRUE,
+  error = FALSE,
+  tidy = FALSE,
+  cache = TRUE,
+  cache.lazy = FALSE,
+  dev = c("png", "pdf"), 
+  fig.width=7, fig.height=7)
+
+# options(markdown.HTML.stylesheet = 'css/custom.css')
+```
+
+```{r msims, fig.width=5, fig.height=5}
+library(tidyverse)
+library(purrr)
+library(parallel)
+# lib.size = rep(2000, 10000)
+
+lib.size = matrix(0, nrow=10000, ncol=3)
+lib.size[,1] = runif(10000, 1000, 1000)
+lib.size[,2] = runif(10000, 5000, 5000)
+lib.size[,3] = runif(10000, 15000, 15000)
+
+# Simulate prop
+# mu = 0.001
+# sigmaSq = 1e-7
+mu = 0.001
+sigmaSq = 2e-7
+alpha = mu^2 / sigmaSq
+beta = mu / sigmaSq
+
+# mu *5000
+
+prop = rgamma(length(lib.size), shape = alpha, rate = beta)
+hist(prop, main="Distribution of expression fractions", xlim=c(0, max(prop)))
+
+# cells
+df = mclapply(c(3,5,7, seq(10, 150, by=15), seq(200, 800, by=50), 1000), function(nc){
+	# replicates
+	map_df(seq(1000), function(repl){
+		# Donor
+		map_df(seq(3), function(d){
+			i = sample.int(nrow(lib.size), nc)
+			x = rpois(length(i), prop[i]*lib.size[i,d])
+
+			tibble(ncells = nc, 
+				Repl = repl, 
+				Donor = factor(lib.size[1,d], levels=lib.size[1,]), 
+				x = x, 
+				lib.size = lib.size[i,d])
+		})
+	})
+}, mc.cores=4)
+df = do.call(rbind, df)
+ 
+# summary for each ncells and Repl
+df2 = df %>%
+	group_by(ncells, Repl, Donor) %>%
+	summarize(Counts = sum(x) + .05, 
+			mean.lib.size = mean(lib.size), 
+			zeta = mean(lib.size^2),
+			per.cell.cpm = mean((x+0.05) / lib.size)*1e6) %>%
+	group_by(ncells, Repl, Donor) %>%
+	summarize(sum = sum(Counts),
+				mu.cpm = mean(Counts / (ncells*mean.lib.size) *1e6),
+				mu.lcpm = mean(log(Counts / (ncells*mean.lib.size) *1e6)),
+				mean.lib.size = mean.lib.size, 
+				zeta = zeta, 
+				per.cell.cpm = mean(per.cell.cpm)) 
+
+# average over replicates
+df3 = df2 %>% 
+		group_by(ncells, Donor) %>%
+		summarize( v.sum = var(sum),
+			mu.cpm2 = mean(mu.cpm),
+			v.cpm2 = var(mu.cpm),
+			mu.lcpm2 = mean(mu.lcpm),
+			v.lcpm2 = var(mu.lcpm),
+			mean.lib.size = mean(mean.lib.size),
+			zeta = mean(zeta),
+			counts = mean(sum), 
+			per.cell.cpm = mean(per.cell.cpm))
+```
+
+# Plots
+Black dots indicate values estimated from simulation. Red lines indicate values predicted given the true parameter value. Green lines indicate values predicted given observed counts, but using true values for `sigmaSq`
+```{r plots, cache=FALSE, fig.height=3, fig.width=8}
+
+thm = theme_bw() +
+	theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) 
+
+ggplot(df3, aes(ncells, counts)) +
+	geom_point(size=2) +
+	thm +
+	geom_line(aes(ncells, mu*ncells*mean.lib.size), col="red", linetype="solid", size=1.2) +
+	facet_wrap(~ Donor) +
+	xlab("Cells per sample") +
+	ylab("mean(Counts)") +
+	ggtitle("mean(Counts)") +
+	scale_y_log10() + 
+	scale_x_log10()
+
+ggplot(df3, aes(ncells, v.sum)) +
+	geom_point(size=2) +
+	thm +
+	geom_line(aes(ncells, ncells*(mu*mean.lib.size + sigmaSq*zeta)), col="red", linetype="solid", size=1.2) +
+	thm +
+	geom_line(aes(ncells, ncells*(counts/ncells + sigmaSq*zeta)), col="green", linetype="dashed", size=1.2) +
+	facet_wrap(~ Donor) +
+	ggtitle("var(Counts)") +
+	ylab("var(Counts)") +
+	xlab("Cells per sample") +
+	scale_y_log10() + 
+	scale_x_log10()
+
+ggplot(df3, aes(ncells, mu.cpm2)) +
+	geom_point(size=2) +
+	thm +
+	geom_hline(yintercept = mu*1e6, linetype="solid", col="red", size=1.2) +
+	facet_wrap(~ Donor) +
+	ggtitle("mean(CPM)") +
+	ylab("mean(CPM)") +
+	xlab("Cells per sample") +
+	ylim(mu*0.9e6, mu*1.1e6) +
+	scale_x_log10()
+
+df3 %>%
+	mutate(mu.hat = counts / (ncells*mean.lib.size)) %>%
+	ggplot(aes(ncells, v.cpm2)) +
+	geom_point(size=2) +
+	thm +
+	geom_line(aes(ncells, 1e12*(mu + sigmaSq*zeta/mean.lib.size)/(mean.lib.size*ncells)), linetype="solid", col="red", size=1.2) +
+	geom_line(aes(ncells, 1e12*(mu.hat + sigmaSq*zeta/mean.lib.size)/(mean.lib.size*ncells)), linetype="dashed", col="green", size=1.2)  +
+	facet_wrap(~ Donor) +
+	ggtitle("var(CPM)") +
+	ylab("var(CPM)") +
+	xlab("Cells per sample") +
+	scale_y_log10() + 
+	scale_x_log10()
+
+rng = range(c(df3$mu.lcpm2, log(mu) + log(1e6)))
+ggplot(df3, aes(ncells, mu.lcpm2)) +
+	geom_point(size=2) +
+	thm +
+	geom_hline(yintercept = log(mu) + log(1e6), linetype="solid", col="red", size=1.2)  +
+	facet_wrap(~ Donor) +
+	ggtitle("mean(log CPM)") +
+	ylab("mean(log CPM)") +
+	xlab("Cells per sample") +
+	scale_y_log10(limits=rng) +
+	scale_x_log10()
+
+ggplot(df3, aes(ncells, v.lcpm2)) +
+	geom_point(size=2) +
+	thm +
+	geom_line(aes(ncells, 1/(mu*ncells*mean.lib.size) * (1 + sigmaSq*zeta/(mu*mean.lib.size))), color="red", size=1.2, linetype="solid") +
+
+	geom_line(aes(ncells, 1/(counts) * (1 + sigmaSq*zeta/(counts/ncells))), color="green", size=1.2, linetype="dashed") +
+	facet_wrap(~ Donor) +
+	ggtitle("var(log CPM)")  +
+	ylab("var(log CPM)") +
+	xlab("Cells per sample") +
+	scale_y_log10() + 
+	scale_x_log10()
+
+ggplot(df3,aes(ncells, v.lcpm2 * counts)) +
+	geom_point(size=2) +
+	thm +
+	geom_line(aes(ncells, (1 + sigmaSq*zeta/(mu*mean.lib.size))), color="red", size=1.2, linetype="solid") +
+	geom_line(aes(ncells, (1 + sigmaSq*zeta/(counts/ncells))), color="green", size=1.2, linetype="dashed") +
+	ylab("Variance inflation") +
+	xlab("Cells per sample") +
+	facet_wrap(~ Donor) +
+	scale_x_log10() +
+	scale_y_continuous(limits=c(1, NA))
+```
+
+
+
+
+
