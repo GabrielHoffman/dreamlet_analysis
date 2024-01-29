@@ -22,6 +22,8 @@ ml python git pandoc
 ml gcc/11.2.0
 git pull 
 
+# rm -rf empirical_vif_cache/ empirical_vif_files/
+
 rmarkdown::render("empirical_vif.Rmd")
 
 
@@ -57,10 +59,11 @@ library(tidyverse)
 ```{r Kfoury}
 setAutoBlockSize(1e9)
 
-file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021.h5ad"
-sce = readH5AD(file, use_hdf5=FALSE)   
+# file <- "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021.h5ad"
+file <- "~/Downloads/Kfoury_CancerCell_2021.h5ad"
+sce <- readH5AD(file, use_hdf5=FALSE)   
 
-sce$cells = factor(sce$cells, sort(levels(sce$cells)))
+sce$cells <- factor(sce$cells, sort(levels(sce$cells)))
 
 # create pseudobulk 
 pb <- aggregateToPseudoBulk(sce,
@@ -68,21 +71,24 @@ pb <- aggregateToPseudoBulk(sce,
     cluster_id = "cells",  
     sample_id = "ID")
 
+# get expressed genes for each cell type
+geneList <- getExprGeneNames(pb)
+
 # compute weights
 weightsList <- pbWeights(sce,
   cluster_id = "cells", 
   sample_id = "ID",
+  geneList = geneList,
   details=TRUE)
 
 # process expression to get genes with sufficient expression
 res.proc <- processAssays(pb, ~1)
 
 # extract results
-df = lapply(names(weightsList), function(x){
-	attr(weightsList[[x]], "details") %>%
-		filter( Gene %in% rownames(res.proc[[x]]))
+df <- lapply(names(weightsList), function(x){
+	attr(weightsList[[x]], "details") 
 })
-df = bind_rows(df) 
+df <- bind_rows(df) 
 ```
 
 ## plots
@@ -114,11 +120,51 @@ ggplot(df, aes(assay, sigSq.hat)) +
 	scale_y_log10() + 
 	ylab("sigSq.hat") +
 	coord_flip()
+
+df %>%
+	select(Gene, assay, sigSq.hat, sigSq.mle) %>%
+	pivot_longer(cols=c("sigSq.mle", "sigSq.hat")) %>%
+	ggplot(aes(assay, value, color=name)) +
+		# geom_violin(scale="width", color=NA) +	
+		geom_boxplot(width=0.1, fill="grey70") +
+		theme_classic() +
+		theme(aspect.ratio=1) +
+		scale_y_log10() + 
+		coord_flip()
 ```
 
 
 
+ggplot(df, aes(sigSq.mle, sigSq.hat)) +
+	geom_point() +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_x_log10() + 
+	scale_y_log10() 
 
+
+df2 = df %>%
+	select(Gene, assay, sigSq.mle, ncell)  %>%
+	filter(assay == "Erythroid") %>%
+	mutate(sigSq.hat = squeezeVar(sigSq.mle + 1e-9, pmax(1, ncell - 1), robust=FALSE)$var.post)
+
+fig =  df2 %>%
+	pivot_longer(cols=c("sigSq.mle", "sigSq.hat")) %>%
+	ggplot(aes(assay, value, color=name)) +
+		# geom_violin(scale="width", color=NA) +	
+		geom_boxplot(width=0.1, fill="grey70") +
+		theme_classic() +
+		theme(aspect.ratio=1) +
+		scale_y_log10() + 
+		coord_flip() 
+
+ggsave(fig, file="~/www/test.png")
+
+
+a = squeezeVar(df2$sigSq.hat + 1e-10, 16, robust=FALSE)$var.post
+
+
+keepList = getExprGenes(pb)
 
 
 # Nathan_NatImm_2021
@@ -157,10 +203,14 @@ pb <- aggregateToPseudoBulk(sce,
     cluster_id = "cluster_name",  
     sample_id = "donor_batch")
 
+# get expressed genes for each cell type
+geneList = getExprGeneNames(pb)
+
 # compute weights
 weightsList <- pbWeights(sce,
   cluster_id = "cluster_name",
-  sample_id = "donor_batch", 
+  sample_id = "donor_batch",
+  geneList = geneList, 
   details=TRUE)
 
 # process expression to get genes with sufficient expression
@@ -168,8 +218,7 @@ res.proc <- processAssays(pb, ~1)
 
 # extract results
 df = lapply(names(weightsList), function(x){
-	attr(weightsList[[x]], "details") %>%
-		filter( Gene %in% rownames(res.proc[[x]]))
+	attr(weightsList[[x]], "details") 
 })
 df = bind_rows(df) 
 ```
@@ -203,6 +252,17 @@ ggplot(df, aes(assay, sigSq.hat)) +
 	scale_y_log10() + 
 	ylab("sigSq.hat") +
 	coord_flip()
+
+df %>%
+	select(Gene, assay, sigSq.hat, sigSq.mle) %>%
+	pivot_longer(cols=c("sigSq.mle", "sigSq.hat")) %>%
+	ggplot(aes(assay, value, color=name)) +
+		# geom_violin(scale="width", color=NA) +	
+		geom_boxplot(width=0.1, fill="grey70") +
+		theme_classic() +
+		theme(aspect.ratio=1) +
+		scale_y_log10() + 
+		coord_flip()
 ```
 
 ```{r exit, cache=FALSE}
@@ -224,10 +284,14 @@ pb = aggregateToPseudoBulk(sce,
     sample_id = "Channel",
     BPPARAM = SnowParam(6))
 
+# get expressed genes for each cell type
+geneList = getExprGeneNames(pb)
+
 # compute weights
 weightsList <- pbWeights(sce,
   cluster_id = "subclass", 
   sample_id = "Channel",
+  geneList = geneList,
   details=TRUE)
 
 # process expression to get genes with sufficient expression
@@ -235,8 +299,7 @@ res.proc <- processAssays(pb, ~1)
 
 # extract results
 df = lapply(names(weightsList), function(x){
-	attr(weightsList[[x]], "details") %>%
-		filter( Gene %in% rownames(res.proc[[x]]))
+	attr(weightsList[[x]], "details")
 })
 df = bind_rows(df) 
 ```
@@ -271,6 +334,17 @@ ggplot(df, aes(assay, sigSq.hat)) +
 	scale_y_log10() + 
 	ylab("sigSq.hat") +
 	coord_flip()
+
+df %>%
+	select(Gene, assay, sigSq.hat, sigSq.mle) %>%
+	pivot_longer(cols=c("sigSq.mle", "sigSq.hat")) %>%
+	ggplot(aes(assay, value, color=name)) +
+		# geom_violin(scale="width", color=NA) +	
+		geom_boxplot(width=0.1, fill="grey70") +
+		theme_classic() +
+		theme(aspect.ratio=1) +
+		scale_y_log10() + 
+		coord_flip()
 ```
 
 
