@@ -213,6 +213,33 @@ ggplot(df3,aes(ncells, v.lcpm2 * counts)) +
 ```
 
 
+```{r plots.vif, cache=FALSE, fig.height=3, fig.width=8}
+# plot VIF as a function of lib and sigmaSq
+df4 = expand.grid(sigmaSq = seq(.1,100, length.out=1000)*1e-7, 
+								mean.lib.size = c(1000, 5000, 15000))
+df4$zeta = df4$mean.lib.size^2
+df4$vif = with(df4, (1 + sigmaSq*zeta/(mu*mean.lib.size)))
+
+ggplot(df4,aes(sigmaSq, vif)) +
+	geom_line(color="red", size=1.2, linetype="solid") +
+	thm +
+	facet_wrap(~ mean.lib.size)+
+	# scale_y_continuous(limits=c(0, NA))  +
+	scale_x_log10() +
+	scale_y_log10() + 
+	# geom_hline(yintercept=1, color="grey30", linetype="dashed") +
+	ylab("Variance inflation factor (log10)")
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
