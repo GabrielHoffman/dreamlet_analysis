@@ -50,6 +50,7 @@ library(zellkonverter)
 library(ggplot2)
 library(dreamlet)
 library(DelayedArray)
+library(tidyverse)
 ```
 
 # Kfoury_CancerCell_2021
@@ -75,7 +76,40 @@ weightsList <- pbWeights(sce,
 
 # process expression to get genes with sufficient expression
 res.proc <- processAssays(pb, ~1)
+
+# extract results
+df = lapply(names(weightsList), function(x){
+	attr(weightsList[[x]], "details") %>%
+		filter( Gene %in% rownames(res.proc[[x]]))
+})
+df = bind_rows(df) 
 ```
+
+## plots
+```{r Kfoury.plots}
+ggplot(df, aes(assay, vif)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	geom_hline(yintercept=1, color="red", linetype="dashed") +
+	ylab("Variance Inflation Factor") +
+	coord_flip()
+
+ggplot(df, aes(assay, sigSq.hat)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	ylab("sigSq.hat") +
+	coord_flip()
+```
+
+
+
+
 
 # Nathan_NatImm_2021
 ```{r Nathan}
@@ -121,6 +155,35 @@ weightsList <- pbWeights(sce,
 
 # process expression to get genes with sufficient expression
 res.proc <- processAssays(pb, ~1)
+
+# extract results
+df = lapply(names(weightsList), function(x){
+	attr(weightsList[[x]], "details") %>%
+		filter( Gene %in% rownames(res.proc[[x]]))
+})
+df = bind_rows(df) 
+```
+
+## plots
+```{r Nathan.plots}
+ggplot(df, aes(assay, vif)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	geom_hline(yintercept=1, color="red", linetype="dashed") +
+	ylab("Variance Inflation Factor") +
+	coord_flip()
+
+ggplot(df, aes(assay, sigSq.hat)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	ylab("sigSq.hat") +
+	coord_flip()
 ```
 
 
@@ -147,8 +210,37 @@ weightsList <- pbWeights(sce,
 
 # process expression to get genes with sufficient expression
 res.proc <- processAssays(pb, ~1)
+
+# extract results
+df = lapply(names(weightsList), function(x){
+	attr(weightsList[[x]], "details") %>%
+		filter( Gene %in% rownames(res.proc[[x]]))
+})
+df = bind_rows(df) 
 ```
 
+
+## plots
+```{r PsychAD.plots}
+ggplot(df, aes(assay, vif)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	geom_hline(yintercept=1, color="red", linetype="dashed") +
+	ylab("Variance Inflation Factor") +
+	coord_flip()
+
+ggplot(df, aes(assay, sigSq.hat)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	ylab("sigSq.hat") +
+	coord_flip()
+```
 
 
 
