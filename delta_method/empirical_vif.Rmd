@@ -58,7 +58,7 @@ library(tidyverse)
 setAutoBlockSize(1e9)
 
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021.h5ad"
-sce = readH5AD(file, use_hdf5=TRUE)   
+sce = readH5AD(file, use_hdf5=FALSE)   
 
 sce$cells = factor(sce$cells, sort(levels(sce$cells)))
 
@@ -97,6 +97,15 @@ ggplot(df, aes(assay, vif)) +
 	ylab("Variance Inflation Factor") +
 	coord_flip()
 
+ggplot(df, aes(assay, sigSq.mle)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	ylab("sigSq.mle") +
+	coord_flip()
+
 ggplot(df, aes(assay, sigSq.hat)) +
 	geom_violin(scale="width") +	
 	geom_boxplot(width=0.1, fill="grey70") +
@@ -111,11 +120,12 @@ ggplot(df, aes(assay, sigSq.hat)) +
 
 
 
+
 # Nathan_NatImm_2021
 ```{r Nathan}
 path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/Nathan_NatImm_2021/"
 file = paste0(path, "/Nathan_NatImm_2021.h5ad")
-sce = readH5AD(file, use_hdf5=TRUE)   
+sce = readH5AD(file, use_hdf5=FALSE)   
 
 # get only single-cell RNA-seq
 # rest is CITE-seq proteins
@@ -176,6 +186,15 @@ ggplot(df, aes(assay, vif)) +
 	ylab("Variance Inflation Factor") +
 	coord_flip()
 
+ggplot(df, aes(assay, sigSq.mle)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	ylab("sigSq.mle") +
+	coord_flip()
+
 ggplot(df, aes(assay, sigSq.hat)) +
 	geom_violin(scale="width") +	
 	geom_boxplot(width=0.1, fill="grey70") +
@@ -186,6 +205,9 @@ ggplot(df, aes(assay, sigSq.hat)) +
 	coord_flip()
 ```
 
+```{r exit, cache=FALSE}
+knitr::knit_exit(1)
+```
 
 # PsychAD pr0
 ```{r PsychAD}
@@ -230,6 +252,15 @@ ggplot(df, aes(assay, vif)) +
 	scale_y_log10() + 
 	geom_hline(yintercept=1, color="red", linetype="dashed") +
 	ylab("Variance Inflation Factor") +
+	coord_flip()
+
+ggplot(df, aes(assay, sigSq.mle)) +
+	geom_violin(scale="width") +	
+	geom_boxplot(width=0.1, fill="grey70") +
+	theme_classic() +
+	theme(aspect.ratio=1) +
+	scale_y_log10() + 
+	ylab("sigSq.mle") +
 	coord_flip()
 
 ggplot(df, aes(assay, sigSq.hat)) +
