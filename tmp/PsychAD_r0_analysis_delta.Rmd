@@ -150,18 +150,18 @@ geneList = getExprGeneNames(pb)
 method = "dreamlet_delta"
 W.list <- switch(method, 
         "dreamlet_delta" = pbWeights( sce, 
-                        sample_id = "subclass", 
-                        cluster_id = "Channel",
+                        cluster_id = "subclass", 
+                        sample_id = "Channel",
                         details = TRUE, 
                         method = "delta", 
                         geneList = geneList), 
         "dreamlet_ncells" = pbWeights( sce, 
-                        sample_id = "subclass", 
-                        cluster_id = "Channel", 
+                        cluster_id = "subclass", 
+                        sample_id = "Channel", 
                         method = "ncells"), 
         "dreamlet_none" = {w = pbWeights( sce, 
-                        sample_id = "subclass", 
-                        cluster_id = "Channel", 
+                        cluster_id = "subclass", 
+                        sample_id = "Channel",
                         method = "ncells");
             lapply(w, function(x){x[] = 1; x})})
 
