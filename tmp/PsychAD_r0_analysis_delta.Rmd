@@ -142,14 +142,19 @@ pb = aggregateToPseudoBulk(sce,
     assay = "counts", 
     cluster_id = "subclass",
     sample_id = "Channel",
-    BPPARAM = SnowParam(6))
+    BPPARAM = SnowParam(3))
+
+# Gene expressed genes for each cell type
+geneList = getExprGeneNames(pb)
 
 method = "dreamlet_delta"
 W.list <- switch(method, 
         "dreamlet_delta" = pbWeights( sce, 
                         sample_id = "subclass", 
-                        cluster_id = "Channel", 
-                        method = "delta"), 
+                        cluster_id = "Channel",
+                        details = TRUE, 
+                        method = "delta", 
+                        geneList = geneList), 
         "dreamlet_ncells" = pbWeights( sce, 
                         sample_id = "subclass", 
                         cluster_id = "Channel", 
@@ -291,7 +296,7 @@ sort(table(df$dx), decreasing=TRUE) %>% kbl() %>% kable_styling(full_width=FALSE
 form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
  
 res.proc = processAssays( pb, form, 
-  BPPARAM = SnowParam(12), weightsList = W.list)
+  BPPARAM = SnowParam(3), weightsList = W.list)
 ```
 
 ```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE} 
@@ -303,7 +308,7 @@ plotVoom( res.proc, ncol=4, assays=ctorder ) + theme_classic()
 ```{r varPart}
 form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
  
-res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(12))
+res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(3))
 ```
 
 ```{r vp.plot, fig.height=15, fig.width=10}
@@ -493,7 +498,7 @@ fig + theme(panel.grid.minor = element_blank(),
 ```{r dreamlet}
 form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + Dx
 
-fit = dreamlet( res.proc, form, BPPARAM = SnowParam(12))
+fit = dreamlet( res.proc, form, BPPARAM = SnowParam(3))
 ```
 
 ## Volcano
