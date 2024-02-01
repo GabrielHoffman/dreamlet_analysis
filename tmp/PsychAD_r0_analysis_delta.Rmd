@@ -168,6 +168,58 @@ W.list <- switch(method,
 W.list[[1]][1:3, 1:3]
 ```
 
+
+## plots
+```{r vif}
+# extract results
+df <- lapply(names(W.list), function(x){
+  attr(W.list[[x]], "details") 
+})
+df <- bind_rows(df) 
+
+ggplot(df, aes(assay, vif)) +
+  geom_violin(scale="width") +  
+  geom_boxplot(width=0.1, fill="grey70") +
+  theme_classic() +
+  theme(aspect.ratio=1) +
+  scale_y_log10() + 
+  geom_hline(yintercept=1, color="red", linetype="dashed") +
+  ylab("Variance Inflation Factor") +
+  coord_flip()
+
+ggplot(df, aes(assay, sigSq.mle)) +
+  geom_violin(scale="width") +  
+  geom_boxplot(width=0.1, fill="grey70") +
+  theme_classic() +
+  theme(aspect.ratio=1) +
+  scale_y_log10() + 
+  ylab("sigSq.mle") +
+  coord_flip()
+
+ggplot(df, aes(assay, sigSq.hat)) +
+  geom_violin(scale="width") +  
+  geom_boxplot(width=0.1, fill="grey70") +
+  theme_classic() +
+  theme(aspect.ratio=1) +
+  scale_y_log10() + 
+  ylab("sigSq.hat") +
+  coord_flip()
+
+df %>%
+  select(Gene, assay, sigSq.hat, sigSq.mle) %>%
+  pivot_longer(cols=c("sigSq.mle", "sigSq.hat")) %>%
+  ggplot(aes(assay, value, color=name)) +
+    # geom_violin(scale="width", color=NA) +  
+    geom_boxplot(width=0.1, fill="grey70") +
+    theme_classic() +
+    theme(aspect.ratio=2) +
+    scale_y_log10() + 
+    coord_flip()
+```
+
+
+
+
 ```{r write.pb, eval=FALSE}
 folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
 file = paste0(folder, "PsychAD_r0_Dec_28_2022_pseudobulk.RDS")

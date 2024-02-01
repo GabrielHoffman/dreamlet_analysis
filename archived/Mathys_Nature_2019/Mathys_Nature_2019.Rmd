@@ -13,7 +13,7 @@ output:
 
 <!--- 
 
-cd /hpc/users/hoffmg01/work/eval_methods/dreamlet
+cd /sc/arion/projects/CommonMind/hoffman/eval_methods/dreamlet
 ml python git
 R --vanilla
 
@@ -187,10 +187,6 @@ res.dl = dreamlet(res.proc, form,
 ## Volcano plots 
 ```{r volcano, fig.width=8, fig.height=7}
 plotVolcano(res.dl, coef='DxAD')
-```
-
-```{r resTable}
-
 ```
 
 

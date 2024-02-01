@@ -64,7 +64,7 @@ pb <- aggregateToPseudoBulk(sce,
     sample_id = "ID")
 
 # Gene expressed genes for each cell type
-geneList = getExprGeneNames(pb)
+geneList = getExprGeneNames(pb, min.count=5)
 
 # compute weights
 W.list <- pbWeights( sce, 
