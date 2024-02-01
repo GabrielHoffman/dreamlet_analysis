@@ -168,6 +168,7 @@ form = ~ (1|subject.id) + (1|Status) + (1|subject.status)
 res.proc = processAssays( pb, 
                           form,  
                           min.count=5,
+                          min.cells = 10,
                           BPPARAM = SnowParam(6), 
                           weightsList = W.list)
 ```

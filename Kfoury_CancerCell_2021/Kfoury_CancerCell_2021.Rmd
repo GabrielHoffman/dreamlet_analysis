@@ -106,32 +106,33 @@ pb$Status = factor(pb$Status, types)
 form = ~ (1|subject.id) + (1|Status) + (1|subject.status) 
 res.proc = processAssays( pb, 
                           form,  
-                          min.count=5,
+                          min.count = 5,
+                          min.cells = 10,
                           BPPARAM = SnowParam(6))
 ```
 
 ### Show details of processing
 ```{r details}
-details(res.proc)
+details(res.proc) 
 ```
 
 ### Show voom-style mean-variance trends
 ```{r voom.plot, fig.height=18, fig.width=12}
 # show voom plot for each cell clusters  
-plotVoom( res.proc, ncol=4)
+plotVoom( res.proc, ncol=4) 
 ```
 
 
 # Variance partitioning analysis
 ```{r vp}
 # run variance partitioning analysis
-form = ~ (1|subject.id) + (1|Status) + (1|subject.status) 
+form = ~ (1|subject.id) + (1|Status) + (1|subject.status)  
 vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
 
 ```{r vp.plot, fig.height=20, fig.width=12}
 # Summarize variance fractions genome-wide for each cell type
-plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)  
+plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)   
 ```
 
 # dreamlet analysis
