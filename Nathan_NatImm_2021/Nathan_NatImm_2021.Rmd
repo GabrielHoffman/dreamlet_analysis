@@ -150,10 +150,11 @@ plotCorrMatrix(C)
 
 ## Process pseudobulk data to estimate precision weights
 ```{r voom}
-form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
-res.proc = processAssays( pb, form, 
-  min.samples = 10,
-  BPPARAM=SnowParam(12, progressbar=TRUE))
+form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + scale(age) + I(scale(age^2)) + scale(prop_NAT)
+res.proc = processAssays( pb, form,
+              min.samples = 10,
+              assays = assayNames(pb), 
+              BPPARAM = SnowParam(12))
 ```
 
 #  min.count = 5
@@ -174,7 +175,7 @@ Note that variation across donors here indicates technical variation since the m
 ```{r run.vp}
 form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT 
 vp.lst = fitVarPart( res.proc, form, 
-  BPPARAM=SnowParam(12, progressbar=TRUE)) 
+            BPPARAM=SnowParam(12)) 
 ```
 
 ```{r plot.vp, fig.width=8, fig.height=16}

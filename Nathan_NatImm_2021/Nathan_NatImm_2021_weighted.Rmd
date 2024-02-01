@@ -204,7 +204,7 @@ plotCorrMatrix(C)
 
 ## Process pseudobulk data to estimate precision weights
 ```{r voom}
-form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
+form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + scale(age) + I(scale(age^2)) + scale(prop_NAT)
 res.proc = processAssays( pb, form, 
               min.samples = 10,
               BPPARAM = SnowParam(12, progressbar=TRUE), 
