@@ -134,10 +134,7 @@ fig.cells_subject
 
 
 
-```{r combineData, message=TRUE}
-# update block size for reading h5ad file from disk
-setAutoBlockSize(1e9)
- 
+```{r combineData, message=TRUE} 
 # Create pseudo-bulk SingleCellExperiment
 pb = aggregateToPseudoBulk(sce,
     assay = "counts", 
@@ -148,23 +145,13 @@ pb = aggregateToPseudoBulk(sce,
 # Gene expressed genes for each cell type
 geneList = getExprGeneNames(pb)
 
-method = "dreamlet_delta"
-W.list <- switch(method, 
-        "dreamlet_delta" = pbWeights( sce, 
-                        cluster_id = "subclass", 
-                        sample_id = "Channel",
-                        details = TRUE, 
-                        method = "delta", 
-                        geneList = geneList), 
-        "dreamlet_ncells" = pbWeights( sce, 
-                        cluster_id = "subclass", 
-                        sample_id = "Channel", 
-                        method = "ncells"), 
-        "dreamlet_none" = {w = pbWeights( sce, 
-                        cluster_id = "subclass", 
-                        sample_id = "Channel",
-                        method = "ncells");
-            lapply(w, function(x){x[] = 1; x})})
+# compute weights
+W.list <- pbWeights( sce, 
+                    cluster_id = "subclass", 
+                    sample_id = "Channel",
+                    details = TRUE, 
+                    method = "delta", 
+                    geneList = geneList)
 
 W.list[[1]][1:3, 1:3]
 ```

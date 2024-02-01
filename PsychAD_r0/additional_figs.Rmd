@@ -20,13 +20,14 @@ fit_n.cells = lm(nGenes ~ log10(sum.cells/n_retain), df3)
 pv = coef(summary(fit_n.cells))[2,4]
 pv = format(pv, digits=2)
 
-fig1 = ggplot(df3, aes(sum.cells/n_retain, nGenes, color=assay, size=n_retain)) +
+fig1 = ggplot(df3, aes(sum.cells/n_retain, nGenes, color=assay, size=n_retain, label=assay)) +
 	geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
 	geom_point() +
 	scale_x_log10() +
 	theme_classic() +
 	theme(aspect.ratio=1) + 
-	scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) +
+	scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) + 
+	geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
 	xlab("Mean # cells per Subject") +
 	ylab("# genes expressed")
 
@@ -34,13 +35,14 @@ fit_n.cells = lm(nDE ~ log10(sum.cells/n_retain), df3)
 pv = coef(summary(fit_n.cells))[2,4]
 pv = format(pv, digits=2)
 
-fig2 = ggplot(df3, aes(sum.cells/n_retain, nDE, color=assay, size=n_retain)) +
+fig2 = ggplot(df3, aes(sum.cells/n_retain, nDE, color=assay, size=n_retain, label=assay)) +
 	geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
 	geom_point() +
 	scale_x_log10() +
 	theme_classic() +
 	theme(aspect.ratio=1) + 
 	scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) +
+	geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
 	xlab("Mean # cells per Subject") +
 	ylab("# differentially expressed genes")
 

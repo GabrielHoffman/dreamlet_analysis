@@ -572,7 +572,7 @@ fig_de_count = ggplot(df_de, aes(2, assay)) +
         scale_color_viridis(name = "% genes\npassing FDR", lim=c(0, NA)) +
         scale_size_continuous(name = "# genes", breaks=c(1, 4, 8, 12, 16)*1000) +
         theme_classic() +
-        theme(aspect.ratio=nrow(df_de), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
+        theme(aspect.ratio=as.numeric(nrow(df_de)), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
         xlab('') + ylab('') 
 fig_de_count
 ```
@@ -615,6 +615,9 @@ fig_batch_GC = df_vp %>%
     coord_flip() 
 
 tab = topTable(fit, coef='DxAD', number=Inf)
+
+file = "./topTable_PsychAD_r0.tsv"
+write.table(tab, file, quote=FALSE, sep='\t', row.names=FALSE)
 
 df_vp = merge(as.data.frame(res.vp), tab, by.x=c("assay", "gene"), by.y=c("assay", "ID") )
 

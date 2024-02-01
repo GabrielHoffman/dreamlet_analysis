@@ -1,6 +1,6 @@
 
 cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0
-ml python git
+ml python git gcc/11.2.0
 git pull
 R --vanilla
 
@@ -13,6 +13,17 @@ system("git pull"); rmarkdown::render("write_pb_for_qtl.Rmd");
 # https://hoffmg01.hpc.mssm.edu/dreamlet_analysis/
 
 # rm -rf PsychAD_r0_analysis_cache
+
+
+
+
+saveRDS(file="PsychAD_dreamlet.RDS", fit)
+
+
+
+Code to evaluate similarity for samples from same versus different donors: https://gist.github.com/GabrielHoffman/f3610cba73f3d6963231d397fc5fa275
+
+
 
 
 
