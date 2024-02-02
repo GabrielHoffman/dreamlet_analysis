@@ -201,7 +201,7 @@ plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)
 ```{r dreamlet}
 # Differential expression analysis for Status within each cell type,
 # evaluated on the voom normalized data 
-form = ~ 0 + Status + (1|subject.id) + (1|subject.status) 
+form = ~ 0 + Status + (1|subject.id) 
 
 # Specify contrasts to compare regression coefficients
 # For example, 

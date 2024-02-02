@@ -224,7 +224,7 @@ plotVoom( res.proc, ncol=4, alpha=.1)
 # Variance partitioning analysis
 Note that variation across donors here indicates technical variation since the multiple samples from the same donor are technical replicates.
 ```{r run.vp}
-form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT 
+form = ~ (1|TB_status) + (1|donor) + (1|batch) + (1|season) + (1|sex) + scale(age) + I(scale(age)^2) + scale(prop_NAT)
 vp.lst = fitVarPart( res.proc, form, 
   BPPARAM=SnowParam(12, progressbar=TRUE)) 
 ```
@@ -235,7 +235,7 @@ plotVarPart(vp.lst, label.angle=60, ncol=4)
 
 # dreamlet analysis
 ```{r dreamlet}
-form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + age + I(age^2) + prop_NAT
+form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + scale(age) + I(scale(age)^2) + scale(prop_NAT)
 res.dl = dreamlet( res.proc, form, 
   BPPARAM=SnowParam(12, progressbar=TRUE))
 ```
