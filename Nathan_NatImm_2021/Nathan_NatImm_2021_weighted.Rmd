@@ -411,6 +411,7 @@ CT = "CD4/8+ PD-1+TIGIT+"
 ngenes = 1
 genes = vp.lst %>%
   as_tibble %>%
+  rename(age = scale.age., I.age.2. = I.scale.age..2., prop_NAT = scale.prop_NAT.) %>%
   filter(assay == CT) %>%
   summarize(gene[order(batch, decreasing=TRUE)[1:ngenes]],
             gene[order(donor, decreasing=TRUE)[1:ngenes]],
