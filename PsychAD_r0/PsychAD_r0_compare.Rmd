@@ -65,7 +65,7 @@ df %>%
 ```
 
 ```{r fig2, fig.height=8, fig.width=8}
-cellTypes = c("Olig")
+cellTypes = c("Oligo")
 
 figList = lapply(cellTypes, function(CT){
   df_gene = df %>%
