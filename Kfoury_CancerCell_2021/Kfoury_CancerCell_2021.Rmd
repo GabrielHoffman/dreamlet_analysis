@@ -177,6 +177,15 @@ plotVolcano( res.dl, coef = 'Involved_Distal', ncol=4)
 
 ### Summarize differential expression 
 ```{r plot.pi, fig.height=12, fig.width=12}
+file = "./topTable_Kfoury_2021.tsv"
+
+names(contrasts) %>%
+  map_df(function(x) 
+    topTable(res.dl, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = x)) %>%
+    write.table(file, quote=FALSE, sep='\t', row.names=FALSE)
+
 # Summarize differential expression for each coef and assay
 df = names(contrasts) %>%
   map_df(function(x) 
