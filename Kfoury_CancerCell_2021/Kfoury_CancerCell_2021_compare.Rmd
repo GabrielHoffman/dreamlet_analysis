@@ -48,7 +48,7 @@ df %>%
   coord_fixed() +
   geom_abline(color="red") +
   xlab("t statistic (standard)") + 
-  tlab("t statistic (weighted)") +
+  ylab("t statistic (weighted)") +
   facet_wrap(~ assay) 
 
 
