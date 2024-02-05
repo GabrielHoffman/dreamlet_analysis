@@ -39,7 +39,7 @@ library(ggrepel)
 df_none = read_tsv("topTable_PsychAD_r0.tsv")
 df_weighted = read_tsv("topTable_PsychAD_r0_weighted.tsv")
 
-df = inner_join(df_none, df_weighted, by=c("assay", "ID", "coef"))
+df = inner_join(df_none, df_weighted, by=c("assay", "ID"))
 ```
 
 ```{r fig1, fig.height=10, fig.width=10}
