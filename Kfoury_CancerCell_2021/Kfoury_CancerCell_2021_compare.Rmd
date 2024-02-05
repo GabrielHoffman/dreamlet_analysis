@@ -40,7 +40,9 @@ df_none = read_tsv("topTable_Kfoury_2021.tsv")
 df_weighted = read_tsv("topTable_Kfoury_2021_weighted.tsv")
 
 df = inner_join(df_none, df_weighted, by=c("assay", "ID", "coef"))
+```
 
+```{r fig1, height=10, width=10}
 df %>%
   ggplot(aes(t.x, t.y)) +
   geom_point() + 
@@ -51,7 +53,6 @@ df %>%
   ylab("t statistic (weighted)") +
   facet_wrap(~ assay) 
 
-
  df %>%
   ggplot(aes(logFC.x, logFC.y)) +
   geom_point() + 
@@ -61,7 +62,9 @@ df %>%
   xlab("logFC (standard)") +
   ylab("logFC(weighted)") +
   facet_wrap(~ assay) 
+```
 
+```{r fig2, height=8, width=8}
 
 df_gene = df %>%
   select(-AveExpr.x, -AveExpr.y, -B.x, -B.y, -z.std.x, -z.std.y, -adj.P.Val.x, -adj.P.Val.y) %>%
