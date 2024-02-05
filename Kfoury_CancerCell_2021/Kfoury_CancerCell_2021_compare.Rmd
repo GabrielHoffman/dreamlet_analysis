@@ -1,0 +1,89 @@
+---
+title: "Compare weighted and unweighted analysis"
+subtitle: '[Kfoury, et al. Cancer Cell (2021)](https://doi.org/10.1016/j.ccell.2021.09.005)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+    toc: true
+    smart: false
+vignette: >
+  %\VignetteIndexEntry{Human prostate cancer bone metastases have an actionable immunosuppressive microenvironment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+# Load packages
+```{r load.packages, cache=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(scattermore)
+library(ggrepel)
+```
+
+```{r data}
+df_none = read_tsv("topTable_Kfoury_2021.tsv")
+df_weighted = read_tsv("topTable_Kfoury_2021_weighted.tsv")
+
+df = inner_join(df_none, df_weighted, by=c("assay", "ID", "coef"))
+
+df %>%
+  ggplot(aes(t.x, t.y)) +
+  geom_point() + 
+  theme_classic() +
+  coord_fixed() +
+  geom_abline(color="red") +
+  xlab("t statistic (standard)") + 
+  tlab("t statistic (weighted)") +
+  facet_wrap(~ assay) 
+
+
+ df %>%
+  ggplot(aes(logFC.x, logFC.y)) +
+  geom_point() + 
+  theme_classic() +
+  coord_fixed() +
+  geom_abline(color="red") +
+  xlab("logFC (standard)") +
+  ylab("logFC(weighted)") +
+  facet_wrap(~ assay) 
+
+
+df_gene = df %>%
+  select(-AveExpr.x, -AveExpr.y, -B.x, -B.y, -z.std.x, -z.std.y, -adj.P.Val.x, -adj.P.Val.y) %>%
+  filter(assay == "CD4+ Naive") %>%
+  arrange(log(P.Value.x) - log(P.Value.y)) %>%
+  tail(5)
+
+df %>%
+  filter(assay == "CD4+ Naive") %>%
+  ggplot(aes(t.x, t.y)) +
+  theme_classic() +
+  geom_abline(color="red") +
+  geom_hline(yintercept=0, color="grey70") +
+  geom_vline(xintercept=0, color="grey70") + 
+  geom_point(size=.5) + 
+  # geom_smooth(method="lm") +
+  facet_wrap(~assay) +
+  geom_text_repel(data = df_gene, aes(t.x, t.y, label=ID),box.padding = .5, color="red3") +
+  geom_point(data = df_gene, aes(t.x, t.y), color="red3", size=2) +
+  xlab("t-statistic (no weights)")+
+  ylab("t-statistic (dreamlet weights)") +
+  scale_y_continuous(sec.axis = sec_axis(~ -1*sign(.)*log10(2*pnorm(abs(.), lower.tail=FALSE)), name="-log10 P")) +
+  scale_x_continuous(sec.axis = sec_axis(~ -1*sign(.)*log10(2*pnorm(abs(.), lower.tail=FALSE)), name="-log10 P")) +
+  tune::coord_obs_pred() 
+```
