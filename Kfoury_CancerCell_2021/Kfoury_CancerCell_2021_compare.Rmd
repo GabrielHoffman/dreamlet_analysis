@@ -92,4 +92,5 @@ figList = lapply(cellTypes, function(CT){
     scale_x_continuous(sec.axis = sec_axis(~ -1*sign(.)*log10(2*pnorm(abs(.), lower.tail=FALSE)), name="-log10 P")) +
     tune::coord_obs_pred() 
 })
+figList
 ```
