@@ -170,7 +170,8 @@ res.proc = processAssays( pb,
                           min.count=5,
                           min.cells = 10,
                           BPPARAM = SnowParam(6), 
-                          weightsList = W.list)
+                          weightsList = W.list,
+                          assays = names(W.list))
 ```
 
 ### Show details of processing
