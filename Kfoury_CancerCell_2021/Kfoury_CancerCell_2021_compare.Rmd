@@ -65,28 +65,31 @@ df %>%
 ```
 
 ```{r fig2, fig.height=8, fig.width=8}
+cellTypes = c("CD4+ Naive", "mDC", "Progenitors", "Tumor")
 
-df_gene = df %>%
-  select(-AveExpr.x, -AveExpr.y, -B.x, -B.y, -z.std.x, -z.std.y, -adj.P.Val.x, -adj.P.Val.y) %>%
-  filter(assay == "CD4+ Naive") %>%
-  arrange(log(P.Value.x) - log(P.Value.y)) %>%
-  tail(5)
+figList = lapply(cellTypes, function(CT){
+  df_gene = df %>%
+    select(-AveExpr.x, -AveExpr.y, -B.x, -B.y, -z.std.x, -z.std.y, -adj.P.Val.x, -adj.P.Val.y) %>%
+    filter(assay == CT) %>%
+    arrange(log(P.Value.x) - log(P.Value.y)) %>%
+    tail(5)
 
-df %>%
-  filter(assay == "CD4+ Naive") %>%
-  ggplot(aes(t.x, t.y)) +
-  theme_classic() +
-  geom_abline(color="red") +
-  geom_hline(yintercept=0, color="grey70") +
-  geom_vline(xintercept=0, color="grey70") + 
-  geom_point(size=.5) + 
-  # geom_smooth(method="lm") +
-  facet_wrap(~assay) +
-  geom_text_repel(data = df_gene, aes(t.x, t.y, label=ID),box.padding = .5, color="red3") +
-  geom_point(data = df_gene, aes(t.x, t.y), color="red3", size=2) +
-  xlab("t-statistic (no weights)")+
-  ylab("t-statistic (dreamlet weights)") +
-  scale_y_continuous(sec.axis = sec_axis(~ -1*sign(.)*log10(2*pnorm(abs(.), lower.tail=FALSE)), name="-log10 P")) +
-  scale_x_continuous(sec.axis = sec_axis(~ -1*sign(.)*log10(2*pnorm(abs(.), lower.tail=FALSE)), name="-log10 P")) +
-  tune::coord_obs_pred() 
+  df %>%
+    filter(assay == CT) %>%
+    ggplot(aes(t.x, t.y, color=coef)) +
+    theme_classic() +
+    geom_abline(color="red") +
+    geom_hline(yintercept=0, color="grey70") +
+    geom_vline(xintercept=0, color="grey70") + 
+    geom_point(size=.5) + 
+    # geom_smooth(method="lm") +
+    facet_wrap(~assay) +
+    geom_text_repel(data = df_gene, aes(t.x, t.y, label=ID),box.padding = .5, color="red3") +
+    geom_point(data = df_gene, aes(t.x, t.y), color="red3", size=2) +
+    xlab("t-statistic (no weights)")+
+    ylab("t-statistic (dreamlet weights)") +
+    scale_y_continuous(sec.axis = sec_axis(~ -1*sign(.)*log10(2*pnorm(abs(.), lower.tail=FALSE)), name="-log10 P")) +
+    scale_x_continuous(sec.axis = sec_axis(~ -1*sign(.)*log10(2*pnorm(abs(.), lower.tail=FALSE)), name="-log10 P")) +
+    tune::coord_obs_pred() 
+})
 ```
