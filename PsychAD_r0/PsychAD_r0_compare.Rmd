@@ -76,7 +76,7 @@ figList = lapply(cellTypes, function(CT){
 
   df %>%
     filter(assay == CT) %>%
-    ggplot(aes(t.x, t.y, color=coef)) +
+    ggplot(aes(t.x, t.y)) +
     theme_classic() +
     geom_abline(color="red") +
     geom_hline(yintercept=0, color="grey70") +
