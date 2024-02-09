@@ -1,0 +1,117 @@
+---
+title: "COVID COMBAT study"
+subtitle: 'crumblr analysis'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+output: 
+  html_document:
+    toc: true
+    smart: true
+    self_contained: false
+---
+
+<!---
+
+
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/COVID_combat/
+ml python git
+ml gcc/11.2.0
+git pull
+R --vanilla
+
+
+system("git pull"); rmarkdown::render("COVID_combat.Rmd");
+
+
+# https://hoffmg01.hpc.mssm.edu/crumblr_analysis/COVID_combat
+
+
+
+# cd 
+
+--->
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  package.startup.message = FALSE,
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+
+```{r load, cache=FALSE}
+library(SingleCellExperiment)
+library(zellkonverter)
+library(dreamlet)
+library(RColorBrewer) 
+library(tidyverse) 
+```
+
+```{r read.data}
+# read single cell RNA-seq
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/local.h5ad"
+sce = readH5AD(file, use_hdf5=TRUE, raw=TRUE)
+
+# the raw counts are stored in the AltExp
+# load them in to the main assay, 
+# the into 'counts'
+sce = swapAltExp(sce, "raw")
+counts(sce) = assay(sce, "X")
+
+# remove doublets
+sce = sce[,sce$GEX_region != "E: Doublets"]
+
+# remove nan cells
+sce = sce[,sce$minor_subset != "nan"]
+```
+
+# UMAP provided with data
+```{r plots.UMAP, fig.widht=8, fig.height=6}
+fig1 = plotProjection(sce, "X_umap", "major_subset")
+fig2 = plotProjection(sce, "X_umap", "minor_subset")
+plot_grid(fig1, fig2)
+```
+
+```{r merge.data}
+# read metadata
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/CBD-KEY-CLINVAR/COMBAT_CLINVAR_for_processed.txt"
+df = read.table(file, header=TRUE)
+
+# filter and merge metadata
+df = df[df$scRNASeq_sample_ID %in% sce$scRNASeq_sample_ID,]
+idx = match(sce$scRNASeq_sample_ID, df$scRNASeq_sample_ID)
+colData(sce) = cbind(colData(sce), df[idx,])
+
+# For each donor, select the most severe sample
+res = colData(sce) %>%
+	as_tibble %>%
+	group_by(donor_id) %>%
+	select(scRNASeq_sample_ID, Source) %>%
+	distinct %>%
+	summarize(scRNASeq_sample_ID, Source, i = which.max(Source),
+		use_sample_id = scRNASeq_sample_ID[which.max(Source)])
+
+# res[res$donor_id == "S00109",]
+
+# subset to one sample per donor
+sceSub = sce[,sce$scRNASeq_sample_ID %in% droplevels(res$use_sample_id)]
+
+# create pseudobulk
+pb <- aggregateToPseudoBulk(sceSub,
+    assay = "counts",     
+    cluster_id = "major_subset",  
+    sample_id = "scRNASeq_sample_ID",
+    verbose = FALSE)
+```
+
+
+   
+
+
