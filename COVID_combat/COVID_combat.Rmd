@@ -52,6 +52,7 @@ library(zellkonverter)
 library(dreamlet)
 library(zenith)
 library(GSEABase)
+library(qvalue)
 library(RColorBrewer) 
 library(cowplot)
 library(tidyverse) 
@@ -184,7 +185,7 @@ details(fit)
 
 
 # Variance partitioning results
-```{r vp.plot, fig.height=18, fig.width=12}}
+```{r vp.plot, fig.height=18, fig.width=12}
 plotVarPart(sortCols(res.vp), label.angle=60, ncol=4)
 ```
 
@@ -197,8 +198,66 @@ plotVolcano(fit, coef="SourceCOVID_MILD")
 
 
 
+### Summarize differential expression 
+```{r plot.pi, fig.height=18, fig.width=12}
+file = "./topTable_COVID_2022.tsv"
 
+coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = x)) %>%
+    write.table(file, quote=FALSE, sep='\t', row.names=FALSE)
 
+# Summarize differential expression for each coef and assay
+df = coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = x)) %>%
+  group_by(coef,assay) %>%
+  summarize( nDE = sum(adj.P.Val < 0.05), 
+            pi1 = 1 - pi0est(P.Value)$pi0,
+            nGenes = length(adj.P.Val)) %>%
+  mutate(assay = factor(assay, assayNames(pb)))
+
+ymax = 1.05*max(df$nGenes)
+fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes expressed") +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+ymax = 1.05*max(df$nDE)
+fig2 = ggplot(df, aes(nDE, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes with FDR < 5%") +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+fig3 = ggplot(df, aes(pi1, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
+    xlab(bquote(pi[1])) +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=3, axis="tblr", align="hv")
+```    
+
+# Gene set analysis
+
+```{r zenith fig.height=18, fig.width=12}
+plotZenithResults(res.gsa, 5, 3)
+```
 
 
 
