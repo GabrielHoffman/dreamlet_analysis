@@ -58,7 +58,17 @@ library(tidyverse)
 # read single cell RNA-seq
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/local.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE, raw=TRUE)
+```
 
+
+# UMAP provided with data
+```{r plots.UMAP, fig.widht=8, fig.height=6}
+fig1 = plotProjection(sce, "X_umap", "major_subset")
+fig2 = plotProjection(sce, "X_umap", "minor_subset")
+plot_grid(fig1, fig2)
+```
+
+```{r swap}
 # the raw counts are stored in the AltExp
 # load them in to the main assay, 
 # the into 'counts'
@@ -72,12 +82,6 @@ sce = sce[,sce$GEX_region != "E: Doublets"]
 sce = sce[,sce$minor_subset != "nan"]
 ```
 
-# UMAP provided with data
-```{r plots.UMAP, fig.widht=8, fig.height=6}
-fig1 = plotProjection(sce, "X_umap", "major_subset")
-fig2 = plotProjection(sce, "X_umap", "minor_subset")
-plot_grid(fig1, fig2)
-```
 
 ```{r merge.data}
 # read metadata
