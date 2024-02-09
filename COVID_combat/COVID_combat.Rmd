@@ -119,6 +119,29 @@ pb <- aggregateToPseudoBulk(sceSub,
     verbose = FALSE)
 ```
 
+
+## Properties of dataset
+```{r properties}
+df = data.frame(table(pb$Source))
+colnames(df) = c("Disease status", "Count")
+
+df %>%
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+
+df = list()
+df$`# Samples` = ncol(pb)
+df$`# Cells` = ncol(sce)
+df = unlist(df)
+df = data.frame(Property=names(df), count = df)
+
+df %>%  
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+```
+
+
+
 ```{r proc}
 form = ~ Age + (1|sex) + (1|Source)
 res.proc = processAssays(pb, form, BPPARAM=SnowParam(6))
@@ -143,17 +166,32 @@ res.gsa = zenith_gsa(fit, go.gs, coefs=coef_array, progressbar=FALSE)
 ```
 
 
+### Show details of processing
+```{r details1}
+details(res.proc) 
+```
 
 
+### Show voom-style mean-variance trends
+```{r voom.plot, fig.height=18, fig.width=12}
+# show voom plot for each cell clusters  
+plotVoom( res.proc, ncol=4) 
+```
 
-```{r vp.plot, height=15, width=10}
-plotVarPart(res.vp)
+```{r details2}
+details(fit) 
+```
+
+
+# Variance partitioning results
+```{r vp.plot, fig.height=18, fig.width=12}}
+plotVarPart(sortCols(res.vp), label.angle=60, ncol=4)
 ```
 
 
 
 
-```{r volcano.plot, height=15, width=10}
+```{r volcano.plot, fig.height=18, fig.width=12}}
 plotVolcano(fit, coef="SourceCOVID_MILD")
 ```
 
