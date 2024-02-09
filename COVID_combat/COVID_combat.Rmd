@@ -75,6 +75,7 @@ plot_grid(fig1, fig2)
 # the into 'counts'
 sce = swapAltExp(sce, "raw")
 counts(sce) = assay(sce, "X")
+rownames(sce) = rowData(sce)$feature_name
 
 # remove doublets
 sce = sce[,sce$GEX_region != "E: Doublets"]
@@ -116,6 +117,15 @@ pb <- aggregateToPseudoBulk(sceSub,
     verbose = FALSE)
 ```
 
+```{r proc}
+form = ~ Age + (1|sex) + (1|Source)
+res.proc = processAssays(pb, form, assays = "ncMono", BPPARAM=SnowParam(6))
+
+res.vp = fitVarPart(res.proc, form, BPPARAM=SnowParam(6) )
+
+form = ~ Source + Age + sex
+fit = dreamlet(res.proc, form, BPPARAM=SnowParam(6))
+```
 
    
 
