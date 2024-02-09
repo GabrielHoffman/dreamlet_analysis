@@ -50,6 +50,8 @@ knitr::opts_chunk$set(
 library(SingleCellExperiment)
 library(zellkonverter)
 library(dreamlet)
+library(zenith)
+library(GSEABase)
 library(RColorBrewer) 
 library(cowplot)
 library(tidyverse) 
@@ -119,13 +121,51 @@ pb <- aggregateToPseudoBulk(sceSub,
 
 ```{r proc}
 form = ~ Age + (1|sex) + (1|Source)
-res.proc = processAssays(pb, form, assays = "ncMono", BPPARAM=SnowParam(6))
+res.proc = processAssays(pb, form, BPPARAM=SnowParam(6))
 
 res.vp = fitVarPart(res.proc, form, BPPARAM=SnowParam(6) )
 
 form = ~ Source + Age + sex
 fit = dreamlet(res.proc, form, BPPARAM=SnowParam(6))
 ```
+
+## Gene set analysis
+```{r zenith}
+# Load Gene Ontology database 
+go.gs = get_GeneOntology(to="SYMBOL")
+
+# remove set with > 1000 genes
+go.gs = go.gs[sapply(go.gs, function(x) length(geneIds(x))) < 1000]
+
+# zenith analysis
+coef_array = c("SourceCOVID_HCW_MILD", "SourceCOVID_MILD", "SourceCOVID_SEV", "SourceCOVID_CRIT", "SourceSepsis", "SourceFlu") 
+res.gsa = zenith_gsa(fit, go.gs, coefs=coef_array, progressbar=FALSE)
+```
+
+
+
+
+
+```{r vp.plot, height=15, width=10}
+plotVarPart(res.vp)
+```
+
+
+
+
+```{r volcano.plot, height=15, width=10}
+plotVolcano(fit, coef="SourceCOVID_MILD")
+```
+
+
+
+
+
+
+
+
+
+
 
    
 
