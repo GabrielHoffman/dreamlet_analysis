@@ -51,6 +51,7 @@ library(SingleCellExperiment)
 library(zellkonverter)
 library(dreamlet)
 library(RColorBrewer) 
+library(cowplot)
 library(tidyverse) 
 ```
 
