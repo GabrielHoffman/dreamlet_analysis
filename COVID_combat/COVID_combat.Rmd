@@ -55,6 +55,7 @@ library(GSEABase)
 library(qvalue)
 library(RColorBrewer) 
 library(cowplot)
+library(kableExtra)
 library(tidyverse) 
 ```
 
