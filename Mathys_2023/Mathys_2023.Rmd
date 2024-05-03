@@ -21,7 +21,7 @@ vignette: >
 
 <!--- 
 
-cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023
 R
 
 system("git pull"); rmarkdown::render("Mathys_2023.Rmd");
@@ -68,7 +68,7 @@ library(BiocParallel)
 # Load data
 ```{r load.data}
 # read H5AD file
-file = "/sc/arion/projects/CommonMind/leed62/ref/published/2023_Mathys_Cell_snRNA/cell_browser/ad-aging-brain/240322_Mathys2023Cell_427snRNA_FINAL.h5ad"
+file = "/sc/arion/projects/CommonMind/leed62/ref/published/2023_Mathys_Cell_snRNA/cell_browser/ad-aging-brain/240321_2023_Mathys_Cell_snRNA_cb_final_only_counts.h5ad"
 sce = readH5AD(file, use_hdf5=FALSE, verbose=TRUE, obsm=FALSE, uns=FALSE, layers=FALSE, var=FALSE, obs=FALSE)   
 counts(sce) = assay(sce, "X")
 
