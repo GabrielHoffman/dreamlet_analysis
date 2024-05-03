@@ -1,0 +1,137 @@
+---
+title: "Single-cell atlas reveals correlates of high cognitive function, dementia, and resilience to Alzheimer's disease pathology"
+subtitle: '[MAthys, et al. Cell (2023)](https://doi.org/10.1016/j.cell.2023.08.039)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+    toc: true
+    smart: false
+vignette: >
+  %\VignetteIndexEntry{Single-cell atlas reveals correlates of high cognitive function, dementia, and resilience to Alzheimers disease pathology}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+# Load packages
+```{r load.packages, cache=FALSE}
+library(SingleCellExperiment)
+library(zellkonverter)
+library(DelayedArray)
+library(dreamlet)
+library(scater)
+library(GSEABase)
+library(zenith)
+library(knitr)
+library(kableExtra)
+library(scattermore)
+library(cowplot)
+library(ggplot2)
+library(qvalue)
+library(tidyverse)
+library(RColorBrewer)
+library(BiocParallel)
+```
+
+# Load data
+```{r load.data}
+# read H5AD file
+file = "/sc/arion/projects/CommonMind/leed62/ref/published/2023_Mathys_Cell_snRNA/cell_browser/ad-aging-brain/240322_Mathys2023Cell_427snRNA_FINAL.h5ad"
+sce = readH5AD(file, use_hdf5=FALSE, verbose=TRUE, obsm=FALSE, uns=FALSE, layers=FALSE, var=FALSE, obs=FALSE)   
+counts(sce) = assay(sce, "X")
+
+sce$Cell_Type = factor(sce$Cell_Type, sort(levels(sce$Cell_Type)))
+
+# create pseudobulk 
+pb <- aggregateToPseudoBulk(sce,
+    assay = "counts",     
+    cluster_id = "Major_Cell_Type",  
+    sample_id = "individualID")
+```
+
+# UMAP embedding
+```{r embeding}
+plotProjection(sce, "X_umap", annotation='Major_Cell_Type') 
+plotProjection(sce, "X_umap", annotation='Cell_Type')  
+```
+
+
+```{r exit, cache=FALSE}
+knitr::knit_exit()
+```
+
+
+## Properties of dataset
+```{r properties}
+df = data.frame(table(pb$Status))
+colnames(df) = c("Disease status", "Count")
+
+df %>%
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+
+df = list()
+df$`# Samples` = ncol(pb)
+df$`# Subjects` = nlevels(sce$subject.id)
+df$`# Cells` = ncol(sce)
+df = unlist(df)
+df = data.frame(Propert=names(df), count = df)
+
+df %>%  
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+```
+
+
+## Process pseudobulk data to estimate precision weights
+```{r voom}
+types = c("Benign", "Distal", "Involved", "Tumor")
+pb$Status = factor(pb$Status, types)
+
+# Normalize and apply voom/voomWithDreamWeights
+form = ~ (1|subject.id) + (1|Status) + (1|subject.status) 
+res.proc = processAssays( pb, 
+                          form,  
+                          min.count = 5,
+                          min.cells = 10,
+                          min.samples = 10,
+                          BPPARAM = SnowParam(6))
+```
+
+### Show details of processing
+```{r details}
+details(res.proc) 
+```
+
+### Show voom-style mean-variance trends
+```{r voom.plot, fig.height=18, fig.width=12}
+# show voom plot for each cell clusters  
+plotVoom( res.proc, ncol=4) 
+```
+
+
+# Variance partitioning analysis
+```{r vp}
+# run variance partitioning analysis
+form = ~ (1|subject.id) + (1|Status) + (1|subject.status)  
+vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
+```
+
+```{r vp.plot, fig.height=20, fig.width=12}
+# Summarize variance fractions genome-wide for each cell type
+plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)   
+```
