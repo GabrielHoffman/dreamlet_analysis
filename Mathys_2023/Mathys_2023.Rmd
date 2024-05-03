@@ -15,6 +15,24 @@ vignette: >
   %\usepackage[utf8]{inputenc}
 ---
 
+
+
+
+
+<!--- 
+
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis
+R
+
+system("git pull"); rmarkdown::render("Mathys_2023.Rmd");
+
+
+# https://hoffmg01.u.hpc.mssm.edu/eval_methods2/dreamlet/Kfoury_CancerCell_2021.html
+
+--->
+
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
