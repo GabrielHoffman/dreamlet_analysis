@@ -69,7 +69,7 @@ library(BiocParallel)
 ```{r load.data}
 # read H5AD file
 file = "/sc/arion/projects/CommonMind/leed62/ref/published/2023_Mathys_Cell_snRNA/cell_browser/ad-aging-brain/240321_2023_Mathys_Cell_snRNA_cb_final_only_counts.h5ad"
-sce = readH5AD(file, use_hdf5=FALSE, verbose=TRUE, obsm=FALSE, uns=FALSE, layers=FALSE, var=FALSE, obs=FALSE)   
+sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)#, obsm=FALSE, uns=FALSE, layers=FALSE, var=FALSE, obs=FALSE)   
 counts(sce) = assay(sce, "X")
 
 sce$Cell_Type = factor(sce$Cell_Type, sort(levels(sce$Cell_Type)))
@@ -82,7 +82,7 @@ pb <- aggregateToPseudoBulk(sce,
 ```
 
 # UMAP embedding
-```{r embeding}
+```{r embedding}
 plotProjection(sce, "X_umap", annotation='Major_Cell_Type') 
 plotProjection(sce, "X_umap", annotation='Cell_Type')  
 ```
