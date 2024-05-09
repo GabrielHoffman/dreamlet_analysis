@@ -124,7 +124,7 @@ types = c("nonAD", "AD" )
 pb$ADdiag2types = factor(pb$ADdiag2types, types)
 
 types = c("nonAD", "earlyAD", "lateAD" )
-pb$ADdiag2types = factor(pb$ADdiag3types, types)
+pb$ADdiag3types = factor(pb$ADdiag3types, types)
 
 # Normalize and apply voomWithDreamWeights
 form = ~ age + sex + Study + pmi
@@ -160,7 +160,7 @@ plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)
 # dreamlet
 ```{r dreamlet}
 form = ~ age + sex + Study + pmi + ADdiag2types 
-fit = dreamlet(res.proc, form)
+fit = dreamlet(res.proc, form) 
 ```
 
 
