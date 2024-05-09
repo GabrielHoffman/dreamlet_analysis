@@ -88,11 +88,6 @@ plotProjection(sce, "X_umap", annotation='Cell_Type')
 ```
 
 
-```{r exit, cache=FALSE}
-knitr::knit_exit()
-```
-
-
 ## Properties of dataset
 ```{r properties}
 df = data.frame(table(pb$ADdiag2types))
@@ -153,11 +148,16 @@ plotVoom( res.proc, ncol=4)
 # Variance partitioning analysis
 ```{r vp}
 # run variance partitioning analysis
-form = ~ (1|subject.id) + (1|Status) + (1|subject.status)  
+form = ~ age + sex + Study + pmi + ADdiag2types 
 vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
 
 ```{r vp.plot, fig.height=20, fig.width=12}
 # Summarize variance fractions genome-wide for each cell type
 plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)   
+```
+
+
+```{r exit, cache=FALSE}
+knitr::knit_exit()
 ```
