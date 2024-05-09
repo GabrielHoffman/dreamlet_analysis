@@ -1,6 +1,6 @@
 ---
 title: "Single-cell atlas reveals correlates of high cognitive function, dementia, and resilience to Alzheimer's disease pathology"
-subtitle: '[MAthys, et al. Cell (2023)](https://doi.org/10.1016/j.cell.2023.08.039)'
+subtitle: '[Mathys, et al. Cell (2023)](https://doi.org/10.1016/j.cell.2023.08.039)'
 author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
 date: "Run on `r Sys.time()`"
 documentclass: article
@@ -160,7 +160,7 @@ plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)
 # dreamlet
 ```{r dreamlet}
 form = ~ age + sex + Study + pmi + ADdiag2types 
-fit = dreamlet(form, res.proc)
+fit = dreamlet(res.proc, form)
 ```
 
 
