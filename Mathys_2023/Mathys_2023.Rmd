@@ -27,7 +27,7 @@ R
 system("git pull"); rmarkdown::render("Mathys_2023.Rmd");
 
 
-# https://hoffmg01.u.hpc.mssm.edu/eval_methods2/dreamlet/Kfoury_CancerCell_2021.html
+# https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023.html
 
 --->
 
@@ -95,7 +95,15 @@ knitr::knit_exit()
 
 ## Properties of dataset
 ```{r properties}
-df = data.frame(table(pb$Status))
+df = data.frame(table(pb$ADdiag2types))
+colnames(df) = c("Disease status", "Count")
+
+df %>%
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+
+
+df = data.frame(table(pb$ADdiag3types))
 colnames(df) = c("Disease status", "Count")
 
 df %>%
@@ -104,7 +112,7 @@ df %>%
 
 df = list()
 df$`# Samples` = ncol(pb)
-df$`# Subjects` = nlevels(sce$subject.id)
+df$`# Subjects` = nlevels(sce$Individual)
 df$`# Cells` = ncol(sce)
 df = unlist(df)
 df = data.frame(Propert=names(df), count = df)
@@ -117,16 +125,16 @@ df %>%
 
 ## Process pseudobulk data to estimate precision weights
 ```{r voom}
-types = c("Benign", "Distal", "Involved", "Tumor")
-pb$Status = factor(pb$Status, types)
+types = c("nonAD", "AD" )
+pb$ADdiag2types = factor(pb$ADdiag2types, types)
 
-# Normalize and apply voom/voomWithDreamWeights
-form = ~ (1|subject.id) + (1|Status) + (1|subject.status) 
+types = c("nonAD", "earlyAD", "lateAD" )
+pb$ADdiag2types = factor(pb$ADdiag3types, types)
+
+# Normalize and apply voomWithDreamWeights
+form = ~ age + sex + Study + pmi
 res.proc = processAssays( pb, 
                           form,  
-                          min.count = 5,
-                          min.cells = 10,
-                          min.samples = 10,
                           BPPARAM = SnowParam(6))
 ```
 
