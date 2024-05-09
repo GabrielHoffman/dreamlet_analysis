@@ -157,6 +157,15 @@ vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
 plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)   
 ```
 
+# dreamlet
+```{r dreamlet}
+form = ~ age + sex + Study + pmi + ADdiag2types 
+fit = dreamlet(form, res.proc)
+```
+
+
+
+
 
 ```{r exit, cache=FALSE}
 knitr::knit_exit()
