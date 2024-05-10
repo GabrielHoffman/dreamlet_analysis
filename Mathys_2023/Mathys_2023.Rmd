@@ -358,7 +358,7 @@ res.gsa = zenith_gsa(fit, go.gs, coefs="ADdiag2typesAD")
 res.gsa$Geneset = gsub("^GO\\S+ ", "", res.gsa$Geneset)
 res.gsa$assay = factor(res.gsa$assay, ctorder)  
 
-plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
+# plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
 ```
 
 ```{r zenith.heatmap.2, fig.width=10, fig.height=50, cache=FALSE} 
