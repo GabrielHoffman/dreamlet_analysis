@@ -164,7 +164,7 @@ fit = dreamlet(res.proc, form)
 ```
 
 # Volcano
-```{r volcano, fig.height=6, fig.width=12}
+```{r volcano, fig.height=9, fig.width=12}
 plotVolcano(fit, "ADdiag2typesAD")
 ```
 
