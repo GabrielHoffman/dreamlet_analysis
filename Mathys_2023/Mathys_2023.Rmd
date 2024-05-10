@@ -269,7 +269,7 @@ fig_de_count
 
 
 
-```{r vp.ncells, eval=FALSE}
+```{r vp.ncells}
 # Number of cells observed per Subject
 df = colData(sce) %>%
   xtabs( ~ Individual + Major_Cell_Type,.) %>%
@@ -278,7 +278,9 @@ df = colData(sce) %>%
   mutate(assay = Major_Cell_Type) %>%
   group_by(assay) %>%
   summarize(sum.cells = sum(n)) 
+```
 
+```{r vp.ncells2, eval=FALSE}
 df2 = df_vp %>%
       as_tibble %>%
       mutate(Donor = Dx + sex + Individual + Age) %>%
