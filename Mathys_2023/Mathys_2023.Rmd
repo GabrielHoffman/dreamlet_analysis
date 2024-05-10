@@ -170,6 +170,11 @@ fit = dreamlet(res.proc, form)
 plotVolcano(fit, "ADdiag2typesAD")
 ```
 
+```{r write.file}
+topTable(fit, coef = "ADdiag2typesAD", number=Inf) %>%
+  write.table(file="Mathys_2023_ADdiag2typesAD.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+```
+
 
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
@@ -327,7 +332,7 @@ fig.nDE_ncells = ggplot(df3, aes(sum.cells/n_retain, nDE, color=assay, size=n_re
   theme(aspect.ratio=1) + 
   scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) +
   xlab("Mean # nuclei per Subject") +
-  ylab("Mean % variance across Subject") +
+  ylab("# differentially expressed genes") +
   geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
   annotate("text", x=1000, y=.7, label=bquote(p==.(pv)))
 fig.nDE_ncells
