@@ -411,13 +411,15 @@ df_all = lapply(names(fitList), function(trait){
       select(all_of(cols)) %>%
       rename(stat = "t")
   }else{
-    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val", "trait", "coefSet")
+    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val"ç, "coefSet")
     tab = tab %>% 
       select(all_of(cols)) %>%
       rename(stat = "F")
   }
 
-}) %>% bind_rows
+}) %>% 
+  bind_rows %>%
+  arrange(trait, assay, ID, adj.P.Val)
 
 write_parquet(df_all, "Mathys_Cell_2023_dreamlet.parquet")
 ```
