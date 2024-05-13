@@ -374,8 +374,29 @@ plotZenithResults(df, Inf, Inf)
 
 
 
+# All phenotypes
+```{r dreamlet.all}
+library(formula.tools)
+
+# Scaled is reversed
+colData(res.proc)$CERAD = 5 - colData(res.proc)$ceradsc
+
+traits = c("ADdiag2types", "CERAD", 'ADdiag3types', 'braaksc', 'cogdx', "ordered(CERAD)", 'ordered(ADdiag3types)', 'ordered(braaksc)', 'ordered(cogdx)')
+
+form.base = ~ age + sex + Study + pmi 
+
+fitList = lapply( traits, function(trait){
+  form = as.formula(paste(as.character(form.base), "+", trait))
+
+  fit = dreamlet(res.proc, form) 
+})
+names(fitList) = traits
+```
 
 
+
+
+topTable(fit, coef="ordered(CERAD).Q")
 
 
 
