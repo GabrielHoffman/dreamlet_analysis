@@ -65,6 +65,9 @@ library(qvalue)
 library(tidyverse)
 library(RColorBrewer)
 library(BiocParallel)
+library(arrow)
+library(formula.tools)
+
 ```
 
 # Load data
@@ -376,8 +379,6 @@ plotZenithResults(df, Inf, Inf)
 
 # All phenotypes
 ```{r dreamlet.all}
-library(formula.tools)
-
 # Scaled is reversed
 colData(res.proc)$CERAD = 5 - colData(res.proc)$ceradsc
 
@@ -393,10 +394,38 @@ fitList = lapply( traits, function(trait){
 names(fitList) = traits
 ```
 
+```{r write.table}
+df_all = lapply(names(fitList), function(trait){
+
+  fit = fitList[[trait]]
+  coefSet = coefNames(fit)[-seq(5)]
+
+  tab = topTable(fit, coef=coefSet, number=Inf)
+  tab$trait = gsub("ordered\\((\\S+)\\)", "\\1", trait)
+  tab$coefSet = paste(coefSet, collapse=' + ')
+  tab = as_tibble(tab) 
+
+  if( length(coefSet) == 1){    
+    cols = c("assay", "ID", "AveExpr", "t", "P.Value", "adj.P.Val", "trait", "coefSet")
+    tab = tab %>% 
+      select(all_of(cols)) %>%
+      rename(stat = "t")
+  }else{
+    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val", "trait", "coefSet")
+    tab = tab %>% 
+      select(all_of(cols)) %>%
+      rename(stat = "F")
+  }
+
+}) %>% bind_rows
+
+write_parquet(df_all, file="Mathys_Cell_2023_dreamlet.parquet")
+```
 
 
 
-topTable(fit, coef="ordered(CERAD).Q")
+
+
 
 
 
