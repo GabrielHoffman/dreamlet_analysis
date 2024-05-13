@@ -411,7 +411,7 @@ df_all = lapply(names(fitList), function(trait){
       select(all_of(cols)) %>%
       rename(stat = "t")
   }else{
-    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val"ç, "coefSet")
+    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val", "coefSet")
     tab = tab %>% 
       select(all_of(cols)) %>%
       rename(stat = "F")
