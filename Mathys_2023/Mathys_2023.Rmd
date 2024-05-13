@@ -419,7 +419,7 @@ df_all = lapply(names(fitList), function(trait){
 
 }) %>% bind_rows
 
-write_parquet(df_all, file="Mathys_Cell_2023_dreamlet.parquet")
+write_parquet(df_all, "Mathys_Cell_2023_dreamlet.parquet")
 ```
 
 
