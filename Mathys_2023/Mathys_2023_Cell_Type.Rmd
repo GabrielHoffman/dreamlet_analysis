@@ -1,0 +1,441 @@
+---
+title: "Single-cell atlas reveals correlates of high cognitive function, dementia, and resilience to Alzheimer's disease pathology"
+subtitle: '[Mathys, et al. Cell (2023)](https://doi.org/10.1016/j.cell.2023.08.039)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+documentclass: article
+output: 
+  html_document:
+    toc: true
+    smart: false
+vignette: >
+  %\VignetteIndexEntry{Single-cell atlas reveals correlates of high cognitive function, dementia, and resilience to Alzheimers disease pathology}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\usepackage[utf8]{inputenc}
+---
+
+
+
+
+
+<!--- 
+
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023
+R
+
+system("git pull"); rmarkdown::render("Mathys_2023_Cell_Type.Rmd.Rmd");
+
+
+# https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/Mathys_2023_Cell_Type.html
+
+
+--->
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+# Load packages
+```{r load.packages, cache=FALSE}
+library(SingleCellExperiment)
+library(zellkonverter)
+library(DelayedArray)
+library(dreamlet)
+library(scater)
+library(GSEABase)
+library(zenith)
+library(ggrepel)
+library(knitr)
+library(kableExtra)
+library(scattermore)
+library(cowplot)
+library(ggplot2)
+library(viridis)
+library(qvalue)
+library(tidyverse)
+library(RColorBrewer)
+library(BiocParallel)
+library(arrow)
+library(formula.tools)
+
+```
+
+# Load data
+```{r load.data}
+# read H5AD file
+file = "/sc/arion/projects/CommonMind/leed62/ref/published/2023_Mathys_Cell_snRNA/cell_browser/ad-aging-brain/240321_2023_Mathys_Cell_snRNA_cb_final_only_counts.h5ad"
+sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)#, obsm=FALSE, uns=FALSE, layers=FALSE, var=FALSE, obs=FALSE)   
+counts(sce) = assay(sce, "X")
+
+sce$Cell_Type = factor(sce$Cell_Type, sort(levels(sce$Cell_Type)))
+
+# create pseudobulk 
+pb <- aggregateToPseudoBulk(sce,
+    assay = "counts",     
+    cluster_id = "Cell_Type",  
+    sample_id = "individualID")
+```
+
+# UMAP embedding
+```{r embedding}
+plotProjection(sce, "X_umap", annotation='Cell_Type') 
+```
+
+
+## Properties of dataset
+```{r properties}
+df = data.frame(table(pb$ADdiag2types))
+colnames(df) = c("Disease status", "Count")
+
+df %>%
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+
+
+df = data.frame(table(pb$ADdiag3types))
+colnames(df) = c("Disease status", "Count")
+
+df %>%
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+
+df = list()
+df$`# Samples` = ncol(pb)
+df$`# Subjects` = nlevels(sce$Individual)
+df$`# Cells` = ncol(sce)
+df = unlist(df)
+df = data.frame(Propert=names(df), count = df)
+
+df %>%  
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+```
+
+
+## Process pseudobulk data to estimate precision weights
+```{r voom}
+types = c("nonAD", "AD" )
+pb$ADdiag2types = factor(pb$ADdiag2types, types)
+
+types = c("nonAD", "earlyAD", "lateAD" )
+pb$ADdiag3types = factor(pb$ADdiag3types, types)
+
+# Normalize and apply voomWithDreamWeights
+form = ~ age + sex + Study + pmi
+res.proc = processAssays( pb, 
+                          form,  
+                          BPPARAM = SnowParam(6))
+```
+
+### Show details of processing
+```{r details}
+details(res.proc) 
+```
+
+### Show voom-style mean-variance trends
+```{r voom.plot, fig.height=6, fig.width=12}
+# show voom plot for each cell clusters  
+plotVoom( res.proc, ncol=4) 
+```
+
+
+# Variance partitioning analysis
+```{r vp}
+# run variance partitioning analysis
+form = ~ age + sex + Study + pmi + ADdiag2types 
+vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
+```
+
+```{r vp.plot, fig.height=6, fig.width=12}
+# Summarize variance fractions genome-wide for each cell type
+plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)   
+```
+
+# dreamlet
+```{r dreamlet}
+form = ~ age + sex + Study + pmi + ADdiag2types 
+fit = dreamlet(res.proc, form) 
+```
+
+# Volcano
+```{r volcano, fig.height=9, fig.width=12}
+plotVolcano(fit, "ADdiag2typesAD")
+```
+
+```{r write.file}
+topTable(fit, coef = "ADdiag2typesAD", number=Inf) %>%
+  write.table(file="Mathys_2023_Cell_Type_ADdiag2typesAD.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+```
+
+
+## Highlight genes
+```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
+ctorder = assayNames(fit)
+
+genes = c("DUSP10", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7') 
+fig.gene_heatmap = plotGeneHeatmap( fit, coef="ADdiag2typesAD", genes=genes, assays=ctorder)  
+fig.gene_heatmap
+```
+
+```{r plotForest, fig.height=10, fig.width=12, cache=FALSE}
+figList = lapply(genes, function(g){  
+  plotForest( fit, coef = 'ADdiag2typesAD', gene = g, assays=ctorder) +
+    theme(aspect.ratio=1, legend.position="none") 
+}) 
+names(figList) = genes
+plot_grid(plotlist=figList, ncol=3)
+```
+
+```{r boxplot, fig.height=10, fig.width=12, cache=FALSE, eval=FALSE}
+gene_CT = c("PTPRG" = "Micro_PVM", 'NPNT' = "Astro", 'DPYD'= "Micro_PVM", 'SPRY4-AS1' = "EN_L3_5_IT_3", "PDE10A" = "EN_L6_IT", "NCAM2" = "EN_L3_5_IT_2", 'PCDH7' = "IN_LAMP5")
+
+figList = lapply( names(gene_CT), function(g){
+
+  df = extractData(res.proc, gene_CT[g])
+
+  df = df[,c('Dx', g)]
+  colnames(df)[colnames(df)==g] = "expr"
+
+  ggplot(df, aes(Dx, expr, fill=Dx)) +
+          geom_boxplot() +
+          theme_classic() +
+          theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5), legend.position="none") +
+          ggtitle(paste0(gene_CT[g], ": ", g)) +
+          ylab(bquote(log[2]~CPM)) +
+          scale_fill_manual(values=c("grey50", "red3"))
+})
+names(figList) = names(gene_CT)
+
+plot_grid(plotlist=figList, ncol=3)
+```
+
+
+### Summarize differential expression 
+```{r plot.pi, fig.height=4, fig.width=12}
+# Summarize differential expression for each coef and assay
+df_de = fit %>%
+  topTable(coef='ADdiag2typesAD', number=Inf) %>%
+    as_tibble %>% 
+    group_by(assay) %>% 
+    summarise( 
+      nGenes = length(adj.P.Val), 
+      nDE = sum(adj.P.Val < 0.05),
+      pi1 = 1 - qvalue(P.Value)$pi0) %>%
+  mutate(assay = factor(assay, ctorder))  
+
+ymax = 1.05*max(df_de$nGenes)
+fig1 = ggplot(df_de, aes(nGenes, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes expressed") +
+    ylab("Cell type") 
+
+ymax = max(1.05*max(df_de$nDE), 100)
+fig2 = ggplot(df_de, aes(nDE, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none", axis.text.y=element_blank()) +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes with FDR < 5%") +
+    ylab('')
+
+fig3 = ggplot(df_de, aes(pi1, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none", axis.text.y=element_blank()) +
+    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
+    xlab(bquote(pi[1]))+
+    ylab('')
+
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=1, axis="tblr", align="hv")
+```    
+
+```{r frac.de}
+fig_de_count = ggplot(df_de, aes(2, assay)) +
+        geom_tile(fill="white") +
+        geom_point(aes(color=nDE/nGenes*100, size=nGenes)) +
+        scale_color_viridis(name = "% genes\npassing FDR", lim=c(0, NA)) +
+        scale_size_continuous(name = "# genes", breaks=c(1, 4, 8, 12, 16)*1000) +
+        theme_classic() +
+        theme(aspect.ratio=as.numeric(nrow(df_de)), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
+        xlab('') + ylab('') 
+fig_de_count
+```
+
+
+
+```{r vp.ncells}
+# Number of cells observed per Subject
+df = colData(sce) %>%
+  xtabs( ~ Individual + Cell_Type,.) %>%
+  as_tibble %>%
+  pivot_longer(cols=Individual) %>%
+  mutate(assay = Cell_Type) %>%
+  group_by(assay) %>%
+  summarize(sum.cells = sum(n)) 
+```
+
+```{r vp.ncells2, eval=FALSE}
+df2 = df_vp %>%
+      as_tibble %>%
+      mutate(Donor = Dx + sex + Individual + Age) %>%
+      group_by(assay) %>%
+      summarize(mean.vp = mean(Donor))
+
+df3 = inner_join(df, df2, by='assay') %>%
+        inner_join(details(res.proc) %>% as_tibble) %>%
+        mutate(assay = factor(assay, ctorder)) 
+
+fit_n.cells = lm(mean.vp ~ log10(sum.cells/n_retain), df3)#, weights=df3$n_retain)
+# summary(fit_n.cells)
+pv = coef(summary(fit_n.cells))[2,4]
+pv = format(pv, digits=2)
+
+fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retain, mean.vp, color=assay, size=n_retain, label=assay)) +
+  geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
+  geom_point() +
+  scale_x_log10() +
+  theme_classic() +
+  theme(aspect.ratio=1) + 
+  scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) +
+  xlab("Mean # cells per Subject") +
+  ylab("Mean % variance across Subject") +
+  geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
+  annotate("text", x=40, y=.7, label=bquote(p==.(pv)))
+fig.vp_ncells
+```
+
+```{r de.ncells}
+df3 = inner_join(df, df_de, by='assay') %>%
+        inner_join(details(res.proc) %>% as_tibble) %>%
+        mutate(assay = factor(assay, ctorder)) 
+
+fit_n.cells = lm(nDE ~ log10(sum.cells/n_retain), df3)
+pv = coef(summary(fit_n.cells))[2,4]
+pv = format(pv, digits=2)
+
+fig.nDE_ncells = ggplot(df3, aes(sum.cells/n_retain, nDE, color=assay, size=n_retain, label=assay)) +
+  geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
+  geom_point() +
+  scale_x_log10() +
+  theme_classic() +
+  theme(aspect.ratio=1) + 
+  scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) +
+  xlab("Mean # nuclei per Subject") +
+  ylab("# differentially expressed genes") +
+  geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
+  annotate("text", x=1000, y=.7, label=bquote(p==.(pv)))
+fig.nDE_ncells
+```
+
+
+
+
+## Gene set analysis
+```{r zenith}
+# Load Gene Ontology database 
+go.gs = get_GeneOntology(to="SYMBOL")
+
+# remove set with > 1000 genes
+go.gs = go.gs[sapply(go.gs, function(x) length(geneIds(x))) < 1000]
+
+# zenith analysis 
+res.gsa = zenith_gsa(fit, go.gs, coefs="ADdiag2typesAD")
+```
+
+```{r zenith.heatmap.1, fig.width=10, fig.height=25, cache=FALSE} 
+# remove "GO0022625: " from gene set name
+res.gsa$Geneset = gsub("^GO\\S+ ", "", res.gsa$Geneset)
+res.gsa$assay = factor(res.gsa$assay, ctorder)  
+
+# plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
+```
+
+```{r zenith.heatmap.2, fig.width=10, fig.height=50, cache=FALSE} 
+# get genesets with FDR < 5%
+gs = unique(res.gsa$Geneset[res.gsa$FDR < 0.05])
+
+# keep only results of these genesets
+df = res.gsa[res.gsa$Geneset %in% gs,]
+
+# plot results, but with no limit based on the highest/lowest t-statistic
+plotZenithResults(df, Inf, Inf) 
+```
+
+
+
+# All phenotypes
+```{r dreamlet.all}
+# Scaled is reversed
+colData(res.proc)$CERAD = 5 - colData(res.proc)$ceradsc
+
+traits = c("ADdiag2types", "CERAD", 'ADdiag3types', 'braaksc', 'cogdx', "ordered(CERAD)", 'ordered(ADdiag3types)', 'ordered(braaksc)', 'ordered(cogdx)')
+
+form.base = ~ age + sex + Study + pmi 
+
+fitList = lapply( traits, function(trait){
+  form = as.formula(paste(as.character(form.base), "+", trait))
+
+  fit = dreamlet(res.proc, form) 
+})
+names(fitList) = traits
+```
+
+```{r write.table}
+df_all = lapply(names(fitList), function(trait){
+
+  fit = fitList[[trait]]
+  coefSet = coefNames(fit)[-seq(5)]
+
+  tab = topTable(fit, coef=coefSet, number=Inf)
+  tab$trait = gsub("ordered\\((\\S+)\\)", "\\1", trait)
+  tab$coefSet = paste(coefSet, collapse=' + ')
+  tab = as_tibble(tab) 
+
+  if( length(coefSet) == 1){    
+    cols = c("assay", "ID", "AveExpr", "t", "P.Value", "adj.P.Val", "trait", "coefSet")
+    tab = tab %>% 
+      select(all_of(cols)) %>%
+      rename(stat = "t")
+  }else{
+    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val", "coefSet")
+    tab = tab %>% 
+      select(all_of(cols)) %>%
+      rename(stat = "F")
+  }
+
+}) %>% 
+  bind_rows %>%
+  arrange(trait, assay, ID, adj.P.Val)
+
+write_parquet(df_all, "Mathys_Cell_2023_Cell_Type_dreamlet.parquet")
+```
+
+
+
+
+
+
+
+
+
+# Session Info
+<details>
+```{r sessioninfo, cache=FALSE}
+sessionInfo()
+```
+</details>
+

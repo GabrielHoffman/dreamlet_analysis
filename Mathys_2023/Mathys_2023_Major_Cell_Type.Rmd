@@ -24,10 +24,11 @@ vignette: >
 cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023
 R
 
-system("git pull"); rmarkdown::render("Mathys_2023.Rmd");
+system("git pull"); rmarkdown::render("Mathys_2023_Major_Cell_Type.Rmd");
 
 
-# https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023.html
+# https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/Mathys_2023_Major_Cell_Type.html
+
 
 --->
 
@@ -89,7 +90,6 @@ pb <- aggregateToPseudoBulk(sce,
 # UMAP embedding
 ```{r embedding}
 plotProjection(sce, "X_umap", annotation='Major_Cell_Type') 
-plotProjection(sce, "X_umap", annotation='Cell_Type')  
 ```
 
 
@@ -175,7 +175,7 @@ plotVolcano(fit, "ADdiag2typesAD")
 
 ```{r write.file}
 topTable(fit, coef = "ADdiag2typesAD", number=Inf) %>%
-  write.table(file="Mathys_2023_ADdiag2typesAD.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+  write.table(file="Mathys_2023_Major_Cell_Type_ADdiag2typesAD.tsv", quote=FALSE, sep="\t", row.names=FALSE)
 ```
 
 
@@ -421,7 +421,7 @@ df_all = lapply(names(fitList), function(trait){
   bind_rows %>%
   arrange(trait, assay, ID, adj.P.Val)
 
-write_parquet(df_all, "Mathys_Cell_2023_dreamlet.parquet")
+write_parquet(df_all, "Mathys_Cell_2023_Major_Cell_Type_dreamlet.parquet")
 ```
 
 
