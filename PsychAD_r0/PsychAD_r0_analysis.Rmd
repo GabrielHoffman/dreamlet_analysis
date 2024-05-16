@@ -270,6 +270,10 @@ sort(table(df$dx), decreasing=TRUE) %>% kbl() %>% kable_styling(full_width=FALSE
 form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
  
 res.proc = processAssays( pb, form, 
+  min.cells = 2,
+  min.count = 1,
+  min.samples = 4,
+  min.prop = 0.1,
   BPPARAM = SnowParam(6))
 ```
 
