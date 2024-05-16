@@ -106,8 +106,8 @@ pb$Status = factor(pb$Status, types)
 form = ~ (1|subject.id) + (1|Status) + (1|subject.status) 
 res.proc = processAssays( pb, 
                           form,  
-                          min.count = 5,
-                          min.cells = 10,
+                          min.count = 1,
+                          min.cells = 2,
                           min.samples = 10,
                           BPPARAM = SnowParam(6))
 ```
