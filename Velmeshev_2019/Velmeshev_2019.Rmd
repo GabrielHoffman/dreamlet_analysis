@@ -110,7 +110,11 @@ ggcorrplot(C, hc.order = TRUE)
 # Process assays
 ```{r dreamlet}
 form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
-res.proc = processAssays( pb, form, BPPARAM = SnowParam(6))
+res.proc = processAssays( pb, form, 
+                          min.count = 1,
+                          min.cells = 2,
+                          min.samples = 10,
+                          BPPARAM = SnowParam(6))
 ```
 ## Mean variance trend
 ```{r voom, fig.height=10}
