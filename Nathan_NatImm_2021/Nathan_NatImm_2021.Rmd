@@ -153,6 +153,8 @@ plotCorrMatrix(C)
 form = ~ TB_status + (1|donor) + (1|batch) + (1|season) + (1|sex) + scale(age) + I(scale(age^2)) + scale(prop_NAT)
 res.proc = processAssays( pb, form,
               min.samples = 10,
+              min.cells=2,
+              min.count = 1,
               assays = assayNames(pb), 
               BPPARAM = SnowParam(6))
 ```
