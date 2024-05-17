@@ -144,7 +144,7 @@ details(res.proc)
 ```
 
 ### Show voom-style mean-variance trends
-```{r voom.plot, fig.height=18, fig.width=12}
+```{r voom.plot, fig.height=6, fig.width=12}
 # show voom plot for each cell clusters  
 plotVoom( res.proc, ncol=4) 
 ```
@@ -157,7 +157,7 @@ form = ~ age + sex + Study + pmi + ADdiag2types
 vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
 ```
 
-```{r vp.plot, fig.height=18, fig.width=12}
+```{r vp.plot, fig.height=6, fig.width=12}
 # Summarize variance fractions genome-wide for each cell type
 plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)   
 ```
@@ -169,7 +169,7 @@ fit = dreamlet(res.proc, form)
 ```
 
 # Volcano
-```{r volcano, fig.height=18, fig.width=12}
+```{r volcano, fig.height=9, fig.width=12}
 plotVolcano(fit, "ADdiag2typesAD")
 ```
 
