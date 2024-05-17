@@ -56,6 +56,7 @@ file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
+sce = sce[,sce$subclass != "EN_NF"]
 ```
 
 Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) pools, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
@@ -270,11 +271,8 @@ sort(table(df$dx), decreasing=TRUE) %>% kbl() %>% kable_styling(full_width=FALSE
 form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
  
 res.proc = processAssays( pb, form, 
-  min.cells = 2,
-  min.count = 1,
-  min.samples = 4,
-  min.prop = 0.1,
-  BPPARAM = SnowParam(6))
+  BPPARAM = SnowParam(12),
+  assays = "Astro")
 ```
 
 ```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE} 
