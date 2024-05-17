@@ -15,7 +15,7 @@ output:
 <!---
 
 cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Velmeshev_2019
-ml git
+
 R
 
 system("git pull"); rmarkdown::render("Velmeshev_2019.Rmd")
@@ -58,7 +58,6 @@ library(ggcorrplot)
 library(BiocParallel)
 library(cowplot)
 library(DelayedArray)
-setAutoBlockSize(1e9)
 
 trimGenesets = function(x){
   x %>%
