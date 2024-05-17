@@ -63,7 +63,7 @@ library(kableExtra)
 library(tidyverse) 
 ```
 
-```{r read.data}
+```{r read_data}
 # read single cell RNA-seq
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/covid_counts.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE)
