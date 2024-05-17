@@ -135,6 +135,10 @@ pb$ADdiag3types = factor(pb$ADdiag3types, types)
 form = ~ age + sex + Study + pmi
 res.proc = processAssays( pb, 
                           form,  
+                          min.cells = 2,
+                          min.count = 1,
+                          min.samples = 4,
+                          min.prop = 0.3,
                           BPPARAM = SnowParam(6))
 ```
 
