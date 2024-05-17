@@ -63,7 +63,7 @@ library(kableExtra)
 library(tidyverse) 
 ```
 
-```{r read_data, eval=FALSE}
+```{r read_data}
 # read single cell RNA-seq
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/covid_counts.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE)
@@ -77,7 +77,7 @@ sce = sce[,sce$GEX_region != "E: Doublets"]
 
 # remove nan cells
 sce = sce[,sce$minor_subset != "nan"]
-``
+```
 
 
 # UMAP provided with data
