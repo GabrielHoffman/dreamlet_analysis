@@ -14,9 +14,6 @@ output:
 
 
 cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/COVID_combat/
-ml python git
-ml gcc/11.2.0
-git pull
 R --vanilla
 
 
@@ -24,6 +21,12 @@ system("git pull"); rmarkdown::render("COVID_combat.Rmd");
 
 
 # https://hoffmg01.hpc.mssm.edu/crumblr_analysis/COVID_combat
+
+conda activate /sc/arion/work/hoffmg01/R.cache/R/basilisk/1.14.3/zellkonverter/1.13.3/zellkonverterAnnDataEnv-0.10.6
+
+adata = ad.read(h5ad("local.h5ad")
+adata.X = adata.raw.X
+adata.write("covid_counts.h5ad")
 
 
 
@@ -61,8 +64,8 @@ library(tidyverse)
 
 ```{r read.data}
 # read single cell RNA-seq
-file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/local.h5ad"
-sce = readH5AD(file, use_hdf5=TRUE, raw=TRUE)
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/covid_counts.h5ad"
+sce = readH5AD(file, use_hdf5=TRUE)
 ```
 
 
