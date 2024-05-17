@@ -22,6 +22,7 @@ system("git pull"); rmarkdown::render("COVID_combat.Rmd");
 
 # https://hoffmg01.hpc.mssm.edu/crumblr_analysis/COVID_combat
 
+# resolve issue reading in 'raw'
 conda activate /sc/arion/work/hoffmg01/R.cache/R/basilisk/1.14.3/zellkonverter/1.13.3/zellkonverterAnnDataEnv-0.10.6
 
 adata = ad.read(h5ad("local.h5ad")
@@ -66,7 +67,17 @@ library(tidyverse)
 # read single cell RNA-seq
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/covid_counts.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE)
-```
+counts(sce) = assay(sce, 'X')
+
+# use HGNC names
+rownames(sce) = rowData(sce)$feature_name
+
+# remove doublets
+sce = sce[,sce$GEX_region != "E: Doublets"]
+
+# remove nan cells
+sce = sce[,sce$minor_subset != "nan"]
+``
 
 
 # UMAP provided with data
@@ -76,20 +87,6 @@ fig2 = plotProjection(sce, "X_umap", "minor_subset")
 plot_grid(fig1, fig2)
 ```
 
-```{r swap}
-# # the raw counts are stored in the AltExp
-# # load them in to the main assay, 
-# # the into 'counts'
-# sce = swapAltExp(sce, "raw")
-# counts(sce) = assay(sce, "X")
-rownames(sce) = rowData(sce)$feature_name
-
-# remove doublets
-sce = sce[,sce$GEX_region != "E: Doublets"]
-
-# remove nan cells
-sce = sce[,sce$minor_subset != "nan"]
-```
 
 
 ```{r merge.data}
