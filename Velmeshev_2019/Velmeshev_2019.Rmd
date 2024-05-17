@@ -159,76 +159,6 @@ vp = vp.lst2[vp.lst2$assay == "L2/3",]
 plotVarPart( sortCols(vp)) 
 ```
 
-## Interpreting variance partitioning analysis
-Observe that fraction of variation across batches correlates with GC content of the corresponding gene. Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in ‘shot noise’ due to low counts.
-
-```{r gc, fig.height=5, fig.width=12}
-# read GC content
-path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/"
-file = paste0(path, '/misc/GRCh38.104_gc_content.tsv.gz')
-df_GC = read.table(file, header=TRUE)
-
-df_vp = merge(as.data.frame(vp.lst), df_GC, by.x="gene", by.y="SYMBOL")
-
-# Compute correlation and standard error for Pearson and Spearman
-cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
-
-  method = match.arg(method)
-
-  if( method == "pearson"){
-    df <- cor.test(x,y, method=method,...) %>%
-      tidy %>%
-      mutate(se = sqrt((1 - estimate^2)/parameter))
-    res = data.frame(rho = df$estimate, rho.se = df$se)
-  }else if(method == "spearman"){
-    # https://stats.stackexchange.com/questions/18887/how-to-calculate-a-confidence-interval-for-spearmans-rank-correlation
-    rho <- cor(x,y, method=method,...)
-    n <- sum(complete.cases(x, y))
-    rho.se <- sqrt((1+rho^2/2)/(n-3))
-
-    res <- data.frame(rho = rho, rho.se = rho.se)
-  }
-
-  return(res) 
-}
-
-fig1 = df_vp %>%
-  group_by(assay) %>%
-  mutate(batch = Capbatch + Seqbatch) %>%
-  summarize(cor.se(batch, GC, method="spearman")) %>%
-  ggplot(aes(assay, rho, fill=assay)) +
-    geom_bar(stat="identity") + 
-    geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
-    theme_classic() +
-    theme(aspect.ratio=1, 
-      legend.position="none") +
-    xlab("Cell type") +
-    ylab("Spearman correlation between batch % and GC content") +
-    coord_flip() 
-
-tab = topTable(res.dl, 'diagnosisASD', number=Inf)
-
-df_vp = merge(as.data.frame(vp.lst), tab, by.x=c("assay", "gene"), by.y=c("assay", "ID") )
-
-fig2 = df_vp %>% 
-  as_tibble %>%
-  group_by(assay) %>%
-  summarize(cor.se(individual, AveExpr, method="spearman")) %>%
-  ggplot(aes(assay, rho, fill=assay)) +
-    geom_bar(stat="identity") + 
-    geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
-    theme_classic() +
-    theme(aspect.ratio=1, 
-      axis.text.y=element_blank(), 
-      axis.ticks.y=element_blank(), 
-      legend.position="none") +
-    xlab("Cell type") +
-    ylab("Spearman correlation between Donor % and CPM") +
-    coord_flip() 
-
-plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr") 
-```
-
 # Differential expression
 ```{r run.de}
 form = ~ (1|individual) + (1|region) + age + (1|sex) + diagnosis + (1|Capbatch) + (1|Seqbatch) + post.mortem.interval..hours. + RNA.Integrity.Number
@@ -321,5 +251,76 @@ plotGeneHeatmap( res.dl, coef="diagnosisASD",
     axis.text.x=element_text(size=7.5, angle=90),
     axis.text.y=element_text(size=7.5)) + 
   xlab('') + ylab('') 
+```
+
+
+## Interpreting variance partitioning analysis
+Observe that fraction of variation across batches correlates with GC content of the corresponding gene. Also genes with higher counts per million show high variation across donor since more counts corresponds to a reduction in ‘shot noise’ due to low counts.
+
+```{r gc, fig.height=5, fig.width=12}
+# read GC content
+path = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/"
+file = paste0(path, '/misc/GRCh38.104_gc_content.tsv.gz')
+df_GC = read.table(file, header=TRUE)
+
+df_vp = merge(as.data.frame(vp.lst), df_GC, by.x="gene", by.y="SYMBOL")
+
+# Compute correlation and standard error for Pearson and Spearman
+cor.se = function(x,y, method = c("pearson", "kendall", "spearman"),...){
+
+  method = match.arg(method)
+
+  if( method == "pearson"){
+    df <- cor.test(x,y, method=method,...) %>%
+      tidy %>%
+      mutate(se = sqrt((1 - estimate^2)/parameter))
+    res = data.frame(rho = df$estimate, rho.se = df$se)
+  }else if(method == "spearman"){
+    # https://stats.stackexchange.com/questions/18887/how-to-calculate-a-confidence-interval-for-spearmans-rank-correlation
+    rho <- cor(x,y, method=method,...)
+    n <- sum(complete.cases(x, y))
+    rho.se <- sqrt((1+rho^2/2)/(n-3))
+
+    res <- data.frame(rho = rho, rho.se = rho.se)
+  }
+
+  return(res) 
+}
+
+fig1 = df_vp %>%
+  group_by(assay) %>%
+  mutate(batch = Capbatch + Seqbatch) %>%
+  summarize(cor.se(batch, GC, method="spearman")) %>%
+  ggplot(aes(assay, rho, fill=assay)) +
+    geom_bar(stat="identity") + 
+    geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
+    theme_classic() +
+    theme(aspect.ratio=1, 
+      legend.position="none") +
+    xlab("Cell type") +
+    ylab("Spearman correlation between batch % and GC content") +
+    coord_flip() 
+
+tab = topTable(res.dl, 'diagnosisASD', number=Inf)
+
+df_vp = merge(as.data.frame(vp.lst), tab, by.x=c("assay", "gene"), by.y=c("assay", "ID") )
+
+fig2 = df_vp %>% 
+  as_tibble %>%
+  group_by(assay) %>%
+  summarize(cor.se(individual, AveExpr, method="spearman")) %>%
+  ggplot(aes(assay, rho, fill=assay)) +
+    geom_bar(stat="identity") + 
+    geom_errorbar(aes(ymin= rho - 1.96*rho.se, ymax= rho + 1.96*rho.se), width=0) +
+    theme_classic() +
+    theme(aspect.ratio=1, 
+      axis.text.y=element_blank(), 
+      axis.ticks.y=element_blank(), 
+      legend.position="none") +
+    xlab("Cell type") +
+    ylab("Spearman correlation between Donor % and CPM") +
+    coord_flip() 
+
+plot_grid(fig1, fig2, labels=LETTERS[1:2], nrow=1, align="hv", axis="tblr") 
 ```
 
