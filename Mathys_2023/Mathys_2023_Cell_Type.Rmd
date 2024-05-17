@@ -368,7 +368,7 @@ res.gsa$assay = factor(res.gsa$assay, ctorder)
 # plotZenithResults(res.gsa, 10, 3) + theme(legend.position="bottom") 
 ```
 
-```{r zenith.heatmap.2, fig.width=12, fig.height=50, cache=FALSE} 
+```{r zenith.heatmap.2, fig.width=16, fig.height=50, cache=FALSE} 
 # get genesets with FDR < 5%
 gs = unique(res.gsa$Geneset[res.gsa$FDR < 0.05])
 
@@ -415,7 +415,7 @@ df_all = lapply(names(fitList), function(trait){
       select(all_of(cols)) %>%
       rename(stat = "t")
   }else{
-    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val", "coefSet")
+    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val","trait", "coefSet")
     tab = tab %>% 
       select(all_of(cols)) %>%
       rename(stat = "F")
