@@ -135,6 +135,10 @@ pb$ADdiag3types = factor(pb$ADdiag3types, types)
 form = ~ age + sex + Study + pmi
 res.proc = processAssays( pb, 
                           form,  
+                          min.cells = 2,
+                          min.count = 1,
+                          min.samples = 4,
+                          min.prop = 0.3,
                           BPPARAM = SnowParam(6))
 ```
 
@@ -146,7 +150,7 @@ details(res.proc)
 ### Show voom-style mean-variance trends
 ```{r voom.plot, fig.height=18, fig.width=12}
 # show voom plot for each cell clusters  
-plotVoom( res.proc, ncol=4) 
+plotVoom( res.proc, ncol=5) 
 ```
 
 
@@ -170,7 +174,7 @@ fit = dreamlet(res.proc, form)
 
 # Volcano
 ```{r volcano, fig.height=18, fig.width=12}
-plotVolcano(fit, "ADdiag2typesAD")
+plotVolcano(fit, "ADdiag2typesAD", ncol=4)
 ```
 
 ```{r write.file}
