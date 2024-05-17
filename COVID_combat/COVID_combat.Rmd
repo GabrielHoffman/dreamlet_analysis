@@ -77,12 +77,12 @@ plot_grid(fig1, fig2)
 ```
 
 ```{r swap}
-# the raw counts are stored in the AltExp
-# load them in to the main assay, 
-# the into 'counts'
-sce = swapAltExp(sce, "raw")
-counts(sce) = assay(sce, "X")
-rownames(sce) = rowData(sce)$feature_name
+# # the raw counts are stored in the AltExp
+# # load them in to the main assay, 
+# # the into 'counts'
+# sce = swapAltExp(sce, "raw")
+# counts(sce) = assay(sce, "X")
+# rownames(sce) = rowData(sce)$feature_name
 
 # remove doublets
 sce = sce[,sce$GEX_region != "E: Doublets"]
