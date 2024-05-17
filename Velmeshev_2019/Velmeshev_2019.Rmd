@@ -237,9 +237,6 @@ plotZenithResults(df, Inf, Inf)
 ```
 
 
-  trace("plotGeneHeatmap", browser, exit=browser, signature = c("dreamletResult")) 
-
-
 ### Highlight specific genesets
 ```{r panels3, fig.height=3, fig.width=8}
 CT = c("L2/3", "IN-PV", "IN-SST", "IN-SV2C", "IN-VIP", "L4", "L5/6", "L5/6-CC")     
