@@ -82,7 +82,7 @@ plot_grid(fig1, fig2)
 # # the into 'counts'
 # sce = swapAltExp(sce, "raw")
 # counts(sce) = assay(sce, "X")
-# rownames(sce) = rowData(sce)$feature_name
+rownames(sce) = rowData(sce)$feature_name
 
 # remove doublets
 sce = sce[,sce$GEX_region != "E: Doublets"]
