@@ -163,7 +163,7 @@ vp.lst = fitVarPart( res.proc, form, BPPARAM = SnowParam(6, progressbar=TRUE))
 
 ```{r vp.plot, fig.height=25, fig.width=12}
 # Summarize variance fractions genome-wide for each cell type
-plotVarPart(sortCols(vp.lst), label.angle=60, ncol=4)   
+plotVarPart(sortCols(vp.lst), label.angle=60, ncol=5)   
 ```
 
 # dreamlet
@@ -174,7 +174,7 @@ fit = dreamlet(res.proc, form)
 
 # Volcano
 ```{r volcano, fig.height=25, fig.width=12}
-plotVolcano(fit, "ADdiag2typesAD", ncol=4)
+plotVolcano(fit, "ADdiag2typesAD", ncol=5)
 ```
 
 ```{r write.file}
@@ -192,7 +192,7 @@ fig.gene_heatmap = plotGeneHeatmap( fit, coef="ADdiag2typesAD", genes=genes, ass
 fig.gene_heatmap
 ```
 
-```{r plotForest, fig.height=10, fig.width=12, cache=FALSE}
+```{r plotForest, fig.height=14, fig.width=12, cache=FALSE}
 figList = lapply(genes, function(g){  
   plotForest( fit, coef = 'ADdiag2typesAD', gene = g, assays=ctorder) +
     theme(aspect.ratio=1, legend.position="none") 
@@ -399,6 +399,7 @@ names(fitList) = traits
 ```
 
 ```{r write.table}
+saveRDS(fitList, file="Mathys_Cell_2023_Cell_Type_dreamlet_fit.RDS")
 df_all = lapply(names(fitList), function(trait){
 
   fit = fitList[[trait]]

@@ -399,6 +399,7 @@ names(fitList) = traits
 ```
 
 ```{r write.table}
+saveRDS(fitList, file="Mathys_Cell_2023_Major_Cell_Type_dreamlet_fit.RDS")
 df_all = lapply(names(fitList), function(trait){
 
   fit = fitList[[trait]]
