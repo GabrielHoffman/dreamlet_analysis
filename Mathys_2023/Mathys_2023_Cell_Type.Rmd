@@ -192,7 +192,7 @@ fig.gene_heatmap = plotGeneHeatmap( fit, coef="ADdiag2typesAD", genes=genes, ass
 fig.gene_heatmap
 ```
 
-```{r plotForest, fig.height=14, fig.width=12, cache=FALSE}
+```{r plotForest, fig.height=14, fig.width=16, cache=FALSE}
 figList = lapply(genes, function(g){  
   plotForest( fit, coef = 'ADdiag2typesAD', gene = g, assays=ctorder) +
     theme(aspect.ratio=1, legend.position="none") 
