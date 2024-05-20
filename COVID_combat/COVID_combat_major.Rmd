@@ -145,7 +145,8 @@ df %>%
 ```{r proc}
 form = ~ Age + (1|sex) + (1|Source)
 res.proc = processAssays(pb, form,  
-                          min.count = 1,
+                          min.count = 3,
+                          min.cells = 3,
                           BPPARAM = SnowParam(6))
 
 res.vp = fitVarPart(res.proc, form, BPPARAM=SnowParam(6) )
