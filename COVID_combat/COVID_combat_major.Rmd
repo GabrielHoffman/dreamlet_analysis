@@ -1,0 +1,363 @@
+---
+title: "COVID COMBAT study"
+subtitle: '[COvid-19 Multi-omics Blood ATlas (COMBAT) Consortium, Cell, 2022](https://doi.org/10.1016/j.cell.2022.01.012)'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+output: 
+  html_document:
+    toc: true
+    smart: true
+    self_contained: false
+---
+
+<!---
+
+
+cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/COVID_combat/
+R --vanilla
+
+
+system("git pull"); rmarkdown::render("COVID_combat_major.Rmd");
+
+
+# https://hoffmg01.hpc.mssm.edu/crumblr_analysis/COVID_combat
+
+# resolve issue reading in 'raw'
+conda activate /sc/arion/work/hoffmg01/R.cache/R/basilisk/1.14.3/zellkonverter/1.13.3/zellkonverterAnnDataEnv-0.10.6
+
+adata = ad.read(h5ad("local.h5ad")
+adata.X = adata.raw.X
+adata.write("covid_counts.h5ad")
+
+
+
+# cd 
+
+--->
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  package.startup.message = FALSE,
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+
+```{r load, cache=FALSE}
+library(SingleCellExperiment)
+library(zellkonverter)
+library(dreamlet)
+library(zenith)
+library(GSEABase)
+library(qvalue)
+library(RColorBrewer) 
+library(cowplot)
+library(kableExtra)
+library(tidyverse) 
+```
+
+```{r read_data}
+# read single cell RNA-seq
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/covid_counts.h5ad"
+sce = readH5AD(file, use_hdf5=TRUE)
+counts(sce) = assay(sce, 'X')
+
+# use HGNC names
+rownames(sce) = rowData(sce)$feature_name
+
+# remove doublets
+sce = sce[,sce$GEX_region != "E: Doublets"]
+
+# remove nan cells
+sce = sce[,sce$major_subset != "nan"]
+```
+
+
+# UMAP provided with data
+```{r plots.UMAP, fig.widht=8, fig.height=6}
+plotProjection(sce, "X_umap", "major_subset")
+```
+
+
+
+```{r merge.data}
+# read metadata
+file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/CBD-KEY-CLINVAR/COMBAT_CLINVAR_for_processed.txt"
+df = read.table(file, header=TRUE)
+
+# filter and merge metadata
+df = df[df$scRNASeq_sample_ID %in% sce$scRNASeq_sample_ID,]
+idx = match(sce$scRNASeq_sample_ID, df$scRNASeq_sample_ID)
+colData(sce) = cbind(colData(sce), df[idx,])
+
+# For each donor, select the most severe sample
+res = colData(sce) %>%
+	as_tibble %>%
+	group_by(donor_id) %>%
+	select(scRNASeq_sample_ID, Source) %>%
+	distinct %>%
+	summarize(scRNASeq_sample_ID, Source, i = which.max(Source),
+		use_sample_id = scRNASeq_sample_ID[which.max(Source)])
+
+# res[res$donor_id == "S00109",]
+
+# subset to one sample per donor
+sceSub = sce[,sce$scRNASeq_sample_ID %in% droplevels(res$use_sample_id)]
+
+# create pseudobulk
+pb <- aggregateToPseudoBulk(sceSub,
+    assay = "counts",     
+    cluster_id = "major_subset",  
+    sample_id = "scRNASeq_sample_ID",
+    verbose = FALSE)
+```
+
+
+## Properties of dataset
+```{r properties}
+df = data.frame(table(pb$Source))
+colnames(df) = c("Disease status", "Count")
+
+df %>%
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+
+df = list()
+df$`# Samples` = ncol(pb)
+df$`# Cells` = ncol(sce)
+df = unlist(df)
+df = data.frame(Property=names(df), count = df)
+
+df %>%  
+  kbl(row.names=FALSE) %>% 
+  kable_classic(full_width = FALSE) 
+```
+
+
+
+```{r proc}
+form = ~ Age + (1|sex) + (1|Source)
+res.proc = processAssays(pb, form,  
+                          min.count = 1,
+                          BPPARAM = SnowParam(6))
+
+res.vp = fitVarPart(res.proc, form, BPPARAM=SnowParam(6) )
+
+form = ~ Source + Age + sex
+fit = dreamlet(res.proc, form, BPPARAM=SnowParam(6))
+```
+
+
+
+### Show details of processing
+```{r details1}
+details(res.proc) 
+```
+
+
+### Show voom-style mean-variance trends
+```{r voom.plot, fig.height=14, fig.width=9}
+# show voom plot for each cell clusters  
+plotVoom( res.proc, ncol=4) 
+```
+
+```{r details2}
+details(fit) 
+```
+
+
+# Variance partitioning results
+```{r vp.plot, fig.height=20, fig.width=12}
+plotVarPart(sortCols(res.vp), label.angle=60, ncol=4)
+```
+
+
+
+
+```{r volcano.plot, fig.height=20, fig.width=12}
+plotVolcano(fit, coef="SourceCOVID_MILD")
+```
+
+```{r examples, eval=FALSE}
+coef_array = c("SourceCOVID_HCW_MILD", "SourceCOVID_MILD", "SourceCOVID_SEV", "SourceCOVID_CRIT", "SourceSepsis", "SourceFlu")
+
+df = coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = factor(x, coef_array))) %>%
+    mutate(se = logFC / t) %>%
+    group_by(coef,assay)
+
+genes = c("IFI27", "PPARG", "ZNF217", "PIM3")
+
+df %>% 
+  filter(ID %in% genes) %>%
+  filter(assay %in% c("cMono", 'ncMono')) %>%
+  ggplot(aes(logFC, coef, color=coef)) +
+    geom_point() +
+    geom_errorbar(aes(xmin = logFC - 1.96*se, xmax = logFC + 1.96*se), width=0) +
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    facet_grid(ID ~assay)
+
+genes = df %>%
+  filter(assay %in% c("cMono", 'ncMono')) %>%
+  arrange(-abs(logFC)) %>%
+  ungroup %>%
+  select(ID) %>%
+  distinct %>%
+  head(100) %>%
+  c
+
+tab = res.gsa %>%
+  as_tibble %>%
+  mutate(coef = factor(coef, coef_array)) %>%
+  filter(assay %in% c("cMono", 'ncMono')) %>%
+  arrange(PValue) 
+
+
+
+gs = "interferon|interlukin|activiation|inflamm|extracell|chemokin"
+
+tab2 = tab %>%
+  filter(grepl(gs, Geneset)) %>%
+  filter(assay == "cMono") %>%
+  mutate(tstat = delta/ se)
+
+
+nrow = length(unique(tab2$coef))
+ncol = length(unique(tab2$Geneset))
+zmax = max(abs(tab2$tstat), na.rm=TRUE)
+
+fig = tab2 %>%
+  ggplot(aes(coef, Geneset, fill=tstat, label=ifelse(FDR < 0.05, '*', ''))) +
+    geom_tile() +    
+    theme_classic() + 
+    scale_fill_gradient2("t-statistic", low="blue", mid="white", high="red", limits=c(-zmax, zmax)) + 
+    theme(aspect.ratio=ncol/nrow, axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), plot.title = element_text(hjust = 0.5)) + 
+    geom_text(vjust=1, hjust=0.5) 
+    
+ggsave(fig, file="~/www/test.pdf", width=15, height=12)
+
+# his showed enrichment for type I and II interferon pathways in the less severe hospitalized COVID-19 patients across cell types.
+
+
+gs = c("GO0002544: chronic inflammatory response", 
+"GO0031012: extracellular matrix",
+"GO0035456: response to interferon−beta",
+"GO0071346: cellular response to type II interferon")
+
+genes = geneIds(go.gs[[gs[4]]])
+
+tab3 = df %>%
+  filter(assay == c( "ncMono"), ID %in% genes) 
+
+nrow = length(unique(tab3$coef))
+ncol = length(unique(tab3$ID))
+zmax = max(abs(tab3$logFC), na.rm=TRUE)
+
+fig = tab3  %>%
+  ggplot(aes(coef, ID, fill=logFC, label=ifelse(adj.P.Val < 0.05, '*', ''))) +
+    geom_tile() +    
+    theme_classic() + 
+    scale_fill_gradient2("logFC", low="blue", mid="white", high="red", limits=c(-zmax, zmax)) + 
+    theme(aspect.ratio=ncol/nrow, axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), plot.title = element_text(hjust = 0.5)) + 
+    geom_text(vjust=1, hjust=0.5) +
+    facet_wrap(~ assay)
+    
+ggsave(fig, file="~/www/test.pdf", width=15, height=18)
+
+
+
+```
+
+
+### Summarize differential expression 
+```{r plot.pi, fig.height=25, fig.width=12}
+file = "./topTable_COVID_2022.tsv"
+
+coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = x)) %>%
+    write.table(file, quote=FALSE, sep='\t', row.names=FALSE)
+
+# Summarize differential expression for each coef and assay
+df = coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = factor(x, coef_array))) %>%
+  group_by(coef,assay) %>%
+  summarize( nDE = sum(adj.P.Val < 0.05), 
+            pi1 = 1 - pi0est(P.Value)$pi0,
+            nGenes = length(adj.P.Val)) %>%
+  mutate(assay = factor(assay, assayNames(pb))) 
+
+
+ymax = 1.05*max(df$nGenes)
+fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes expressed") +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+ymax = 1.05*max(df$nDE)
+fig2 = ggplot(df, aes(nDE, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,ymax), expand=c(0,0)) +
+    xlab("# genes with FDR < 5%") +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+fig3 = ggplot(df, aes(pi1, assay, fill=assay)) + 
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") +
+    scale_x_continuous(limits=c(0,1), expand=c(0,0)) +
+    xlab(bquote(pi[1])) +
+    ylab("Cell type") +
+    facet_wrap(~ coef)
+
+plot_grid(fig1, fig2, fig3, labels=LETTERS[1:3], nrow=3, axis="tblr", align="hv")
+```    
+
+
+## Gene set analysis
+```{r zenith}
+# Load Gene Ontology database 
+go.gs = get_GeneOntology(to="SYMBOL")
+
+# remove set with > 1000 genes
+go.gs = go.gs[sapply(go.gs, function(x) length(geneIds(x))) < 1000]
+
+# zenith analysis
+res.gsa = zenith_gsa(fit, go.gs, coefs=coef_array, progressbar=FALSE)
+```
+
+```{r zenith.plot, fig.height=80, fig.width=20}
+plotZenithResults(res.gsa, 5, 3)
+```
+
+
+
+
+
+
+   
+
+

@@ -17,7 +17,7 @@ cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/COVID_combat/
 R --vanilla
 
 
-system("git pull"); rmarkdown::render("COVID_combat.Rmd");
+system("git pull"); rmarkdown::render("COVID_combat_minor.Rmd");
 
 
 # https://hoffmg01.hpc.mssm.edu/crumblr_analysis/COVID_combat
@@ -82,9 +82,7 @@ sce = sce[,sce$minor_subset != "nan"]
 
 # UMAP provided with data
 ```{r plots.UMAP, fig.widht=8, fig.height=6}
-fig1 = plotProjection(sce, "X_umap", "major_subset")
-fig2 = plotProjection(sce, "X_umap", "minor_subset")
-plot_grid(fig1, fig2)
+plotProjection(sce, "X_umap", "minor_subset")
 ```
 
 
@@ -116,7 +114,7 @@ sceSub = sce[,sce$scRNASeq_sample_ID %in% droplevels(res$use_sample_id)]
 # create pseudobulk
 pb <- aggregateToPseudoBulk(sceSub,
     assay = "counts",     
-    cluster_id = "major_subset",  
+    cluster_id = "minor_subset",  
     sample_id = "scRNASeq_sample_ID",
     verbose = FALSE)
 ```
@@ -187,6 +185,99 @@ plotVarPart(sortCols(res.vp), label.angle=60, ncol=4)
 plotVolcano(fit, coef="SourceCOVID_MILD")
 ```
 
+```{r examples, eval=FALSE}
+coef_array = c("SourceCOVID_HCW_MILD", "SourceCOVID_MILD", "SourceCOVID_SEV", "SourceCOVID_CRIT", "SourceSepsis", "SourceFlu")
+
+df = coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = factor(x, coef_array))) %>%
+    mutate(se = logFC / t) %>%
+    group_by(coef,assay)
+
+genes = c("IFI27", "PPARG", "ZNF217", "PIM3")
+
+df %>% 
+  filter(ID %in% genes) %>%
+  filter(assay %in% c("cMono", 'ncMono')) %>%
+  ggplot(aes(logFC, coef, color=coef)) +
+    geom_point() +
+    geom_errorbar(aes(xmin = logFC - 1.96*se, xmax = logFC + 1.96*se), width=0) +
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    facet_grid(ID ~assay)
+
+genes = df %>%
+  filter(assay %in% c("cMono", 'ncMono')) %>%
+  arrange(-abs(logFC)) %>%
+  ungroup %>%
+  select(ID) %>%
+  distinct %>%
+  head(100) %>%
+  c
+
+tab = res.gsa %>%
+  as_tibble %>%
+  mutate(coef = factor(coef, coef_array)) %>%
+  filter(assay %in% c("cMono", 'ncMono')) %>%
+  arrange(PValue) 
+
+
+
+gs = "interferon|interlukin|activiation|inflamm|extracell|chemokin"
+
+tab2 = tab %>%
+  filter(grepl(gs, Geneset)) %>%
+  filter(assay == "cMono") %>%
+  mutate(tstat = delta/ se)
+
+
+nrow = length(unique(tab2$coef))
+ncol = length(unique(tab2$Geneset))
+zmax = max(abs(tab2$tstat), na.rm=TRUE)
+
+fig = tab2 %>%
+  ggplot(aes(coef, Geneset, fill=tstat, label=ifelse(FDR < 0.05, '*', ''))) +
+    geom_tile() +    
+    theme_classic() + 
+    scale_fill_gradient2("t-statistic", low="blue", mid="white", high="red", limits=c(-zmax, zmax)) + 
+    theme(aspect.ratio=ncol/nrow, axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), plot.title = element_text(hjust = 0.5)) + 
+    geom_text(vjust=1, hjust=0.5) 
+    
+ggsave(fig, file="~/www/test.pdf", width=15, height=12)
+
+# his showed enrichment for type I and II interferon pathways in the less severe hospitalized COVID-19 patients across cell types.
+
+
+gs = c("GO0002544: chronic inflammatory response", 
+"GO0031012: extracellular matrix",
+"GO0035456: response to interferon−beta",
+"GO0071346: cellular response to type II interferon")
+
+genes = geneIds(go.gs[[gs[4]]])
+
+tab3 = df %>%
+  filter(assay == c( "ncMono"), ID %in% genes) 
+
+nrow = length(unique(tab3$coef))
+ncol = length(unique(tab3$ID))
+zmax = max(abs(tab3$logFC), na.rm=TRUE)
+
+fig = tab3  %>%
+  ggplot(aes(coef, ID, fill=logFC, label=ifelse(adj.P.Val < 0.05, '*', ''))) +
+    geom_tile() +    
+    theme_classic() + 
+    scale_fill_gradient2("logFC", low="blue", mid="white", high="red", limits=c(-zmax, zmax)) + 
+    theme(aspect.ratio=ncol/nrow, axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), plot.title = element_text(hjust = 0.5)) + 
+    geom_text(vjust=1, hjust=0.5) +
+    facet_wrap(~ assay)
+    
+ggsave(fig, file="~/www/test.pdf", width=15, height=18)
+
+
+
+```
 
 
 ### Summarize differential expression 
@@ -205,13 +296,13 @@ df = coef_array %>%
   map_df(function(x) 
     topTable(fit, coef = x, number=Inf) %>%
     as_tibble %>%
-    mutate(coef = x)) %>%
+    mutate(coef = factor(x, coef_array))) %>%
   group_by(coef,assay) %>%
   summarize( nDE = sum(adj.P.Val < 0.05), 
             pi1 = 1 - pi0est(P.Value)$pi0,
             nGenes = length(adj.P.Val)) %>%
-  mutate(assay = factor(assay, assayNames(pb))) %>%
-  mutate(coef = factor(coef, coef_array))
+  mutate(assay = factor(assay, assayNames(pb))) 
+
 
 ymax = 1.05*max(df$nGenes)
 fig1 = ggplot(df, aes(nGenes, assay, fill=assay)) + 
@@ -255,7 +346,6 @@ go.gs = get_GeneOntology(to="SYMBOL")
 go.gs = go.gs[sapply(go.gs, function(x) length(geneIds(x))) < 1000]
 
 # zenith analysis
-coef_array = c("SourceCOVID_HCW_MILD", "SourceCOVID_MILD", "SourceCOVID_SEV", "SourceCOVID_CRIT", "SourceSepsis", "SourceFlu") 
 res.gsa = zenith_gsa(fit, go.gs, coefs=coef_array, progressbar=FALSE)
 ```
 
