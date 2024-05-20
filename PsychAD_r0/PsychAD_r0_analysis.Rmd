@@ -56,7 +56,7 @@ file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
-sce = sce[,sce$subclass != "EN_NF"]
+# sce = sce[,sce$subclass != "EN_NF"]
 ```
 
 Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) pools, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
