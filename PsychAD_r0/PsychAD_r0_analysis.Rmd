@@ -270,8 +270,10 @@ sort(table(df$dx), decreasing=TRUE) %>% kbl() %>% kable_styling(full_width=FALSE
 # Normalize and apply voom
 form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
  
-res.proc = processAssays( pb, form, 
-                BPPARAM = SnowParam(12))
+res.proc = processAssays( pb, form,
+                          min.cells = 10,
+                          min.counts = 10,
+                          BPPARAM = SnowParam(12))
 ```
 
 ```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE} 
