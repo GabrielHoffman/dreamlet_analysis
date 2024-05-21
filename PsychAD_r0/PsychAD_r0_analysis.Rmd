@@ -774,7 +774,7 @@ df = res.gsa[res.gsa$Geneset %in% gs,]
 plotZenithResults(df, Inf, Inf) 
 ```
 
-```{r  fig.panels}
+```{r  fig.panels, eval=FALSE}
 
 fig.voom = plotVoom( res.proc[["Micro_PVM"]] )
 fig.vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PVM", col=col.vp )  
