@@ -345,6 +345,18 @@ lst = list(fig.embed, fig.voom, fig.vp, fig.percent, fig.strat0, fig.strat1, fig
 plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="t") 
 ```
 
+# results counts
+```{r counts}
+vp.lst %>% 
+  as_tibble %>%
+  filter(assay == "Mono3") %>%
+  summarize(count = sum(Status > 0.1), ngenes = length(Status))
+```
+
+
+
+
+
 ```{r combine3, fig.height=5, fig.width=12}
 res_zenith = res_zenith.Tumor_Involved 
 idx = grep(paste0(gs, collapse="|"), res_zenith$Geneset)
