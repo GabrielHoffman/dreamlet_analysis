@@ -384,6 +384,17 @@ plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=sort(geneIds(go.gs[[gs1]])
   xlab('') + ylab('') 
 ```
 
+```{r plotGeneHeatmap2, fig.height=3, fig.width=8}
+gs1 = "GO0044183: protein folding chaperone"
+plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=sort(geneIds(go.gs[[gs1]])), assay=CT, transpose=TRUE) + 
+  ggtitle(gs1) + 
+  theme(legend.position = "bottom",
+    axis.text.x=element_text(size=10, angle=45),
+    axis.text.y=element_text(size=10)) + 
+  xlab('') + ylab('') 
+```
+
+
 
 
 
@@ -394,6 +405,30 @@ plotGeneHeatmap( res.dl, coef="Tumor_Involved", genes=sort(geneIds(go.gs[[gs1]])
 sessionInfo()
 ```
 </details>
+
+```{r exit123, cache=FALSE, echo=FALSE}
+knitr::knit_exit()
+```
+
+
+
+
+
+
+
+# Cell composition
+```{r composition.plot}
+plotCellComposition(pb[,order(pb$Status)])     
+```
+
+```{r fracs, fig.height=12}
+frac = apply(cellCounts(pb), 1, function(x) x / sum(x))
+
+df = reshape2::melt(frac)
+df = merge(df, colData(pb), by.x='Var2', by.y="row.names")
+
+ggplot(as.data.frame(df), aes(Var1, value, fill=Status)) + geom_boxplot() + theme_classic() + theme(aspect.ratio=3) + ylab("Fraction") + xlab('') + coord_flip()
+```
 
 
 
