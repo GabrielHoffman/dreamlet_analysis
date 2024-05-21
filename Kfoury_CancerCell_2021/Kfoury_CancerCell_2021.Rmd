@@ -347,10 +347,21 @@ plot_grid(plotlist=lst, nrow=2, ncol=4, labels=LETTERS[1:10], align="hv", axis="
 
 # results counts
 ```{r counts}
+# variance partition results
 vp.lst %>% 
   as_tibble %>%
   filter(assay == "Mono3") %>%
   summarize(count = sum(Status > 0.1), ngenes = length(Status))
+
+# count DE genes
+names(contrasts) %>%
+  map_df(function(x) 
+    topTable(res.dl, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = x)) %>%
+    filter(assay == "Mono3") %>%
+    group_by(coef) %>%
+    summarize(count = sum(adj.P.Val < 0.05), ngenes = length(adj.P.Val))
 ```
 
 
