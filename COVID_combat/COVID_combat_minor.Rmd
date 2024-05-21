@@ -285,6 +285,8 @@ ggsave(fig, file="~/www/test.pdf", width=15, height=18)
 ```{r plot.pi, fig.height=25, fig.width=12}
 file = "./topTable_COVID_2022.tsv"
 
+coef_array = c("SourceCOVID_HCW_MILD", "SourceCOVID_MILD", "SourceCOVID_SEV", "SourceCOVID_CRIT", "SourceSepsis", "SourceFlu")
+
 coef_array %>%
   map_df(function(x) 
     topTable(fit, coef = x, number=Inf) %>%
