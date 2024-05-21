@@ -300,7 +300,7 @@ plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder, col=col.v
 
 
 
-```{r plotPercentBars, fig.height=6, fig.width=10}
+```{r √, fig.height=6, fig.width=10}
 # Show variance fractions at the gene-level for each cell type
 # genes = c("KCNMA1", 'RASGRF2', "CECR2", "PTPRG", 'NPNT', 'LINC01844', 'SPRY4-AS1', "PDE10A", "XIST", 'C1D')
 
@@ -495,8 +495,12 @@ fig.gene_heatmap
 
 ```{r plotForest, fig.height=10, fig.width=12, cache=FALSE}
 figList = lapply(genes, function(g){  
-  plotForest( fit, coef = 'DxAD', gene = g, assays=ctorder) +
+  fig = plotForest( fit, coef = 'DxAD', gene = g, assays=ctorder) +
     theme(aspect.ratio=1, legend.position="none") 
+
+  xlim = switch(g, PTPRG = c(-.6, 1.8), DPYD = c(-.2, 1))
+
+  fig + coord_flip(ylim = xlim)
 }) 
 names(figList) = genes
 plot_grid(plotlist=figList, ncol=3)
@@ -782,14 +786,17 @@ fig_batch_GC_mod = fig_batch_GC +
   ylab('Corr of batch effect\nand GC content') +
   xlab('')
 
+
+file = '~/www/test.pdf'
+ggsave(file=file, fig_batch_GC_mod)
+
+
+
 figA = ggplot() + annotate("text", x=0, y=0, label="Diagram") + theme_void()
 figG = ggplot() + annotate("text", x=0, y=0, label="Differ, expressed genes") + theme_void()
 
 # fig.cells_subject
 fig = plot_grid(figA, fig_UMAP, fig_mv, fig_vp, fig.percent + theme(legend.position="bottom"), fig_batch_GC_mod, fig.vp_ncells, figG, labels=LETTERS, ncol=4, axis="tblr" , align="hv")
-
-file = '~/www/test.pdf'
-ggsave(file=file, fig, width=12, height=7)
 
 
 
