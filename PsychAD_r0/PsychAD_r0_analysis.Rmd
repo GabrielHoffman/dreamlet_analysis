@@ -56,7 +56,6 @@ file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
 sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE)
 assayNames(sce)[1] = "counts"
 sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
-# sce = sce[,sce$subclass != "EN_NF"]
 ```
 
 Public release 0 includes `r length(table(sce$Channel))` samples, `r length(table(sce$round_num))` rounds, `r length(table(sce$poolID))` [10X](https://www.10xgenomics.com/products/single-cell-gene-expression) pools, `r length(table(sce$SubID))` donors and `r format(ncol(sce), big.mark=',')` cells passing QC.
@@ -271,7 +270,7 @@ sort(table(df$dx), decreasing=TRUE) %>% kbl() %>% kable_styling(full_width=FALSE
 form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
  
 res.proc = processAssays( pb, form,
-                          min.cells = 10,
+                          min.cells = 5,
                           min.counts = 10,
                           BPPARAM = SnowParam(12))
 ```
@@ -293,9 +292,38 @@ colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
  
-plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder )  
+col.vp = c(brewer.pal(ncol(res.vp)-3, "Set1"), "grey85")
+names(col.vp) = colnames(sortCols(res.vp))[-seq(2)]
+
+plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder, col=col.vp )
 ```
 
+
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
+res.proc = processAssays( pb, form,
+                          min.cells = 5,
+                          min.counts = 10, 
+                          assays = "Micro_PVM",
+                          BPPARAM = SnowParam(12))
+
+res.proc
+
+geneExpr = res.proc[["Micro_PVM"]]
+
+W = t(geneExpr[c("XIST"),]$weights)
+range(W / min(W))
+
+
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + (1|Dx) + scale(Age)
+# form = ~ (1|SubID) + (1|Sex) + (1|Dx) 
+
+data = colData(res.proc)[colnames(geneExpr),]
+# data$poolID = gsub("-([a-zA-Z]+\\d)$", "", data$poolID)
+
+
+df = fitExtractVarPartModel(geneExpr[genes,], form, data)
+
+plotPercentBars(sortCols(df))
 
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
@@ -323,8 +351,7 @@ df.vp.sub = sortCols(res.vp)[(res.vp$gene %in% genes) &(res.vp$assay=="Micro_PVM
 df.vp.sub$gene = factor(df.vp.sub$gene, rev(genes))
 df.vp.sub = df.vp.sub[order(df.vp.sub$gene, decreasing=TRUE),]
  
-col = c(brewer.pal(ncol(df.vp.sub)-3, "Set1"), "grey85")
-fig.percent = plotPercentBars(df.vp.sub, assays=ctorder, col=col) + theme(aspect.ratio=1)
+fig.percent = plotPercentBars(df.vp.sub, assays=ctorder, col=col.vp) + theme(aspect.ratio=1)
 fig.percent
 ```
 
@@ -572,7 +599,10 @@ fig_de_count = ggplot(df_de, aes(2, assay)) +
         scale_color_viridis(name = "% genes\npassing FDR", lim=c(0, NA)) +
         scale_size_continuous(name = "# genes", breaks=c(1, 4, 8, 12, 16)*1000) +
         theme_classic() +
-        theme(aspect.ratio=as.numeric(nrow(df_de)), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
+        theme(aspect.ratio=as.numeric(nrow(df_de)), 
+          axis.ticks.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.text.y = element_text(colour = variancePartition::ggColorHue(nrow(df_de)))) +
         xlab('') + ylab('') 
 fig_de_count
 ```
@@ -744,13 +774,37 @@ df = res.gsa[res.gsa$Geneset %in% gs,]
 plotZenithResults(df, Inf, Inf) 
 ```
 
+```{r  fig.panels}
+
+fig.voom = plotVoom( res.proc[["Micro_PVM"]] )
+fig.vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PVM", col=col.vp )  
+
+# axis.text.y=element_blank()
+fig_batch_GC_mod = fig_batch_GC + 
+  theme(axis.ticks.y=element_blank()) +
+  coord_flip(ylim=c(0,.1), expand=FALSE) +
+  ylab('Corr of batch effect\nand GC content') +
+  xlab('')
+
+fig = plot_grid(ggplot(), ggplot(), fig.voom, fig.vp, 
+  fig.percent + theme(legend.position = "none"), 
+  fig_batch_GC_mod,
+  fig.vp_ncells,
+  figG,
+  labels=LETTERS, ncol=4)
+
+
+
+ggsave(fig, file="~/www/test.pdf", width=9, height=7)
+
+
+```
+
+
 
 
 # Combine plots
 ```{r combine, eval=FALSE}
-# file = '/sc/arion/projects/psychAD/NPS-AD/public_release_0/res.vp.RDS'
-# saveRDS(res.vp, file=file)
-
 # Plot UMAP
 fig_UMAP = plotProjection(sce, "X_umap", "subclass", order=ctorder)
 
@@ -769,7 +823,7 @@ fig_vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PV
 # axis.text.y=element_blank()
 fig_batch_GC_mod = fig_batch_GC + 
   theme(axis.ticks.y=element_blank()) +
-  coord_flip(ylim=c(0,0.18), expand=FALSE) +
+  coord_flip(ylim=c(0,.1), expand=FALSE) +
   ylab('Corr of batch effect\nand GC content') +
   xlab('')
 
@@ -780,7 +834,7 @@ figG = ggplot() + annotate("text", x=0, y=0, label="Differ, expressed genes") + 
 fig = plot_grid(figA, fig_UMAP, fig_mv, fig_vp, fig.percent + theme(legend.position="bottom"), fig_batch_GC_mod, fig.vp_ncells, figG, labels=LETTERS, ncol=4, axis="tblr" , align="hv")
 
 file = '~/www/test.pdf'
-ggsave(file=file, fig, width=16, height=8)
+ggsave(file=file, fig, width=12, height=7)
 
 
 # Last figure
@@ -905,61 +959,6 @@ topTable(fit[['Micro_PVM']], coef='DxAD', number=1)
 sessionInfo()
 ```
 </details>
-
-
-
-```{r exit2, cache=FALSE}
-knitr::knit_exit()
-```
-
-
-
-
-# Write residuals
-```{r write.residuals, eval=FALSE}
-# extract residuals for each assay
-resMatList = lapply( assayNames(fit), function(CT){
-
-  # get residuals for assay CT
-  resMat = residuals(assay(fit, CT))
-
-  # extra colData for there samples
-  idx = match(colnames(resMat), rownames(colData(res.proc)))
-  info = droplevels(colData(res.proc)[idx,])
-  # identical(colnames(resMat), rownames(info))
-
-  # for each Donor, report mean expression
-  resMatCollapse = lapply( unique(info$SubID), function(grpid){
-    idx = which(info$SubID == grpid)
-
-    rowMeans(resMat[,idx,drop=FALSE])
-    })
-  resMatCollapse = do.call(cbind, resMatCollapse)
-  colnames(resMatCollapse) = unique(info$SubID)
-
-  resMatCollapse
-})
-names(resMatList) = assayNames(fit)
-
-library(R.utils)
-outPath = paste0("/sc/arion/projects/CommonMind/hoffman/NPS-AD/work/residuals/public_release0_", Sys.Date())
-if(! dir.exists(outPath) ){
-  dir.create(outPath)
-}
-
-for( CT in names(resMatList) ){
-  file = paste0(outPath, "/", gsub(' ', '_',CT), '.tsv')
-  data = format(resMatList[[CT]], digits=5)
-  write.table( data, file=file, quote=FALSE, sep="\t")
-  gzip(file, overwrite=TRUE)
-}
-```
-
-
-
-
-
-
 
 
 
