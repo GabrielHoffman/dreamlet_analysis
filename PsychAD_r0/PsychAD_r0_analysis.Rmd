@@ -299,32 +299,6 @@ plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder, col=col.v
 ```
 
 
-form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
-res.proc = processAssays( pb, form,
-                          min.cells = 5,
-                          min.counts = 10, 
-                          assays = "Micro_PVM",
-                          BPPARAM = SnowParam(12))
-
-res.proc
-
-geneExpr = res.proc[["Micro_PVM"]]
-
-W = t(geneExpr[c("XIST"),]$weights)
-range(W / min(W))
-
-
-form = ~ (1|SubID) + (1|poolID) + (1|Sex) + (1|Dx) + scale(Age)
-# form = ~ (1|SubID) + (1|Sex) + (1|Dx) 
-
-data = colData(res.proc)[colnames(geneExpr),]
-# data$poolID = gsub("-([a-zA-Z]+\\d)$", "", data$poolID)
-
-
-df = fitExtractVarPartModel(geneExpr[genes,], form, data)
-
-plotPercentBars(sortCols(df))
-
 
 ```{r plotPercentBars, fig.height=6, fig.width=10}
 # Show variance fractions at the gene-level for each cell type
@@ -361,8 +335,8 @@ res.vp %>%
   as_tibble %>%
   mutate(assay = factor(assay, ctorder)) %>%
   ggplot(aes(100*poolID, assay)) + 
-    geom_violin(fill="#984EA3", scale="area") +
-    geom_boxplot(width=.1, outlier.color="#984EA3") +
+    geom_violin(fill=col.vp["poolID"], scale="area") +
+    geom_boxplot(width=.1, outlier.color=col.vp["poolID"]) +
     theme_classic() +
     theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
     xlab("Variance explained (%)") +
@@ -512,8 +486,10 @@ plotVolcano(fit, "DxAD", ncol=4, assays=ctorder) + theme_classic()
 
 ## Highlight genes
 ```{r genehatmap, fig.height=4, fig.width=7, cache=FALSE}
-genes = c("DUSP10", "PTPRG", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7') 
-fig.gene_heatmap = plotGeneHeatmap( fit, coef="DxAD", genes=genes, assays=ctorder)  
+genes = c("PTPRG", "DUSP10", 'NPNT', 'DPYD', "VGF", 'SPRY4-AS1', "PDE10A", "NCAM2", 'PCDH7') 
+fig.gene_heatmap = plotGeneHeatmap( fit, coef="DxAD", genes=genes, assays=ctorder) + 
+  theme( axis.text.x = element_text(colour = variancePartition::ggColorHue(length(ctorder))))
+
 fig.gene_heatmap
 ```
 
@@ -776,27 +752,6 @@ plotZenithResults(df, Inf, Inf)
 
 ```{r  fig.panels, eval=FALSE}
 
-fig.voom = plotVoom( res.proc[["Micro_PVM"]] )
-fig.vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PVM", col=col.vp )  
-
-# axis.text.y=element_blank()
-fig_batch_GC_mod = fig_batch_GC + 
-  theme(axis.ticks.y=element_blank()) +
-  coord_flip(ylim=c(0,.1), expand=FALSE) +
-  ylab('Corr of batch effect\nand GC content') +
-  xlab('')
-
-fig = plot_grid(ggplot(), ggplot(), fig.voom, fig.vp, 
-  fig.percent + theme(legend.position = "none"), 
-  fig_batch_GC_mod,
-  fig.vp_ncells,
-  figG,
-  labels=LETTERS, ncol=4)
-
-
-
-ggsave(fig, file="~/www/test.pdf", width=9, height=7)
-
 
 ```
 
@@ -835,6 +790,28 @@ fig = plot_grid(figA, fig_UMAP, fig_mv, fig_vp, fig.percent + theme(legend.posit
 
 file = '~/www/test.pdf'
 ggsave(file=file, fig, width=12, height=7)
+
+
+
+fig.voom = plotVoom( res.proc[["Micro_PVM"]] )
+fig.vp = plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays="Micro_PVM", col=col.vp )  
+
+# axis.text.y=element_blank()
+fig_batch_GC_mod = fig_batch_GC + 
+  theme(axis.ticks.y=element_blank()) +
+  coord_flip(ylim=c(0,.1), expand=FALSE) +
+  ylab('Corr of batch effect\nand GC content') +
+  xlab('')
+
+fig = plot_grid(ggplot(), ggplot(), fig.voom, fig.vp, 
+  fig.percent + theme(legend.position = "none"), 
+  fig_batch_GC_mod,
+  fig.vp_ncells,
+  labels=LETTERS, ncol=4)
+
+
+
+ggsave(fig, file="~/www/test.pdf", width=9, height=7)
 
 
 # Last figure
