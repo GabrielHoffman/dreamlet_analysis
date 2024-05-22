@@ -24,7 +24,7 @@ vignette: >
 cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023
 R
 
-system("git pull"); rmarkdown::render("Mathys_2023_Cell_Type.Rmd");
+system("git pull"); rmarkdown::render("Mathys_2023_bulk.Rmd");
 
 
 # https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/Mathys_2023_Cell_Type.html
@@ -180,7 +180,7 @@ plotVolcano(fit, "ADdiag2typesAD", ncol=5)
 
 ```{r write.file}
 topTable(fit, coef = "ADdiag2typesAD", number=Inf) %>%
-  write.table(file="Mathys_2023_Cell_Type_ADdiag2typesAD.tsv", quote=FALSE, sep="\t", row.names=FALSE)
+  write.table(file="Mathys_2023_bulk_ADdiag2typesAD.tsv", quote=FALSE, sep="\t", row.names=FALSE)
 ```
 
 
@@ -383,7 +383,7 @@ plotZenithResults(df, Inf, Inf)
 
 
 # All phenotypes
-```{r dreamlet.all}
+```{r dreamlet.all, eval=FALSE}
 # Scaled is reversed
 colData(res.proc)$CERAD = 5 - colData(res.proc)$ceradsc
 
@@ -399,7 +399,7 @@ fitList = lapply( traits, function(trait){
 names(fitList) = traits
 ```
 
-```{r write.table}
+```{r write.table, eval=FALSE}
 saveRDS(fitList, file="Mathys_Cell_2023_Cell_Type_dreamlet_fit.RDS")
 df_all = lapply(names(fitList), function(trait){
 
