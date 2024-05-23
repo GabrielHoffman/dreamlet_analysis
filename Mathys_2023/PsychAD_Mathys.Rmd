@@ -16,10 +16,6 @@ output:
 cd /sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023
 R
 
-system("git pull"); rmarkdown::render("Mathys_2023_Cell_Type.Rmd");
-
-R
-
 system("git pull"); rmarkdown::render("PsychAD_Mathys.Rmd");
 
 
@@ -178,7 +174,7 @@ res.merge = jointMatrix(tab.merge)
 ```
 
 
-```{r pheatmap, fig.height=9}
+```{r pheatmap1, fig.height=9}
 library(pheatmap)
 
 # res.merge$Dataset1 = sapply(strsplit(res.merge$CT1, '\\.'), function(x) x[1])
