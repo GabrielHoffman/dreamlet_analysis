@@ -183,7 +183,7 @@ plotVarPart(sortCols(res.vp), label.angle=60, ncol=4)
 
 
 ```{r volcano.plot, fig.height=28, fig.width=12}
-plotVolcano(fit, coef="SourceCOVID_MILD") 
+plotVolcano(fit, coef="SourceCOVID_MILD", ncol=4) 
 ```
 
 ```{r examples, eval=FALSE}
