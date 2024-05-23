@@ -190,6 +190,9 @@ j = which(ids == ids[length(ids)])
 bks = seq(-.3, .3, by=.05)
 col = colorRampPalette(c("blue", "white", "red"))(length(bks))
 
+colnames(C) = sapply(strsplit(colnames(C), '\\.'), function(x) x[2])
+rownames(C) = sapply(strsplit(rownames(C), '\\.'), function(x) x[2])
+
 pheatmap(C[-i, -j], breaks=bks, cellheight=15, cellwidth = 15, color=col, breaklist=seq(-.3, .3, by=0.3), main = "Spearman")
 ```
 
