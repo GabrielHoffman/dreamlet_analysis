@@ -358,6 +358,14 @@ plotZenithResults(res.gsa, 5, 3)
 
 
 
+```{r zenith.plot2, fig.height=40, fig.width=20}
+
+i = grep("Mono", res.gsa$assay)
+
+plotZenithResults(res.gsa[i,], 5, 3)
+```
+
+
 
 
 
