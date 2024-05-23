@@ -177,8 +177,8 @@ res.merge = jointMatrix(tab.merge)
 ```{r pheatmap1, fig.height=9}
 library(pheatmap)
 
-res.merge$Dataset1 = sapply(strsplit(res.merge$CT1, '\\.'), function(x) x[2])
-res.merge$Dataset2 = sapply(strsplit(res.merge$CT2, '\\.'), function(x) x[2])
+res.merge$CT1 = sapply(strsplit(res.merge$CT1, '\\.'), function(x) x[2])
+res.merge$CT2 = sapply(strsplit(res.merge$CT2, '\\.'), function(x) x[2])
 
 # Pearson correlation
 C = convertToMatrix(res.merge, "cor")
