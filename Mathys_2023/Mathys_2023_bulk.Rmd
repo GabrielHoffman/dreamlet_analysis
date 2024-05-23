@@ -27,7 +27,7 @@ R
 system("git pull"); rmarkdown::render("Mathys_2023_bulk.Rmd");
 
 
-# https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/Mathys_2023_Cell_Type.html
+# https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/Mathys_2023_bulk.html
 
 
 --->
@@ -322,31 +322,6 @@ fig.vp_ncells = ggplot(df3, aes(sum.cells/n_retain, mean.vp, color=assay, size=n
   annotate("text", x=40, y=.7, label=bquote(p==.(pv)))
 fig.vp_ncells
 ```
-
-```{r de.ncells}
-df3 = inner_join(df, df_de, by='assay') %>%
-        inner_join(details(res.proc) %>% as_tibble) %>%
-        mutate(assay = factor(assay, ctorder)) 
-
-fit_n.cells = lm(nDE ~ log10(sum.cells/n_retain), df3)
-pv = coef(summary(fit_n.cells))[2,4]
-pv = format(pv, digits=2)
-
-fig.nDE_ncells = ggplot(df3, aes(sum.cells/n_retain, nDE, color=assay, size=n_retain, label=assay)) +
-  geom_abline(intercept=coef(fit_n.cells)[1], slope=coef(fit_n.cells)[2], color="grey30") +
-  geom_point() +
-  scale_x_log10() +
-  theme_classic() +
-  theme(aspect.ratio=1) + 
-  scale_size(name="# Subjects", breaks=c(50, 100, 250, 500)) +
-  xlab("Mean # nuclei per Subject") +
-  ylab("# differentially expressed genes") +
-  geom_text_repel(size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
-  annotate("text", x=1000, y=.7, label=bquote(p==.(pv)))
-fig.nDE_ncells
-```
-
-
 
 
 ## Gene set analysis
