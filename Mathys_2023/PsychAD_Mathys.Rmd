@@ -19,7 +19,7 @@ R
 system("git pull"); rmarkdown::render("PsychAD_Mathys.Rmd");
 
 
-https://hoffmg01.u.hpc.mssm.edu/work/heivr_analysis/PsychAD_Mathys.html
+https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/PsychAD_Mathys.html
 
 
 --->
@@ -134,7 +134,7 @@ jointMatrix = function( tab ){
     tab.join = inner_join(tab.sub1, tab.sub2, by="ID")
 
     df = list()
-    df$cor = with(tab.join, cor(logFC.x, logFC.y))
+    df$cor = with(tab.join, cor(logFC.x, logFC.y, method="spearman"))
 
     data.frame(CT1 = grd$CT1[i], CT2 = grd$CT2[i], df)
   })
@@ -190,7 +190,7 @@ j = which(ids == ids[length(ids)])
 bks = seq(-.3, .3, by=.05)
 col = colorRampPalette(c("blue", "white", "red"))(length(bks))
 
-pheatmap(C[-i, -j], breaks=bks, cellheight=15, cellwidth = 15, color=col, breaklist=seq(-.3, .3, by=0.3), main = "Pearson")
+pheatmap(C[-i, -j], breaks=bks, cellheight=15, cellwidth = 15, color=col, breaklist=seq(-.3, .3, by=0.3), main = "Spearman")
 ```
 
 
