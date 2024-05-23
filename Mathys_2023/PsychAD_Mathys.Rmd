@@ -43,6 +43,7 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(Matrix)
 library(ggcorrplot)
+library(ggrepel)
 ```
 
 
@@ -55,6 +56,9 @@ tab.psychad = read_tsv(file)
 
 file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023/Mathys_2023_Major_Cell_Type_ADdiag2typesAD.tsv"
 tab.mathys = read_tsv(file)
+
+# cell type order
+ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Oligo', 'OPC', 'Astro', 'Micro_PVM', 'CD8_T', 'PC', 'VLMC','Endo')
 ```
 
 ```{r analysis, fig.height=8}
@@ -103,12 +107,11 @@ fig = tab %>%
           ggtitle("Compare logFC from microglia") +
           theme(plot.title = element_text(hjust = 0.5)) +
           scale_color_manual(values=col) +
-          annotate("text", x=-.6, y=1.6, label=txt)
-# fig
+          annotate("text", x=-.6, y=1.6, label=txt) 
 
-ggsave(fig, file="~/www/test.pdf")
-
-
+fig = fig +
+      geom_text_repel(data = tab %>% filter(Signif == "Both"), aes(x = logFC.x, y = logFC.y, label=ID), box.padding=.6, label.padding=.6, min.segment.length=.1, color="black")
+fig
 ```
 
 # All pairs
@@ -193,7 +196,14 @@ col = colorRampPalette(c("blue", "white", "red"))(length(bks))
 colnames(C) = sapply(strsplit(colnames(C), '\\.'), function(x) x[2])
 rownames(C) = sapply(strsplit(rownames(C), '\\.'), function(x) x[2])
 
-pheatmap(C[-i, -j], breaks=bks, cellheight=15, cellwidth = 15, color=col, breaklist=seq(-.3, .3, by=0.3), main = "Spearman")
+pheatmap(C[-i, -j], breaks=bks, cellheight=15, cellwidth = 15, color=col, breaklist=seq(-.3, .3, by=0.3), main = "Spearman", xlab="Mathys, et al.", ylab="PsychAD")
+
+
+
+A = C[-i, -j]
+idx = c( "Exc", "Inh","Oli", "Opc", "Ast", "Mic", "Vas")
+A = A[ctorder,idx]
+pheatmap(A, breaks=bks, cellheight=15, cellwidth = 15, color=col, breaklist=seq(-.3, .3, by=0.3), main = "Spearman", xlab="Mathys, et al.", ylab="PsychAD", cluster_cols=FALSE, cluster_rows=FALSE)
 ```
 
 
