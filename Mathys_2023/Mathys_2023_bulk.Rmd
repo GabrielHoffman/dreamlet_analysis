@@ -358,7 +358,7 @@ plotZenithResults(df, Inf, Inf)
 
 
 # All phenotypes
-```{r dreamlet.all, eval=FALSE}
+```{r dreamlet.all, eval=TRUE}
 # Scaled is reversed
 colData(res.proc)$CERAD = 5 - colData(res.proc)$ceradsc
 
@@ -374,7 +374,7 @@ fitList = lapply( traits, function(trait){
 names(fitList) = traits
 ```
 
-```{r write.table, eval=FALSE}
+```{r write.table, eval=TRUE}
 saveRDS(fitList, file="Mathys_Cell_2023_bulk_dreamlet_fit.RDS")
 df_all = lapply(names(fitList), function(trait){
 
