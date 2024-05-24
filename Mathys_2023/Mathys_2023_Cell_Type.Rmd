@@ -411,13 +411,14 @@ df_all = lapply(names(fitList), function(trait){
   tab = as_tibble(tab) 
 
   if( length(coefSet) == 1){    
-    cols = c("assay", "ID", "AveExpr", "t", "P.Value", "adj.P.Val", "trait", "coefSet")
+    cols = c("assay", "ID", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "trait", "coefSet")
     tab = tab %>% 
       select(all_of(cols)) %>%
       rename(stat = "t")
   }else{
-    cols = c("assay", "ID", "AveExpr", "F", "P.Value", "adj.P.Val","trait", "coefSet")
+    cols = c("assay", "ID", "logFC", "AveExpr", "F", "P.Value", "adj.P.Val","trait", "coefSet")
     tab = tab %>% 
+      mutate(logFC = NA) %>%
       select(all_of(cols)) %>%
       rename(stat = "F")
   }
