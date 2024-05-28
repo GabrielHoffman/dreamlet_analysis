@@ -20,7 +20,7 @@ R --vanilla
 system("git pull"); rmarkdown::render("COVID_combat_minor.Rmd");
 
 
-# https://hoffmg01.hpc.mssm.edu/crumblr_analysis/COVID_combat
+# https://hoffmg01.hpc.mssm.edu/dreamlet_analysis/COVID_combat
 
 # resolve issue reading in 'raw'
 conda activate /sc/arion/work/hoffmg01/R.cache/R/basilisk/1.14.3/zellkonverter/1.13.3/zellkonverterAnnDataEnv-0.10.6
@@ -68,6 +68,10 @@ library(tidyverse)
 file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/covid_counts.h5ad"
 sce = readH5AD(file, use_hdf5=TRUE)
 counts(sce) = assay(sce, 'X')
+
+# Keep only Oxford samples since Source and Institute are confounded:
+# Flu was the only one collected at St_Georges
+sce = sce[,sce$Institute == "Oxford"]
 
 # use HGNC names
 rownames(sce) = rowData(sce)$feature_name
@@ -141,20 +145,21 @@ df %>%
 ```
 
 
-
 ```{r proc}
-form = ~ Age + (1|sex) + (1|Source)
+form = ~ Age + (1|sex) + (1|Source) 
 res.proc = processAssays(pb, form,  
                           min.count = 3,
                           min.cells = 3,
-                          BPPARAM = SnowParam(6))
+                          min.samples = 8,
+                          BPPARAM = SnowParam(12),
+                          assays = "cMono")
 
-res.vp = fitVarPart(res.proc, form, BPPARAM=SnowParam(6) )
+form = ~ Age + (1|sex) + (1|Source)
+res.vp = fitVarPart(res.proc, form, BPPARAM=SnowParam(12) )
 
-form = ~ Source + Age + sex
-fit = dreamlet(res.proc, form, BPPARAM=SnowParam(6))
+form = ~ Source + Age + sex 
+fit = dreamlet(res.proc, form, BPPARAM=SnowParam(12))
 ```
-
 
 
 ### Show details of processing
@@ -364,6 +369,107 @@ i = grep("Mono", res.gsa$assay)
 
 plotZenithResults(res.gsa[i,], 5, 3)
 ```
+
+```{r heatmap, eval=FALSE}
+
+pfx = "GO0034340"
+grep(pfx, names(go.gs), value=T)
+
+gs1 = "GO0034340: response to type I interferon"
+genes = sort(geneIds(go.gs[[gs1]]))
+
+# Summarize differential expression for each coef and assay
+df = coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = factor(x, coef_array))) %>%
+  mutate(assay = factor(assay, assayNames(pb))) %>%
+  filter(grepl("Mono", assay), ID %in% genes) %>%
+  droplevels 
+  
+
+fig = df %>% 
+  ggplot(aes(coef, ID, fill=logFC)) +
+    geom_tile() +
+    scale_fill_gradient2(low="blue", mid="white", high="red") +
+    theme_classic() +
+    coord_equal() +
+    facet_wrap(~assay, ncol=4) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+ggsave(fig, file="~/www/test.pdf", height=20, width=12)
+
+
+
+
+
+
+fig = plotGeneHeatmap( fit, coef="DxAD", genes=sort(geneIds(go.gs[[gs1]])), transpose=TRUE, assays='Micro_PVM', zmax=6) +
+  ggtitle(gs1) + 
+  theme(legend.position = "bottom",
+    axis.text.x=element_text(size=10, angle=90, vjust=0.5),
+    axis.text.y=element_text(size=10)) + 
+  xlab('') + ylab('') 
+
+ggsave(file="~/www/test.pdf", fig)
+
+```
+
+
+# Figures
+```{r figures, fig.height=8, fig.width=12, eval=FALSE}
+library(paletteer)
+
+# cluster, GEX_region, minor_subset, major_subset
+incl = grep("cDC|Mono", sce$GEX_region)
+figA = plotProjection(sce[,incl], "X_umap", "minor_subset", pointsize=2) + scale_color_manual(values = paletteer_d("ggsci::default_nejm"))
+
+figB = plotVoom(res.proc[["cMono"]])
+
+
+# form = ~ Age + (1|sex) + (1|Source)
+form = ~1
+res.proc2 = processAssays(pb, form,  
+                          # min.count = 3,
+                          # min.cells = 10,
+                          BPPARAM = SnowParam(6), 
+                          assay="cMono" )
+
+
+
+
+colData(res.proc)$isCOVID = grepl("^COVID", colData(res.proc)$Source)
+
+form = ~ Age + (1|sex) + (1|Source) + (1|Institute)
+res.vp2 = fitVarPart(res.proc2, form, BPPARAM=SnowParam(12), assay="cMono" )
+
+
+df = inner_join(res.vp2 %>% 
+                  as_tibble %>%
+                  mutate(ID = gene), 
+                topTable(fit, coef="sexmale", number=Inf) %>% 
+                as_tibble %>%
+                filter(assay == "cMono"),
+                by = 'ID')
+
+incl = res.vp$assay == "cMono"
+figC = plotVarPart( sortCols(res.vp[incl,]) )
+
+figD = plotVolcano(fit[["cMono"]], coef="SourceCOVID_MILD")
+
+fig = plot_grid(figA, figB, figC, figD, ncol=4, labels=LETTERS)
+ggsave(file="~/www/test.pdf", fig, height=8, width=12)
+
+
+
+with(colData(pb), xtabs(~Source + Institute))
+
+
+
+```
+
+
 
 
 
