@@ -69,10 +69,6 @@ file = "/sc/arion/projects/CommonMind/hoffman/scRNAseq_data/covid19_combat/covid
 sce = readH5AD(file, use_hdf5=TRUE)
 counts(sce) = assay(sce, 'X')
 
-# Keep only Oxford samples since Source and Institute are confounded:
-# Flu was the only one collected at St_Georges
-sce = sce[,sce$Institute == "Oxford"]
-
 # use HGNC names
 rownames(sce) = rowData(sce)$feature_name
 
@@ -110,10 +106,12 @@ res = colData(sce) %>%
 	summarize(scRNASeq_sample_ID, Source, i = which.max(Source),
 		use_sample_id = scRNASeq_sample_ID[which.max(Source)])
 
-# res[res$donor_id == "S00109",]
-
 # subset to one sample per donor
 sceSub = sce[,sce$scRNASeq_sample_ID %in% droplevels(res$use_sample_id)]
+
+# Keep only Oxford samples since Source and Institute are confounded:
+# Flu was the only one collected at St_Georges
+sceSub = sceSub[,sceSub$Institute == "Oxford"]
 
 # create pseudobulk
 pb <- aggregateToPseudoBulk(sceSub,
