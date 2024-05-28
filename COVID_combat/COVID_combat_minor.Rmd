@@ -149,8 +149,7 @@ res.proc = processAssays(pb, form,
                           min.count = 3,
                           min.cells = 3,
                           min.samples = 8,
-                          BPPARAM = SnowParam(12),
-                          assays = "cMono")
+                          BPPARAM = SnowParam(12))
 
 form = ~ Age + (1|sex) + (1|Source)
 res.vp = fitVarPart(res.proc, form, BPPARAM=SnowParam(12) )
