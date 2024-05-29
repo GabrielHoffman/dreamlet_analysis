@@ -383,8 +383,7 @@ plotZenithResults(res.msigdb, 5, 3)
 ```{r zenith.plot2.MSigDB, fig.height=40, fig.width=20}
 i = grep("Mono|cDC", res.msigdb$assay)
 fig = plotZenithResults(res.msigdb[i,], 5, 3) + facet_wrap(~coef, nrow=1)
-
-ggsave(fig, file="~/www/test.pdf", width=12, height=12)
+fig
 
 gs.array = c("M5936_HALLMARK_OXIDATIVE_PHOSPHORYLATION",
 'M5892_HALLMARK_CHOLESTEROL_HOMEOSTASIS',
