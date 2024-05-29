@@ -426,7 +426,8 @@ df2 %>%
 df_gsa = res.gsa %>%
           as_tibble %>%
           filter(Geneset %in% gs.array) %>%
-          filter(grepl("Mono|cDC", assay))
+          filter(grepl("Mono|cDC", assay)) %>%
+          mutate(coef = factor(coef, coef_array))          
 
 df_gsa %>%
       ggplot(aes(coef, Geneset, fill=delta/se)) +
