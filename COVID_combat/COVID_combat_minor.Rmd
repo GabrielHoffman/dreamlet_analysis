@@ -523,12 +523,15 @@ df_gsa = res.gsa %>%
           as_tibble %>%
           filter(Geneset %in% gs.array) %>%
           filter(grepl("Mono|cDC", assay)) %>%
-          mutate(coef = factor(coef, coef_array))          
+          mutate(coef = factor(coef, coef_array)) %>%
+          mutate(tstat = delta/se)         
+
+zmax = max(abs(df_gsa$tstat))          
 
 fig = df_gsa %>%
-      ggplot(aes(coef, Geneset, fill=delta/se)) +
+      ggplot(aes(coef, Geneset, fill=tstat)) +
         geom_tile() +
-        scale_fill_gradient2(low="blue", mid="white", high="red") +
+        scale_fill_gradient2(low="blue", mid="white", high="red", limits=c(-zmax, zmax)) +
         theme_classic() +
         coord_equal()  +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
