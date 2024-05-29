@@ -380,7 +380,7 @@ plotZenithResults(res.msigdb, 5, 3)
 ```
 
 
-```{r zenith.plot2.MSigDB, fig.height=40, fig.width=20}
+```{r zenith.plot2.MSigDB, fig.height=20, fig.width=20}
 i = grep("Mono|cDC", res.msigdb$assay)
 fig = plotZenithResults(res.msigdb[i,], 5, 3) + facet_wrap(~coef, nrow=1)
 fig
@@ -453,10 +453,8 @@ fig = df_gsa %>%
         coord_equal()  +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
         geom_text(data = df_gsa %>% filter(FDR < 0.05), label='*', hjust=0.5, vjust=0.8) +
-        facet_wrap(~assay)
+        facet_wrap(~assay, nrow=1)
 fig
-
-
 ```
 
 
