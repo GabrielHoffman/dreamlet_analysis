@@ -600,6 +600,17 @@ figList
 ###########
 genes = c("NLRC5","PTPN2", "FADD")
 
+# Summarize differential expression for each coef and assay
+df = coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = factor(x, coef_array))) %>%
+  mutate(assay = factor(assay, assayNames(pb))) %>%
+  filter(grepl("Mono|cDC", assay)) %>%
+  droplevels 
+
+
 df2 = df %>%
   filter(ID %in% genes, assay == "cMono") %>%
   mutate(se = logFC / t)
@@ -753,6 +764,16 @@ ggsave(file="~/www/test.pdf", fig, height=8, width=12)
 # heatmap
 ###########
 genes = c("NLRC5","PTPN2", "FADD")
+
+# Summarize differential expression for each coef and assay
+df = coef_array %>%
+  map_df(function(x) 
+    topTable(fit, coef = x, number=Inf) %>%
+    as_tibble %>%
+    mutate(coef = factor(x, coef_array))) %>%
+  mutate(assay = factor(assay, assayNames(pb))) %>%
+  filter(grepl("Mono|cDC", assay)) %>%
+  droplevels 
 
 df2 = df %>%
   filter(ID %in% genes, assay == "cMono") %>%
