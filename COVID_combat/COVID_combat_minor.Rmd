@@ -284,7 +284,7 @@ ggsave(fig, file="~/www/test.pdf", width=15, height=18)
 
 
 ### Summarize differential expression 
-```{r plot.pi, fig.height=25, fig.width=12}
+```{r plot.pi, fig.height=35, fig.width=12}
 file = "./topTable_COVID_2022.tsv"
 
 coef_array = c("SourceCOVID_HCW_MILD", "SourceCOVID_MILD", "SourceCOVID_SEV", "SourceCOVID_CRIT", "SourceSepsis")
