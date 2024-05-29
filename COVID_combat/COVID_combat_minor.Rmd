@@ -468,11 +468,7 @@ genes = c(genes, 'NLRC5', 'GIGYF2', 'FADD', 'PTPN2', 'IFI27')
 genes = genes[rev(order(match(genes, rownames(df.vp))))]
 figE = plotPercentBars(sortCols(df.vp), genes = genes, assays="cMono", col=col) + theme(aspect.ratio=1, legend.position="none")
 
-
-fig = plot_grid(figA, figB, figC, figD, figE, ncol=4, labels=LETTERS)
-fig
-ggsave(file="~/www/test.pdf", fig, height=8, width=12)
-
+plot_grid(figA, figB, figC, figD, figE, ncol=4, labels=LETTERS)
 ```
 
 ```{r heatmap}
@@ -561,7 +557,7 @@ fig = df_gsa %>%
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
         geom_text(data = df_gsa %>% filter(FDR < 0.05), label='*', hjust=0.5, vjust=0.8) +
         facet_wrap(~assay)
-
+fig
 
 
 
