@@ -636,7 +636,7 @@ plot_grid(fig1 + theme(axis.text.x =  element_blank()), fig2, ncol=1, align="h",
 
 
 # Figures
-```{r figures2, fig.height=8, fig.width=12, eval=FALSE}
+```{r figures3, fig.height=8, fig.width=12, eval=FALSE}
 library(paletteer)
 
 # cluster, GEX_region, minor_subset, major_subset
