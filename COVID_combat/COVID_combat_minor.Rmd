@@ -247,10 +247,9 @@ fig = tab2 %>%
     scale_fill_gradient2("t-statistic", low="blue", mid="white", high="red", limits=c(-zmax, zmax)) + 
     theme(aspect.ratio=ncol/nrow, axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), plot.title = element_text(hjust = 0.5)) + 
     geom_text(vjust=1, hjust=0.5) 
-    
-ggsave(fig, file="~/www/test.pdf", width=15, height=12)
+fig
 
-# his showed enrichment for type I and II interferon pathways in the less severe hospitalized COVID-19 patients across cell types.
+# this showed enrichment for type I and II interferon pathways in the less severe hospitalized COVID-19 patients across cell types.
 
 
 gs = c("GO0002544: chronic inflammatory response", 
@@ -375,7 +374,7 @@ msigdb.gs = get_MSigDB("H", to="SYMBOL")
 res.msigdb = zenith_gsa(fit, msigdb.gs, coefs=coef_array, progressbar=FALSE)
 ```
 
-```{r zenith.plot.MSigDB, fig.height=80, fig.width=20}
+```{r zenith.plot.MSigDB, fig.height=40, fig.width=20}
 plotZenithResults(res.msigdb, 5, 3)
 ```
 
@@ -461,9 +460,6 @@ fig
 ```
 
 
-```
-
-
 # Figures
 ```{r figures, fig.height=20, fig.width=12}
 gs.array = c("GO0006119: oxidative phosphorylation",
@@ -541,8 +537,6 @@ fig = df_gsa %>%
         geom_text(data = df_gsa %>% filter(FDR < 0.05), label='*', hjust=0.5, vjust=0.8) +
         facet_wrap(~assay)
 fig
-
-
 ```
 
 
@@ -552,7 +546,7 @@ library(paletteer)
 
 # cluster, GEX_region, minor_subset, major_subset
 incl = grep("cDC|Mono", sce$GEX_region)
-figA = plotProjection(sce[,incl], "X_umap", "minor_subset", pointsize=2) + scale_color_manual(values = adjustcolor(paletteer_d("ggsci::default_nejm"), alpha=.6))
+figA = plotProjection(sce[,incl], "X_umap", "minor_subset", pointsize=2) + scale_color_manual(values = adjustcolor(paletteer_d("ggsci::default_nejm"), offset=c(.3, .3, .3, 0)))
 
 figB = plotVoom(res.proc[["cMono"]])
 
@@ -662,11 +656,7 @@ fig = df_gsa %>%
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
         geom_text(data = df_gsa %>% filter(FDR < 0.05), label='*', hjust=0.5, vjust=0.8) +
         facet_wrap(~assay, nrow=1)
-# fig
-ggsave(fig, file="~/www/test.pdf", width=12)
-
-
-
+fig
 
 # Summarize differential expression for each coef and assay
 df = coef_array %>%
@@ -943,12 +933,12 @@ ggsave(file="~/www/test.pdf", fig, height=8, width=12)
 
 
 
-
+<!---
 NFKBIA/PIM3/IFI27 at the same level for all COVID levels
 CLU/NLRC5/PTPN2 increases with severity and Sepsis
 GIGYF2 returns to normal with severity
 FADD is only sepsis
-
+--->
 
    
 
