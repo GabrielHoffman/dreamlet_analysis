@@ -552,7 +552,7 @@ library(paletteer)
 
 # cluster, GEX_region, minor_subset, major_subset
 incl = grep("cDC|Mono", sce$GEX_region)
-figA = plotProjection(sce[,incl], "X_umap", "minor_subset", pointsize=2) + scale_color_manual(values = paletteer_d("ggsci::default_nejm"))
+figA = plotProjection(sce[,incl], "X_umap", "minor_subset", pointsize=2) + scale_color_manual(values = adjustcolor(paletteer_d("ggsci::default_nejm"), alpha=.6))
 
 figB = plotVoom(res.proc[["cMono"]])
 
