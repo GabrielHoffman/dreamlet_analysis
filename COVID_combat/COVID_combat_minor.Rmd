@@ -7,7 +7,7 @@ output:
   html_document:
     toc: true
     smart: true
-    self_contained: false
+    self_contained: true
 ---
 
 <!---
@@ -553,6 +553,14 @@ figB = plotVoom(res.proc[["cMono"]])
 incl = res.vp$assay == "cMono"
 col = c('#3A488AFF', '#DABD61FF', '#BE3428FF', "grey85")
 figC = plotVarPart( sortCols(res.vp[incl,]), col=col ) 
+
+# statistics
+sortCols(res.vp[incl,]) %>%
+  as_tibble %>%
+  summarize(median = median(Source), 
+    N10 = sum(Source> .25), 
+    length = length(Source))
+
 
 figD = plotVolcano(fit[["cMono"]], coef="SourceCOVID_MILD")
 
