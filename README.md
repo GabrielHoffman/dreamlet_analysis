@@ -16,11 +16,7 @@ Here we present analysis code, data and results from 4 public datasets.
 - [Mathys, et al. Cell (2023)](https://doi.org/10.1016/j.cell.2023.08.039)
 - Data: [MIT / ROSMAP study](https://www.synapse.org/#!Synapse:syn52293417)
 - Analysis code: [Mathys\_2023\_Major\_Cell\_Type.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/Mathys_2023/Mathys_2023_Major_Cell_Type.Rmd)
-<!--- , [Mathys\_2023\_Cell\_Type.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/Mathys_2023/Mathys_2023_Cell_Type.Rmd) --->
 - Results: [Mathys\_2023\_Major\_Cell\_Type.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/Mathys_2023_Major_Cell_Type.html)
-<!--- , 
-[Mathys\_2023\_Cell\_Type.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/Mathys_2023_Cell_Type.html) --->
-
 
 ## Bone metastases from prostate cancer
 - [Kfoury, et al. Cancer Cell (2021)](https://doi.org/10.1016/j.ccell.2021.09.005)
@@ -34,7 +30,5 @@ Here we present analysis code, data and results from 4 public datasets.
 - [COMBAT Consortium. Cell (2023)](https://doi.org/10.1016/j.cell.2022.01.012)
 - Data: [Zenodo](https://zenodo.org/records/6120249)
 - Analysis code: [COVID\_combat\_minor.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/COVID_combat/COVID_combat_minor.Rmd)
-<!--- , [COVID\_combat\_major.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/COVID_combat/COVID_combat_major.Rmd) --->
 - Results: [COVID\_combat\_minor.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/COVID_combat_minor.html) 
-<!--- , [COVID\_combat\_major.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/COVID_combat_major.html) --->
 
