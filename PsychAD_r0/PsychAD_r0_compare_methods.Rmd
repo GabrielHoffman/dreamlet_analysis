@@ -12,8 +12,12 @@ output:
 
 <---
 
-/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/bin/R
+cd /hpc/users/hoffmg01/www/dreamlet_analysis/PsychAD_r0
 
+/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/bin/R
+.libPaths("/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/lib/R/library")
+
+rmarkdown::render("PsychAD_r0_compare_methods.Rmd")
 
 --->
 
@@ -32,7 +36,6 @@ knitr::opts_chunk$set(
 
 # Load libraries
 ```{r load.packages, cache=FALSE}
-.libPaths("/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/lib/R/library")
 suppressPackageStartupMessages({
 library(SingleCellExperiment)
 library(zellkonverter)
@@ -44,7 +47,7 @@ library(muscat)
 library(cowplot)
 library(scater)
 library(tidyverse)
-library(kableExtra)
+# library(kableExtra)
 library(qvalue)
 library(scattermore)
 library(RColorBrewer)
