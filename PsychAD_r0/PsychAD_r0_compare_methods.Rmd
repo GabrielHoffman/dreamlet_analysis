@@ -1,0 +1,139 @@
+---
+title: "Analysis of Alzheimer's Disease in [PsychAD](https://adknowledgeportal.synapse.org/Explore/Projects/DetailsPage?Grant%20Number=R01AG067025)"
+subtitle: 'Compare with other methods'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+output: 
+  html_document:
+    toc: true
+    smart: true
+---
+
+
+<---
+
+/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/bin/R
+
+
+--->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  package.startup.message = FALSE,
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+# Load libraries
+```{r load.packages, cache=FALSE}
+.libPaths("/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/lib/R/library")
+suppressPackageStartupMessages({
+library(SingleCellExperiment)
+library(zellkonverter)
+library(dreamlet)
+library(zenith)
+library(DelayedArray)
+library(GSEABase)
+library(muscat)
+library(cowplot)
+library(scater)
+library(tidyverse)
+library(kableExtra)
+library(qvalue)
+library(scattermore)
+library(RColorBrewer)
+library(corrplot)
+library(viridis)
+library(dplyr)
+library(org.Hs.eg.db)
+library(EnrichmentBrowser)
+library(ggrepel)
+})
+```
+
+
+```{r load.data}
+folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
+file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
+sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE, version="0.8.0")
+assayNames(sce)[1] = "counts"
+sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
+
+# cell type order
+ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Oligo', 'OPC', 'Astro', 'Micro_PVM', 'CD8_T', 'PC', 'VLMC','Endo')
+
+# harmony covariates
+df = reducedDim(sce, "X_pca_regressed_harmony")
+colnames(df) = paste0("hcomp_", seq(ncol(df)), sep="")
+colData(sce) = cbind(colData(sce), df[,1:5])
+```
+
+
+```{r combineData, message=TRUE} 
+# Create pseudo-bulk SingleCellExperiment
+pb = aggregateToPseudoBulk(sce,
+    assay = "counts", 
+    cluster_id = "subclass",
+    sample_id = "Channel")
+```
+
+
+
+# Process data: log2 CPM + voom precision weights
+```{r voom}
+# Normalize and apply voom
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+ 
+res.proc = processAssays( pb, form,
+                          min.cells = 5,
+                          min.counts = 10,
+                          BPPARAM = SnowParam(12))
+```
+
+```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE} 
+plotVoom( res.proc, ncol=4, assays=ctorder ) + theme_classic()  
+```
+
+
+# Variance Partitioning Analysis
+```{r varPart}
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+ 
+res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
+```
+
+
+```{r vp.plot, fig.height=15, fig.width=10}
+colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
+colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
+colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
+ 
+col.vp = c(brewer.pal(ncol(res.vp)-3, "Set1"), "grey85")
+names(col.vp) = colnames(sortCols(res.vp))[-seq(2)]
+
+plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder, col=col.vp )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
