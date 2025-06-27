@@ -278,20 +278,22 @@ tab.limma = do.call(rbind, tab.limma)
 ```{r limma.volcano, fig.height=15, fig.width=10}
 plot_volcano = function(x, nGenes = 5, size = 12, minp = 1.0e-310, cutoff = 0.05, ncol = 4, ...) {
 
-    library(data.table)
-    x = as.data.table(x)
-    x$isSignif <- c("no", "yes")[(x$adj.P.Val < cutoff) + 1]
-    x$P.Value <- pmax(minp, x$P.Value)
+  x = x %>%
+    filter(!is.na(adj.P.Val))
 
-    # sort facets by original sorting of assays
-    x$assay <- factor(x$assay)
-    # order by assay, then p-value
-    ord <- order(x$assay, x$P.Value)
-    x <- x[ord, , drop = FALSE]
+  library(data.table)
+  x = as.data.table(x)
+  x$isSignif <- c("no", "yes")[(x$adj.P.Val < cutoff) + 1]
+  x$P.Value <- pmax(minp, x$P.Value)
 
-    # top significant genes in each cell type
-    df2 <- x[, head(.SD, nGenes), by = "assay", drop = FALSE]
+  # sort facets by original sorting of assays
+  x$assay <- factor(x$assay)
+  # order by assay, then p-value
+  ord <- order(x$assay, x$P.Value)
+  x <- x[ord, , drop = FALSE]
 
+  # top significant genes in each cell type
+  df2 <- x[, head(.SD, nGenes), by = "assay", drop = FALSE]
 
   ggplot(x, aes(logFC, -log10(P.Value), color = isSignif)) +
     geom_point() +
@@ -306,7 +308,6 @@ plot_volcano = function(x, nGenes = 5, size = 12, minp = 1.0e-310, cutoff = 0.05
 
 plot_volcano(tab.limma)
 ```
-
 
 
 
@@ -388,6 +389,7 @@ tab.deseq2 %>%
 tab2 = inner_join(tab, 
                   tab.deseq2 %>%
                     mutate(t = log2FoldChange / lfcSE),
+                    filter(!is.na(adj.P.Val))
                   by=c("assay", "ID"))
 
 tab2 %>%
