@@ -247,9 +247,7 @@ inner_join(tab, tab0, by=c("assay", "ID")) %>%
 ```
 
 
-
 # Limma
-## load("PsychAD_r0_compare_methods_cache/html/combineData2_869998dd449b074116a4afa0d62b3d72.RData")
 
 ```{r limma}
 library(limma)
@@ -302,7 +300,7 @@ tab.deseq2 = do.call(rbind, tab.deseq2)
 tab2 = inner_join(tab, tab.limma, 
                   by=c("assay", "ID"))
 
-fig = tab2 %>%
+tab2 %>%
     ggplot(aes(t.x, t.y))  +
         geom_hline(yintercept=0, color="grey80") +
         geom_vline(xintercept=0, color="grey80") +
@@ -310,13 +308,37 @@ fig = tab2 %>%
         theme_classic() +
         theme(aspect.ratio=1) +
         xlab("t (dreamlet)") +
-        ylab("t (limma)") +
+        ylab("t (DESeq2)") +
         geom_abline( color="red") +
         facet_wrap(~assay)
 
-pdf(file="~/www/test.pdf", height=15, width=10)
-fig
-dev.off()
+
+
+by = c("assay", "ID")
+df = tab2 %>%
+  inner_join(res.vp %>% 
+    data.frame %>% 
+    rename(ID = "gene") %>%
+    dplyr::select(assay, ID, poolID), 
+    by = by) %>%
+  mutate(diff = abs(t.x-t.y)) %>%
+  arrange(-diff) %>%
+  dplyr::select(-B, -z.std, -Method, -P.Value, -adj.P.Val) 
+
+df %>%
+  group_by(assay) %>%
+  summarize(rho = cor(diff, poolID, method="sp"))
+
+df %>% 
+  ggplot(aes(diff, poolID)) +
+    geom_scattermore(pointsize=3) +
+    geom_smooth(method="lm") + 
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    facet_wrap(~assay) +
+    xlab("Absolute difference in t-statistics between dreamlet and DESeq2") +
+    ylab("Variance explained by PoolID (%)")
+
 ```
 
 
