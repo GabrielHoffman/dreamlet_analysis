@@ -290,7 +290,8 @@ tab2 %>%
         xlab("t (dreamlet)") +
         ylab("t (DESeq2)") +
         geom_abline( color="red") +
-        facet_wrap(~assay)
+        facet_wrap(~assay) +
+        geom_smooth(se=FALSE)
 
 by = c("assay", "ID")
 df = tab2 %>%
@@ -304,7 +305,8 @@ df = tab2 %>%
 
 df %>%
   group_by(assay) %>%
-  summarize(rho = cor(diff, poolID, method="sp"))
+  summarize(rho = cor(diff, poolID, method="sp")) %>%
+  data.frame
 
 df %>% 
   ggplot(aes(diff, poolID)) +
@@ -357,9 +359,8 @@ tab2 %>%
         xlab("t (dreamlet)") +
         ylab("t (DESeq2)") +
         geom_abline( color="red") +
-        facet_wrap(~assay)
-
-
+        facet_wrap(~assay) +
+        geom_smooth(se=FALSE)
 
 by = c("assay", "ID")
 df = tab2 %>%
@@ -374,7 +375,8 @@ df = tab2 %>%
 
 df %>%
   group_by(assay) %>%
-  summarize(rho = cor(diff, poolID, method="sp"))
+  summarize(rho = cor(diff, poolID, method="sp")) %>%
+  data.frame
 
 df %>% 
   ggplot(aes(diff, poolID)) +
