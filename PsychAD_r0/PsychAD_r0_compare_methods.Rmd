@@ -167,19 +167,23 @@ fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
 
 # Harmony
 form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
-fith = dreamlet( res.proch form, BPPARAM = SnowParam(6))
+fith = dreamlet( res.proch, form, BPPARAM = SnowParam(6))
 
 # No Batch correction
 form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx 
-fit0 = dreamlet( res.proch form, BPPARAM = SnowParam(6))
+fit0 = dreamlet( res.proch, form, BPPARAM = SnowParam(6))
 ```
 
 
 # Limma
+## load("PsychAD_r0_compare_methods_cache/html/combineData2_869998dd449b074116a4afa0d62b3d72.RData")
+
 ```{r limma}
+library(limma)
+library(edgeR)
 form = ~ Sex + Age + Dx 
 
-tab.limma = lapply(assayNames(pb2), function(id){
+tab.limma = lapply(assayNames(pb2)[1], function(id){
 
   design = model.matrix(form, colData(pb2))
   counts = assay(pb2, id)
@@ -188,8 +192,9 @@ tab.limma = lapply(assayNames(pb2), function(id){
   dge = calcNormFactors(dge)
   vobj = voom(dge, design)
   fit = lmFit(vobj, design)
+  fit = eBayes(fit)
   tab = topTable(fit, coef="DxAD", number=Inf)
-  data.frame(CellType = id, tab)
+  data.frame(CellType = id, Gene = rownames(tab), tab)
   })
 tab.limma = do.call(rbind, tab.limma)
 ```
@@ -197,6 +202,7 @@ tab.limma = do.call(rbind, tab.limma)
 
 # DESeq2
 ```{r DESeq2}
+library(DESeq2)
 form = ~ Sex + Age + Dx 
 
 tab.deseq2 = lapply(assayNames(pb2), function(id){
