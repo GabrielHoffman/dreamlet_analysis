@@ -12,7 +12,7 @@ output:
 
 <---
 
-li04e03
+ssh li04e03
 
 cd /hpc/users/hoffmg01/www/dreamlet_analysis/PsychAD_r0
 
@@ -50,17 +50,17 @@ library(dreamlet)
 # library(muscat)
 # library(cowplot)
 # library(scater)
-# library(tidyverse)
+library(tidyverse)
 # library(kableExtra)
 # library(qvalue)
-# library(scattermore)
-# library(RColorBrewer)
+library(scattermore)
+library(RColorBrewer)
 # library(corrplot)
 # library(viridis)
 # library(dplyr)
 # library(org.Hs.eg.db)
 # library(EnrichmentBrowser)
-# library(ggrepel)
+library(ggrepel)
 })
 ```
 
@@ -164,6 +164,33 @@ plotVarPart( sortCols(res.vph2), label.angle=45, ncol=4, assays=ctorder, col=col
 
 ### How well does Harmony capture Pool effect?
 
+```{r vp.compare, fig.height=15, fig.width=10}
+ids = c("assay", "gene")
+df = merge(res.vp[,c(ids, "poolID")] %>% data.frame, 
+          res.vph2[,c(ids, "Harmony")] %>% data.frame, 
+          by=ids)
+
+df_sort = df %>%
+  as.data.frame %>%
+  as_tibble %>%
+  arrange(assay, -poolID) %>%
+  group_by(assay) %>%
+  slice_head(n=3)
+
+ggplot(df, aes(poolID, Harmony)) +
+        geom_scattermore(pointsize=3) +
+        geom_text_repel(aes(label=gene), data=df_sort, size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
+        geom_smooth(method='lm') +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        facet_wrap(~assay, ncol=4) +
+        xlab("Variance explained by PoolID (%)") +
+        ylab("Variance explained by Harmony (%)") +
+        xlim(0,1) +
+        ylim(0,1)
+```
+
+
 
 ## Differential expression: dreamlet analysis
 ```{r dreamlet}
@@ -180,6 +207,45 @@ form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx
 fit0 = dreamlet( res.proch, form, BPPARAM = SnowParam(6))
 ```
 
+```{r compare.dreamlet, fig.height=15, fig.width=10}
+
+tab = topTable(fit, coef="DxAD", number=Inf) %>%
+        data.frame %>% as_tibble
+tab$Method = "poolID"
+
+tabh = topTable(fith, coef="DxAD", number=Inf) %>%
+        data.frame %>% as_tibble
+tabh$Method = "Harmony"
+
+tab0 = topTable(fit0, coef="DxAD", number=Inf) %>%
+        data.frame %>% as_tibble
+tab0$Method = "none"
+
+inner_join(tab, tabh, by=c("assay", "ID")) %>%
+    ggplot(aes(t.x, t.y))  +
+        geom_hline(yintercept=0, color="grey80") +
+        geom_vline(xintercept=0, color="grey80") +
+        geom_scattermore(pointsize=3) +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        xlab("Log FC (poolID)") +
+        ylab("Log FC (Harmony)") +
+        geom_abline( color="red") +
+        facet_wrap(~assay)
+
+inner_join(tab, tab0, by=c("assay", "ID")) %>%
+    ggplot(aes(t.x, t.y))  +
+        geom_hline(yintercept=0, color="grey80") +
+        geom_vline(xintercept=0, color="grey80") +
+        geom_scattermore(pointsize=3) +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        xlab("Log FC (poolID)") +
+        ylab("Log FC (none)") +
+        geom_abline( color="red") +
+        facet_wrap(~assay)
+```
+
 
 
 # Limma
@@ -190,8 +256,8 @@ library(limma)
 library(edgeR)
 form = ~ Sex + Age + Dx 
  
-tab.limma = lapply(assayNames(pb2), function(id){
-  
+tab.limma = lapply(assayNames(pb2)[1], function(id){
+
   # remove SubID with insufficient read count
   lib.size = colSums(assay(pb2, id))
   pb_tmp = pb2[,lib.size > 1000]
@@ -216,7 +282,7 @@ tab.limma = do.call(rbind, tab.limma)
 library(DESeq2)
 form = ~ Sex + Age + Dx 
 
-tab.deseq2 = lapply(assayNames(pb2), function(id){
+tab.deseq2 = lapply(assayNames(pb2)[1], function(id){
  
   # remove SubID with insufficient read count
   lib.size = colSums(assay(pb2, id))
@@ -228,18 +294,75 @@ tab.deseq2 = lapply(assayNames(pb2), function(id){
   res <- results(dds)
   data.frame(assay = id, ID = rownames(res), res)
   })
-tab.deseq2 = do.call(rbind, tab.deseq2)
+tab.deseq2 = do.call(rbind, tab.deseq2) 
+```
+
+```{r compare2.limma, fig.height=15, fig.width=10}
+# Limma
+tab2 = inner_join(tab, tab.limma, 
+                  by=c("assay", "ID"))
+
+fig = tab2 %>%
+    ggplot(aes(t.x, t.y))  +
+        geom_hline(yintercept=0, color="grey80") +
+        geom_vline(xintercept=0, color="grey80") +
+        geom_scattermore(pointsize=3) +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        xlab("t (dreamlet)") +
+        ylab("t (limma)") +
+        geom_abline( color="red") +
+        facet_wrap(~assay)
+
+pdf(file="~/www/test.pdf", height=15, width=10)
+fig
+dev.off()
 ```
 
 
+```{r compare2.DESeq2, fig.height=15, fig.width=10}
+# DESeq2
+tab2 = inner_join(tab, 
+                  tab.deseq2 %>%
+                    mutate(t = log2FoldChange / lfcSE),
+                  by=c("assay", "ID"))
+
+tab2 %>%
+    ggplot(aes(t.x, t.y))  +
+        geom_hline(yintercept=0, color="grey80") +
+        geom_vline(xintercept=0, color="grey80") +
+        geom_scattermore(pointsize=3) +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        xlab("t (dreamlet)") +
+        ylab("t (DESeq2)") +
+        geom_abline( color="red") +
+        facet_wrap(~assay)
 
 
 
+by = c("assay", "ID")
+df = tab2 %>%
+  inner_join(res.vp %>% 
+    data.frame %>% 
+    rename(ID = "gene") %>%
+    select(assay, ID, poolID), 
+    by = by) %>%
+  mutate(diff = abs(t.x-t.y)) %>%
+  arrange(-diff) %>%
+  select(-B, -z.std, -Method, -P.Value, -adj.P.Val) 
 
+df %>%
+  group_by(assay) %>%
+  summarize(rho = cor(diff, poolID, method="sp"))
 
-
-
-
-
-
-
+df %>% 
+  ggplot(aes(diff, poolID)) +
+    geom_scattermore(pointsize=3) +
+    geom_smooth(method="lm") + 
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    facet_wrap(~assay) +
+    xlab("Absolute difference in t-statistics between dreamlet and DESeq2") +
+    ylab("Variance explained by PoolID (%)")
+```
