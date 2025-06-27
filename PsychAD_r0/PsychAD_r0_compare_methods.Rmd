@@ -312,8 +312,6 @@ tab2 %>%
         geom_abline( color="red") +
         facet_wrap(~assay)
 
-
-
 by = c("assay", "ID")
 df = tab2 %>%
   inner_join(res.vp %>% 
@@ -322,8 +320,7 @@ df = tab2 %>%
     dplyr::select(assay, ID, poolID), 
     by = by) %>%
   mutate(diff = abs(t.x-t.y)) %>%
-  arrange(-diff) %>%
-  dplyr::select(-B, -z.std, -Method, -P.Value, -adj.P.Val) 
+  arrange(-diff) 
 
 df %>%
   group_by(assay) %>%
