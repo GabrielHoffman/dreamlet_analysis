@@ -256,7 +256,7 @@ library(limma)
 library(edgeR)
 form = ~ Sex + Age + Dx 
  
-tab.limma = lapply(assayNames(pb2)[1], function(id){
+tab.limma = lapply(assayNames(pb2), function(id){
 
   # remove SubID with insufficient read count
   lib.size = colSums(assay(pb2, id))
@@ -282,7 +282,7 @@ tab.limma = do.call(rbind, tab.limma)
 library(DESeq2)
 form = ~ Sex + Age + Dx 
 
-tab.deseq2 = lapply(assayNames(pb2)[1], function(id){
+tab.deseq2 = lapply(assayNames(pb2), function(id){
  
   # remove SubID with insufficient read count
   lib.size = colSums(assay(pb2, id))
@@ -346,11 +346,11 @@ df = tab2 %>%
   inner_join(res.vp %>% 
     data.frame %>% 
     rename(ID = "gene") %>%
-    select(assay, ID, poolID), 
+    dplyr::select(assay, ID, poolID), 
     by = by) %>%
   mutate(diff = abs(t.x-t.y)) %>%
   arrange(-diff) %>%
-  select(-B, -z.std, -Method, -P.Value, -adj.P.Val) 
+  dplyr::select(-B, -z.std, -Method, -P.Value, -adj.P.Val) 
 
 df %>%
   group_by(assay) %>%
