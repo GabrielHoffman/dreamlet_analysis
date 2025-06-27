@@ -274,6 +274,41 @@ tab.limma = lapply(assayNames(pb2), function(id){
 tab.limma = do.call(rbind, tab.limma)
 ```
 
+## Volcano
+```{r limma.volcano, fig.height=15, fig.width=10}
+plot_volcano = function(x, nGenes = 5, size = 12, minp = 1.0e-310, cutoff = 0.05, ncol = 4, ...) {
+
+    library(data.table)
+    x = as.data.table(x)
+    x$isSignif <- c("no", "yes")[(x$adj.P.Val < cutoff) + 1]
+    x$P.Value <- pmax(minp, x$P.Value)
+
+    # sort facets by original sorting of assays
+    x$assay <- factor(x$assay)
+    # order by assay, then p-value
+    ord <- order(x$assay, x$P.Value)
+    x <- x[ord, , drop = FALSE]
+
+    # top significant genes in each cell type
+    df2 <- x[, head(.SD, nGenes), by = "assay", drop = FALSE]
+
+
+  ggplot(x, aes(logFC, -log10(P.Value), color = isSignif)) +
+    geom_point() +
+    theme_classic(size) +
+    theme(aspect.ratio = 1, legend.position = "none", plot.title = element_text(hjust = 0.5)) +
+    xlab(bquote(log[2] ~ fold ~ change)) +
+    ylab(bquote(-log[10] ~ P)) +
+    scale_color_manual(values = c("grey", "darkred")) +
+    geom_text_repel(data = df2, aes(logFC, -log10(P.Value), label = ID), segment.size = .5, segment.color = "black", color = "black", force = 1, nudge_x = .005, nudge_y = .5) +
+    facet_wrap(~assay, ncol = ncol, ...)
+}
+
+plot_volcano(tab.limma)
+```
+
+
+
 
 ```{r compare2.limma, fig.height=15, fig.width=10}
 # Limma
@@ -341,6 +376,12 @@ tab.deseq2 = lapply(assayNames(pb2), function(id){
 tab.deseq2 = do.call(rbind, tab.deseq2) 
 ```
 
+## Volcano
+```{r limma.deseq2, fig.height=15, fig.width=10}
+tab.deseq2 %>% 
+  rename(logFC = "log2FoldChange", P.Value = "pvalue", adj.P.Val = "padj") %>%
+  plot_volcano
+```    
 
 ```{r compare2.DESeq2, fig.height=15, fig.width=10}
 # DESeq2
