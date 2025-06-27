@@ -107,8 +107,7 @@ form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx)
 res.proc = processAssays( pb, form,
                           min.cells = 5,
                           min.counts = 10,
-                          BPPARAM = SnowParam(12),
-                          assays="Astro")
+                          BPPARAM = SnowParam(6))
 
 # Harmony:
 # Normalize and apply voom
@@ -117,8 +116,7 @@ form = ~ (1|SubID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3
 res.proch = processAssays( pb, form,
                           min.cells = 5,
                           min.counts = 10,
-                          BPPARAM = SnowParam(12),
-                          assays="Astro")
+                          BPPARAM = SnowParam(6))
 ```
 
 ```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE} 
@@ -183,7 +181,7 @@ library(limma)
 library(edgeR)
 form = ~ Sex + Age + Dx 
 
-tab.limma = lapply(assayNames(pb2)[1], function(id){
+tab.limma = lapply(assayNames(pb2), function(id){
 
   design = model.matrix(form, colData(pb2))
   counts = assay(pb2, id)
@@ -194,7 +192,7 @@ tab.limma = lapply(assayNames(pb2)[1], function(id){
   fit = lmFit(vobj, design)
   fit = eBayes(fit)
   tab = topTable(fit, coef="DxAD", number=Inf)
-  data.frame(CellType = id, Gene = rownames(tab), tab)
+  data.frame(assay = id, ID = rownames(tab), tab)
   })
 tab.limma = do.call(rbind, tab.limma)
 ```
@@ -211,7 +209,7 @@ tab.deseq2 = lapply(assayNames(pb2), function(id){
   dds <- DESeqDataSetFromMatrix(counts, colData(pb2), form)
   dds <- DESeq(dds)
   res <- results(dds)
-  data.frame(CellType = id, res)
+  data.frame(assay = id, ID = rownames(res), res)
   })
 tab.deseq2 = do.call(rbind, tab.deseq2)
 ```
