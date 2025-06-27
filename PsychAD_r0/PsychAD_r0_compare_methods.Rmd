@@ -17,7 +17,7 @@ cd /hpc/users/hoffmg01/www/dreamlet_analysis/PsychAD_r0
 /sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/bin/R
 .libPaths("/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/lib/R/library")
 
-rmarkdown::render("PsychAD_r0_compare_methods.Rmd")
+system("git pull"); rmarkdown::render("PsychAD_r0_compare_methods.Rmd")
 
 --->
 
@@ -90,40 +90,79 @@ pb = aggregateToPseudoBulk(sce,
 
 # Process data: log2 CPM + voom precision weights
 ```{r voom}
+# poolID:
 # Normalize and apply voom
-form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx) 
  
 res.proc = processAssays( pb, form,
                           min.cells = 5,
                           min.counts = 10,
-                          BPPARAM = SnowParam(12))
+                          BPPARAM = SnowParam(12),
+                          assays="Astro")
+
+# Harmony:
+# Normalize and apply voom
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+ 
+res.proch = processAssays( pb, form,
+                          min.cells = 5,
+                          min.counts = 10,
+                          BPPARAM = SnowParam(12),
+                          assays="Astro")
 ```
 
 ```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE} 
 plotVoom( res.proc, ncol=4, assays=ctorder ) + theme_classic()  
+plotVoom( res.proch, ncol=4, assays=ctorder ) + theme_classic()  
 ```
 
 
 # Variance Partitioning Analysis
 ```{r varPart}
-form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
- 
-res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
+# poolID
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx) 
+ res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
+
+# Harmony
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+res.vph = fitVarPart(res.proch, form, BPPARAM = SnowParam(6))
 ```
 
 
 ```{r vp.plot, fig.height=15, fig.width=10}
+# poolID
 colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
 colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
 colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
- 
 col.vp = c(brewer.pal(ncol(res.vp)-3, "Set1"), "grey85")
 names(col.vp) = colnames(sortCols(res.vp))[-seq(2)]
 
 plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder, col=col.vp )
+
+# Harmony
+colnames(res.vph)[colnames(res.vph) == "scale.Age."] = 'Age'
+colnames(res.vph)[colnames(res.vph) == "SubID"] = 'Subject'
+
+plotVarPart( sortCols(res.vph), label.angle=45, ncol=4, assays=ctorder, col=col.vp )
 ```
 
+## How well does Harmony captur Pool effect?
 
+
+# Differential expression: dreamlet analysis
+```{r dreamlet}
+# poolID
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + Dx
+fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
+
+# Harmony
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+fith = dreamlet( res.proch form, BPPARAM = SnowParam(6))
+
+# No Batch correction
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx 
+fit0 = dreamlet( res.proch form, BPPARAM = SnowParam(6))
+```
 
 
 
