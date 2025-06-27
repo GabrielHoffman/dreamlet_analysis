@@ -12,6 +12,8 @@ output:
 
 <---
 
+li04e03
+
 cd /hpc/users/hoffmg01/www/dreamlet_analysis/PsychAD_r0
 
 export OPENBLAS_NUM_THREADS=1
@@ -189,7 +191,7 @@ library(edgeR)
 form = ~ Sex + Age + Dx 
  
 tab.limma = lapply(assayNames(pb2), function(id){
-
+  
   # remove SubID with insufficient read count
   lib.size = colSums(assay(pb2, id))
   pb_tmp = pb2[,lib.size > 1000]
