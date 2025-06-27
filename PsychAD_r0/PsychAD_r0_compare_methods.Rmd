@@ -275,26 +275,6 @@ tab.limma = do.call(rbind, tab.limma)
 ```
 
 
-# DESeq2
-```{r DESeq2}
-library(DESeq2)
-form = ~ Sex + Age + Dx 
-
-tab.deseq2 = lapply(assayNames(pb2), function(id){
- 
-  # remove SubID with insufficient read count
-  lib.size = colSums(assay(pb2, id))
-  pb_tmp = pb2[,lib.size > 1000]
-
-  counts = assay(pb_tmp, id)
-  dds <- DESeqDataSetFromMatrix(counts, colData(pb_tmp), form)
-  dds <- DESeq(dds)
-  res <- results(dds)
-  data.frame(assay = id, ID = rownames(res), res)
-  })
-tab.deseq2 = do.call(rbind, tab.deseq2) 
-```
-
 ```{r compare2.limma, fig.height=15, fig.width=10}
 # Limma
 tab2 = inner_join(tab, tab.limma, 
@@ -336,6 +316,27 @@ df %>%
     xlab("Absolute difference in t-statistics between dreamlet and DESeq2") +
     ylab("Variance explained by PoolID (%)")
 
+```
+
+
+# DESeq2
+```{r DESeq2}
+library(DESeq2)
+form = ~ Sex + Age + Dx 
+
+tab.deseq2 = lapply(assayNames(pb2), function(id){
+ 
+  # remove SubID with insufficient read count
+  lib.size = colSums(assay(pb2, id))
+  pb_tmp = pb2[,lib.size > 1000]
+
+  counts = assay(pb_tmp, id)
+  dds <- DESeqDataSetFromMatrix(counts, colData(pb_tmp), form)
+  dds <- DESeq(dds)
+  res <- results(dds)
+  data.frame(assay = id, ID = rownames(res), res)
+  })
+tab.deseq2 = do.call(rbind, tab.deseq2) 
 ```
 
 
