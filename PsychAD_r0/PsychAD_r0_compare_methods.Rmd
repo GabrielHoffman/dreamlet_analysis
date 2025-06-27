@@ -12,7 +12,6 @@ output:
 
 <---
 
-ssh li04e03
 
 cd /hpc/users/hoffmg01/www/dreamlet_analysis/PsychAD_r0
 
@@ -311,7 +310,7 @@ plot_volcano(tab.limma)
 
 
 
-```{r compare2.limma, fig.height=15, fig.width=10}
+```{r compare2.limma, fig.height=15, fig.width=10, cache=FALSE}
 # Limma
 tab2 = inner_join(tab, tab.limma, 
                   by=c("assay", "ID"))
@@ -378,13 +377,13 @@ tab.deseq2 = do.call(rbind, tab.deseq2)
 ```
 
 ## Volcano
-```{r limma.deseq2, fig.height=15, fig.width=10}
+```{r limma.deseq2, fig.height=15, fig.width=10, cache=FALSE}
 tab.deseq2 %>% 
   rename(logFC = "log2FoldChange", P.Value = "pvalue", adj.P.Val = "padj") %>%
   plot_volcano
 ```    
 
-```{r compare2.DESeq2, fig.height=15, fig.width=10}
+```{r compare2.DESeq2, fig.height=15, fig.width=10, cache=FALSE}
 # DESeq2
 tab2 = inner_join(tab, 
                   tab.deseq2 %>%
