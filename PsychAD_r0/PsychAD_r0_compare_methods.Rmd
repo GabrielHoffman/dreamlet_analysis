@@ -600,7 +600,7 @@ df_wx %>%
 file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_limma.tsv.gz"
 write.table(tab.limma, file, quote=FALSE, sep='\t', row.names=FALSE)
 
-file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_limma.tsv.gz"
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_deseq2.tsv.gz"
 write.table(tab.deseq2, file, quote=FALSE, sep='\t', row.names=FALSE)
 ```
 
