@@ -230,7 +230,7 @@ fig1 = res.vp %>%
  
 col = c(col[1:2], Harmony  = "pink", col[-c(1:2)])
 fig2 = res.vph2 %>%
-    sortCols %>%
+    data.frame %>%
     filter(gene == "NXPE1") %>%
     pivot_longer(!assay&!gene) %>%
     mutate(name = factor(name, names(col))) %>%
