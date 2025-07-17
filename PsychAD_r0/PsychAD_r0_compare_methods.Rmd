@@ -371,7 +371,7 @@ plot_volcano(tab.limma)
 
 
 
-```{r compare2.limma, fig.height=15, fig.width=10, cache=FALSE}
+```{r compare2.limma, fig.height=12, fig.width=8, cache=FALSE}
 # Limma
 tab2 = inner_join(tab, tab.limma, 
                   by=c("assay", "ID"))
@@ -380,12 +380,12 @@ tab2 %>%
     ggplot(aes(t.x, t.y))  +
         geom_hline(yintercept=0, color="grey80") +
         geom_vline(xintercept=0, color="grey80") +
+        geom_abline( color="red") +
         geom_scattermore(pointsize=3) +
         theme_classic() +
         theme(aspect.ratio=1) +
         xlab("t (dreamlet)") +
-        ylab("t (DESeq2)") +
-        geom_abline( color="red") +
+        ylab("t (limma)") +
         facet_wrap(~assay) +
         geom_smooth(se=FALSE)
 
@@ -396,7 +396,7 @@ df = tab2 %>%
     rename(ID = "gene") %>%
     dplyr::select(assay, ID, poolID), 
     by = by) %>%
-  mutate(diff = abs(t.x-t.y)) %>%
+  mutate(diff = t.x-t.y) %>%
   arrange(-diff) 
 
 df %>%
@@ -404,17 +404,22 @@ df %>%
   summarize(rho = cor(diff, poolID, method="sp")) %>%
   data.frame
 
-df %>% 
-  ggplot(aes(diff, poolID)) +
-    geom_scattermore(pointsize=3) +
-    geom_smooth(method="lm") + 
+fig = df %>% 
+  ggplot(aes(abs(diff), 100*poolID)) +
+    geom_scattermore(pointsize=4) +
+    geom_smooth() + 
     theme_classic() +
     theme(aspect.ratio=1) +
     facet_wrap(~assay) +
-    xlab("Absolute difference in t-statistics between dreamlet and DESeq2") +
-    ylab("Variance explained by PoolID (%)")
-
+    xlab("Absolute difference in t-statistics between dreamlet and limma") +
+    ylab("Variance explained by PoolID (%)") +
+    ylim(0,100)
 ```
+
+
+
+
+
 
 
 # DESeq2
@@ -444,7 +449,7 @@ tab.deseq2 %>%
   plot_volcano
 ```    
 
-```{r compare2.DESeq2, fig.height=15, fig.width=10, cache=FALSE}
+```{r compare2.DESeq2, fig.height=12, fig.width=8, cache=FALSE}
 # DESeq2
 tab2 = inner_join(tab, 
                   tab.deseq2 %>%
@@ -456,12 +461,12 @@ tab2 %>%
     ggplot(aes(t.x, t.y))  +
         geom_hline(yintercept=0, color="grey80") +
         geom_vline(xintercept=0, color="grey80") +
+        geom_abline( color="red") +
         geom_scattermore(pointsize=3) +
         theme_classic() +
         theme(aspect.ratio=1) +
         xlab("t (dreamlet)") +
         ylab("t (DESeq2)") +
-        geom_abline( color="red") +
         facet_wrap(~assay) +
         geom_smooth(se=FALSE)
 
@@ -472,7 +477,7 @@ df = tab2 %>%
     rename(ID = "gene") %>%
     dplyr::select(assay, ID, poolID), 
     by = by) %>%
-  mutate(diff = abs(t.x-t.y)) %>%
+  mutate(diff = t.x-t.y) %>%
   arrange(-diff) %>%
   dplyr::select(-B, -z.std, -Method, -P.Value, -adj.P.Val) 
 
@@ -481,13 +486,14 @@ df %>%
   summarize(rho = cor(diff, poolID, method="sp")) %>%
   data.frame
 
-df %>% 
-  ggplot(aes(diff, poolID)) +
-    geom_scattermore(pointsize=3) +
-    geom_smooth(method="lm") + 
+fig = df %>% 
+  ggplot(aes(abs(diff), 100*poolID)) +
+    geom_scattermore(pointsize=4) +
+    geom_smooth() + 
     theme_classic() +
     theme(aspect.ratio=1) +
     facet_wrap(~assay) +
     xlab("Absolute difference in t-statistics between dreamlet and DESeq2") +
-    ylab("Variance explained by PoolID (%)")
+    ylab("Variance explained by PoolID (%)") +
+    ylim(0,100)
 ```
