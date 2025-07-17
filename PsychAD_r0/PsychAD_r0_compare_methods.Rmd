@@ -335,6 +335,7 @@ tab.limma = lapply(assayNames(pb2), function(id){
 tab.limma = do.call(rbind, tab.limma)
 ```
 
+
 ## Volcano
 ```{r limma.volcano, fig.height=15, fig.width=10}
 plot_volcano = function(x, nGenes = 5, size = 12, minp = 1.0e-310, cutoff = 0.05, ncol = 4, ...) {
@@ -416,6 +417,58 @@ df %>%
     ylab("Variance explained by PoolID (%)") +
     ylim(0,100)
 ```
+
+```{r fisher, eval=FALSE}
+df %>%
+  mutate( pool5 = 100*poolID > 5) %>%
+  mutate(absDiff = abs(diff)) %>%  
+  group_by(assay) %>%  
+  wilcox_test(absDiff ~ pool5) 
+
+sort(df_wx$p)[1:4]
+
+
+df %>%
+  mutate( pool5 = 100*poolID > 5) %>%
+  mutate(isSignif = adj.P.Val.y < 0.05) %>%  
+  filter(assay == "Astro") %>%
+  group_by(assay) %>%  
+  group_modify(~tidy(fisher.test(.$pool5, .$isSignif)))
+
+cts = unique(df$assay)
+cts = setdiff(cts, c("Endo", "EN_NF", "CD8_T", "PC"))
+res_fsh = lapply(cts, function(CT){
+
+  print(CT)
+  a = df %>%
+    filter(assay == CT) %>%
+    with(fisher.test(100*poolID >0, adj.P.Val.y < 0.05, alternative="greater"))
+
+  data.frame(CellType = CT, 
+    p = a$p, 
+    OR = a$estimate, 
+    CI1 = a$conf.int[1], 
+    CT2 = a$conf.int[2])
+})
+res_fsh = bind_rows(res_fsh)
+
+sort(res_fsh$p)
+
+fig = res_fsh %>%
+  ggplot(aes(OR, CellType)) +
+    geom_bar(stat="identity") +
+    theme_classic() +
+    theme(aspect.ratio=1) 
+
+ggsave(fig, file="~/www/test.pdf")
+
+ print(CT)
+  a = df %>%
+    filter(assay == CT) %>%
+    with(table(100*poolID > 0, adj.P.Val.y < 0.05))
+```
+
+
 
 
 ```{r limma.wilcox}
@@ -543,8 +596,13 @@ df_wx %>%
 
 
 
+```{r write}
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_limma.tsv.gz"
+write.table(tab.limma, file, quote=FALSE, sep='\t', row.names=FALSE)
 
-
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_limma.tsv.gz"
+write.table(tab.deseq2, file, quote=FALSE, sep='\t', row.names=FALSE)
+```
 
 
 
