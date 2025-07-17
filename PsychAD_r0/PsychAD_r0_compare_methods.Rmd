@@ -60,6 +60,7 @@ library(RColorBrewer)
 # library(org.Hs.eg.db)
 # library(EnrichmentBrowser)
 library(ggrepel)
+library(rstatix)
 })
 ```
 
@@ -404,7 +405,7 @@ df %>%
   summarize(rho = cor(diff, poolID, method="sp")) %>%
   data.frame
 
-fig = df %>% 
+df %>% 
   ggplot(aes(abs(diff), 100*poolID)) +
     geom_scattermore(pointsize=4) +
     geom_smooth() + 
@@ -415,6 +416,28 @@ fig = df %>%
     ylab("Variance explained by PoolID (%)") +
     ylim(0,100)
 ```
+
+
+```{r limma.wilcox}
+df_wx = df %>%
+  mutate( pool5 = 100*poolID > 5) %>%
+  mutate(absDiff = abs(diff)) %>%  
+  group_by(assay) %>%  
+  wilcox_test(absDiff ~ pool5) 
+
+ymax = -log10(min(df_wx$p))*1.03
+
+df_wx %>% 
+  ggplot(aes(assay, -log10(p), fill=assay)) +
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") + 
+    geom_hline(yintercept=-log10(1/22), color="grey35", linetype="dashed") +
+    scale_y_continuous(limits=c(0, ymax), expand=c(0,0)) +
+    coord_flip() +
+    ggtitle("limma")
+```
+
 
 
 
@@ -486,7 +509,7 @@ df %>%
   summarize(rho = cor(diff, poolID, method="sp")) %>%
   data.frame
 
-fig = df %>% 
+df %>% 
   ggplot(aes(abs(diff), 100*poolID)) +
     geom_scattermore(pointsize=4) +
     geom_smooth() + 
@@ -497,3 +520,33 @@ fig = df %>%
     ylab("Variance explained by PoolID (%)") +
     ylim(0,100)
 ```
+
+```{r deseq.wilcox}
+df_wx = df %>%
+  mutate( pool5 = 100*poolID > 5) %>%
+  mutate(absDiff = abs(diff)) %>%  
+  group_by(assay) %>%  
+  wilcox_test(absDiff ~ pool5) 
+
+ymax = -log10(min(df_wx$p))*1.03
+
+df_wx %>% 
+  ggplot(aes(assay, -log10(p), fill=assay)) +
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") + 
+    geom_hline(yintercept=-log10(1/22), color="grey35", linetype="dashed") +
+    scale_y_continuous(limits=c(0, ymax), expand=c(0,0)) +
+    coord_flip() +
+    ggtitle("DESeq2")
+```
+
+
+
+
+
+
+
+
+
+
