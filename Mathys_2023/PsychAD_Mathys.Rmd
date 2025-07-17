@@ -19,7 +19,7 @@ R
 system("git pull"); rmarkdown::render("PsychAD_Mathys.Rmd");
 
 
-https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/PsychAD_Mathys.html
+https://hoffmg01.dmz.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/PsychAD_Mathys.html
 
 
 --->
@@ -432,6 +432,150 @@ ggcorrplot(as.matrix(C.heivr), method = "circle", hc.order = TRUE)
 
 
 ```
+
+
+```{r readAll}
+library(tidyverse)
+library(arrow)
+
+# PsychAD
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0.tsv.gz"
+tab.psychad.dreamlet = read_tsv(file) %>%
+    select(assay, ID, logFC, t, P.Value, adj.P.Val) %>%
+    rename(FDR = "adj.P.Val") %>%
+    mutate(Method = "dreamlet")
+
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_limma.tsv.gz"
+tab.psychad.limma = read_tsv(file) %>%
+    select(assay, ID, logFC, t, P.Value, adj.P.Val) %>%
+    rename(FDR = "adj.P.Val") %>%
+    mutate(Method = "limma")
+
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_deseq2.tsv.gz"
+tab.psychad.DESeq2 = read_tsv(file) %>%
+    rename(FDR = "padj", P.Value = "pvalue", logFC = "log2FoldChange", t="stat") %>%
+    select(assay, ID, logFC, t, P.Value, FDR) %>%
+    mutate(Method = "DESeq2") 
+
+# Join ensures the same genes across all methods
+tab.psychad = bind_rows(tab.psychad.dreamlet,
+            tab.psychad.limma, 
+            tab.psychad.DESeq2) %>% 
+  inner_join(tab.psychad.limma %>% select(assay, ID))
+
+# Mathys
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023/Mathys_2023_Major_Cell_Type_ADdiag2typesAD.tsv"
+tab.mathys.dreamlet = read_tsv(file)  %>%
+    select(assay, ID, logFC, t, P.Value, adj.P.Val) %>%
+    rename(FDR = "adj.P.Val") %>%
+    mutate(Method = "dreamlet")
+
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023/Mathys_Cell_2023_Major_Cell_Type_limma.parquet"
+tab.mathys.limma = read_parquet(file) %>%
+    select(assay, ID, logFC, t, P.Value, adj.P.Val) %>%
+    rename(FDR = "adj.P.Val") %>%
+    mutate(Method = "limma")
+
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/Mathys_2023/Mathys_Cell_2023_Major_Cell_Type_DESeq2.parquet"
+tab.mathys.DESeq2 = read_parquet(file) %>%
+    rename(FDR = "padj", P.Value = "pvalue", logFC = "log2FoldChange", t="stat") %>%
+    select(assay, ID, logFC, t, P.Value, FDR) %>%
+    mutate(Method = "DESeq2") 
+
+# Join ensures the same genes across all methods
+tab.mathys = bind_rows(tab.mathys.dreamlet,
+            tab.mathys.limma, 
+            tab.mathys.DESeq2)  %>% 
+  inner_join(tab.mathys.limma %>% select(assay, ID))
+
+
+
+
+
+res.cor = lapply( unique(tab.mathys$Method), function(METHOD){
+
+  rbind(tab.mathys %>% 
+    filter(Method == METHOD) %>%
+    mutate(assay = paste0('Mathys.', assay)),
+    tab.psychad %>% 
+    filter(Method == METHOD) %>%
+    mutate(assay = paste0('PsychAD.', assay))) %>%
+    filter(!is.na(logFC)) %>%
+    jointMatrix %>%
+    mutate(Method = METHOD)
+}) %>%
+  bind_rows
+
+
+df = rbind(
+res.cor %>%
+  filter(CT1 == "Mathys.Ast", CT2 == "PsychAD.Astro"),
+res.cor %>%
+  filter(CT1 == "Mathys.Opc", CT2 == "PsychAD.OPC"),
+res.cor %>%
+  filter(CT1 == "Mathys.Oli", CT2 == "PsychAD.Oligo"),
+res.cor %>%
+  filter(CT1 == "Mathys.Mic", CT2 == "PsychAD.Micro_PVM"),
+res.cor %>%
+  filter(CT1 == "Mathys.Inh", CT2 == "PsychAD.IN_LAMP5"),
+res.cor %>%
+  filter(CT1 == "Mathys.Exc", CT2 == "PsychAD.EN_L2_3_IT"))
+
+# res.cor %>%
+#   filter(CT1 == "Mathys.Inh") %>%
+#   arrange(cor)
+
+# res.cor %>%
+  # filter(CT1 == "Mathys.Exc") %>%
+  # arrange(cor)
+
+fig = df %>%
+  ggplot(aes(cor, CT1, fill=Method)) +
+    geom_bar(stat="identity", position='dodge') +
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    scale_x_continuous(limits=c(0, 0.65), expand=c(0,0))
+
+ggsave(fig, file="~/www/test.pdf")
+
+
+
+make_plot = function(x, main){
+
+  library(pheatmap)
+
+  # Pearson correlation
+  C = convertToMatrix(x, "cor")
+  ids = sapply(strsplit(rownames(C), '\\.'), function(x) x[1])
+
+  i = which(ids == ids[1])
+  j = which(ids == ids[length(ids)])
+
+  bks = seq(-.8, .8, by=.05)
+  col = colorRampPalette(c("blue", "white", "red"))(length(bks))
+
+  colnames(C) = sapply(strsplit(colnames(C), '\\.'), function(x) x[2])
+  rownames(C) = sapply(strsplit(rownames(C), '\\.'), function(x) x[2])
+
+  # pheatmap(C[-i, -j], breaks=bks, cellheight=15, cellwidth = 15, color=col, breaklist=seq(-.3, .3, by=0.3), main = "Spearman", xlab="Mathys, et al.", ylab="PsychAD")
+  A = C[-i, -j]
+  idx = c( "Exc", "Inh","Oli", "Opc", "Ast", "Mic", "Vas")
+  A = A[ctorder,idx]
+  pheatmap(A, breaks=bks, cellheight=15, cellwidth = 15, color=col, breaklist=seq(-.3, .3, by=0.3), main = main, xlab="Mathys, et al.", ylab="PsychAD", cluster_cols=FALSE, cluster_rows=FALSE)
+}
+
+pdf("~/www/test.pdf")
+make_plot(res.cor %>% filter(Method == "dreamlet"), "dreamlet")
+make_plot(res.cor %>% filter(Method == "limma"), "limma")
+make_plot(res.cor %>% filter(Method == "DESeq2"), "DESeq2")
+dev.off()
+
+
+
+
+
+
+
 
 
 
