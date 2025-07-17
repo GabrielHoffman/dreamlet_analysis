@@ -267,7 +267,7 @@ form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx
 fit0 = dreamlet( res.proch, form, BPPARAM = SnowParam(6))
 ```
 
-```{r compare.dreamlet, fig.height=15, fig.width=10}
+```{r compare.dreamlet, fig.height=12, fig.width=8}
 
 tab = topTable(fit, coef="DxAD", number=Inf) %>%
         data.frame %>% as_tibble
