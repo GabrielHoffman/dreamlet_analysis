@@ -213,7 +213,6 @@ col = c(RColorBrewer::brewer.pal(5, "Set1"), "grey85")
 names(col) = c("Subject", "10X pool", "Age", "Dx", "Sex", "Residuals")
 
 fig1 = res.vp %>%
-    sortCols %>%
     data.frame %>%
     filter(gene == "NXPE1") %>%
     rename("10X pool" = "poolID") %>%
@@ -232,7 +231,6 @@ fig1 = res.vp %>%
 col = c(col[1:2], Harmony  = "pink", col[-c(1:2)])
 fig2 = res.vph2 %>%
     sortCols %>%
-    data.frame %>%
     filter(gene == "NXPE1") %>%
     pivot_longer(!assay&!gene) %>%
     mutate(name = factor(name, names(col))) %>%
@@ -287,24 +285,24 @@ inner_join(tab, tabh, by=c("assay", "ID")) %>%
     ggplot(aes(t.x, t.y))  +
         geom_hline(yintercept=0, color="grey80") +
         geom_vline(xintercept=0, color="grey80") +
+        geom_abline( color="red") +
         geom_scattermore(pointsize=3) +
         theme_classic() +
         theme(aspect.ratio=1) +
         xlab("Log FC (poolID)") +
         ylab("Log FC (Harmony)") +
-        geom_abline( color="red") +
         facet_wrap(~assay)
 
 inner_join(tab, tab0, by=c("assay", "ID")) %>%
     ggplot(aes(t.x, t.y))  +
         geom_hline(yintercept=0, color="grey80") +
         geom_vline(xintercept=0, color="grey80") +
+        geom_abline( color="red") +
         geom_scattermore(pointsize=3) +
         theme_classic() +
         theme(aspect.ratio=1) +
         xlab("Log FC (poolID)") +
         ylab("Log FC (none)") +
-        geom_abline( color="red") +
         facet_wrap(~assay)
 ```
 
