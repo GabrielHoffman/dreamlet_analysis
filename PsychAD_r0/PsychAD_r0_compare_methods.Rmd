@@ -189,6 +189,69 @@ ggplot(df, aes(poolID, Harmony)) +
         ylim(0,1)
 ```
 
+```{r harmony.vp, fig.width=10}
+library(cowplot)
+
+thm <- theme(
+  axis.line = element_line(colour = "transparent"),
+  axis.line.x = element_line(colour = "black"),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  axis.ticks.y = element_blank(),
+  legend.key = element_blank(),
+  plot.margin = unit(c(0, .3, 0, .8), "cm"),
+  text = element_text(colour = "black"),
+  axis.text = element_text(colour = "black"),
+  plot.title = element_text(hjust = 0.5),
+  legend.text = element_text(colour = "black"),
+  aspect.ratio=2
+) + xlab("") 
+
+col = c(RColorBrewer::brewer.pal(5, "Set1"), "grey85")
+names(col) = c("Subject", "10X pool", "Age", "Dx", "Sex", "Residuals")
+
+fig1 = res.vp %>%
+    sortCols %>%
+    data.frame %>%
+    filter(gene == "NXPE1") %>%
+    rename("10X pool" = "poolID") %>%
+    pivot_longer(!assay&!gene) %>%
+    mutate(name = factor(name, names(col))) %>%
+    ggplot(aes(assay, 100*value, fill = name)) +
+    geom_bar(stat = "identity") +
+    thm +
+    coord_flip() + 
+    scale_fill_manual(values = col) + 
+    guides(fill = guide_legend(title = NULL)) +
+    scale_y_reverse(breaks = seq(0, 100, by = 20), label = seq(100, 0, by = -20), expand = c(0, 0.03)) +
+    ylab("Variance explained (%)") +
+    ggtitle("Account for 10X pool")
+ 
+col = c(col[1:2], Harmony  = "pink", col[-c(1:2)])
+fig2 = res.vph2 %>%
+    sortCols %>%
+    data.frame %>%
+    filter(gene == "NXPE1") %>%
+    pivot_longer(!assay&!gene) %>%
+    mutate(name = factor(name, names(col))) %>%
+    ggplot(aes(assay, 100*value, fill = name)) +
+    geom_bar(stat = "identity") +
+    thm +
+    coord_flip() + 
+    scale_fill_manual(values = col) + 
+    guides(fill = guide_legend(title = NULL)) +
+    scale_y_reverse(breaks = seq(0, 100, by = 20), label = seq(100, 0, by = -20), expand = c(0, 0.03)) +
+    ylab("Variance explained (%)") +
+    ggtitle("Account for Harmony factors")
+ 
+plot_grid(fig1, fig2, labels=LETTERS[1:2])
+```
+
+
+
+
 
 
 ## Differential expression: dreamlet analysis
