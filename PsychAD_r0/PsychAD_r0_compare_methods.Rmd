@@ -530,6 +530,7 @@ tab.deseq2 %>%
 tab2 = inner_join(tab, 
                   tab.deseq2 %>%
                     mutate(t = log2FoldChange / lfcSE) %>%
+                    mutate(logFC = log2FoldChange) %>%
                     filter(!is.na(padj)),
                   by=c("assay", "ID"))
 
