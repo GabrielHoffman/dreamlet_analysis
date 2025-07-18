@@ -383,13 +383,15 @@ tab2 %>%
         geom_hline(yintercept=0, color="grey80") +
         geom_vline(xintercept=0, color="grey80") +
         geom_abline( color="red") +
-        geom_scattermore(pointsize=3) +
+        geom_scattermore(pointsize=4) +
         theme_classic() +
         theme(aspect.ratio=1) +
-        xlab("t (dreamlet)") +
-        ylab("t (limma)") +
+        xlab("logFC (dreamlet)") +
+        ylab("logFC (limma)") +
+        # geom_smooth(se=FALSE) +
         facet_wrap(~assay) +
-        geom_smooth(se=FALSE)
+        xlim(-1, 1) +
+        ylim(-1, 1)
 
 by = c("assay", "ID")
 df = tab2 %>%
@@ -542,10 +544,12 @@ tab2 %>%
         geom_scattermore(pointsize=3) +
         theme_classic() +
         theme(aspect.ratio=1) +
-        xlab("t (dreamlet)") +
-        ylab("t (DESeq2)") +
+        xlab("logFC (dreamlet)") +
+        ylab("logFC (DESeq2)") +
         facet_wrap(~assay) +
-        geom_smooth(se=FALSE)
+        # geom_smooth(se=FALSE) +
+        xlim(-1, 1) +
+        ylim(-1, 1)
 
 by = c("assay", "ID")
 df = tab2 %>%
