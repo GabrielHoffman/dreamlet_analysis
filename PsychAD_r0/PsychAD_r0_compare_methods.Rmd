@@ -373,13 +373,13 @@ plot_volcano(tab.limma)
 
 
 
-```{r compare2.limma, fig.height=12, fig.width=8, cache=FALSE}
+```{r compare2.limma, fig.height=10, fig.width=8, cache=FALSE}
 # Limma
 tab2 = inner_join(tab, tab.limma, 
                   by=c("assay", "ID"))
 
 tab2 %>%
-    ggplot(aes(t.x, t.y))  +
+    ggplot(aes(logFC.x, logFC.y))  +
         geom_hline(yintercept=0, color="grey80") +
         geom_vline(xintercept=0, color="grey80") +
         geom_abline( color="red") +
@@ -525,7 +525,7 @@ tab.deseq2 %>%
   plot_volcano
 ```    
 
-```{r compare2.DESeq2, fig.height=12, fig.width=8, cache=FALSE}
+```{r compare2.DESeq2, fig.height=10, fig.width=8, cache=FALSE}
 # DESeq2
 tab2 = inner_join(tab, 
                   tab.deseq2 %>%
@@ -534,7 +534,7 @@ tab2 = inner_join(tab,
                   by=c("assay", "ID"))
 
 tab2 %>%
-    ggplot(aes(t.x, t.y))  +
+    ggplot(aes(logFC.x, logFC.y))  +
         geom_hline(yintercept=0, color="grey80") +
         geom_vline(xintercept=0, color="grey80") +
         geom_abline( color="red") +
