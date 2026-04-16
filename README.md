@@ -18,7 +18,6 @@ Here we present analysis code, data and results from 4 public datasets.
 - Data: [MIT / ROSMAP study](https://www.synapse.org/#!Synapse:syn52293417)
 - Analysis code: [Mathys\_2023\_Major\_Cell\_Type.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/Mathys_2023/Mathys_2023_Major_Cell_Type.Rmd)
 	 - Results: [Mathys\_2023\_Major\_Cell\_Type.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/Mathys_2023_Major_Cell_Type.html)
-	 - Figures: S6-S8
 - Analysis code: [PsychAD_Mathys.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/Mathys_2023/PsychAD_Mathys.Rmd)
 	- Results: [PsychAD\_Mathys.html]( https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/PsychAD_Mathys.html)
  	- Figures: S9,S10
