@@ -10,8 +10,8 @@ Here we present analysis code, data and results from 4 public datasets.
 - Generated as part of this work, and currently public
 - [PsychAD project and data](https://www.synapse.org/PsychAD_public)
 - Analysis code: [PsychAD\_r0\_analysis.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/PsychAD_r0/PsychAD_r0_analysis.Rmd)
- - Results: [PsychAD\_r0\_analysis.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/PsychAD_r0_analysis.html)
- - Figures: 5, 6, S6-S8
+	- Results: [PsychAD\_r0\_analysis.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/PsychAD_r0_analysis.html)
+	- Figures: 5, 6, S6-S8
 
 ## Reanalysis of external Alzheimer's snRNA-seq data 
 - [Mathys, et al. Cell (2023)](https://doi.org/10.1016/j.cell.2023.08.039)
@@ -28,8 +28,8 @@ Here we present analysis code, data and results from 4 public datasets.
 - Download and format data: [Kfoury\_CancerCell\_2021\_get\_data.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021_get_data.Rmd)
 - Public data in H5AD format [Kfoury\_CancerCell\_2021.h5ad](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/data/Kfoury_CancerCell_2021.h5ad)
 - Analysis code: [Kfoury\_CancerCell\_2021.Rmd](https://github.com/GabrielHoffman/dreamlet_analysis/blob/main/Kfoury_CancerCell_2021/Kfoury_CancerCell_2021.Rmd)
- - Results: [Kfoury\_CancerCell\_2021.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/Kfoury_CancerCell_2021.html)
- - Figures: 4, S5
+	- Results: [Kfoury\_CancerCell\_2021.html](https://ghoffman-cdn.s3.us-east-2.amazonaws.com/dreamlet_analysis/Kfoury_CancerCell_2021.html)
+	- Figures: 4, S5
 
 ## Response to COVID-19 severity
 - [COMBAT Consortium. Cell (2023)](https://doi.org/10.1016/j.cell.2022.01.012)
