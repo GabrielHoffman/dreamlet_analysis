@@ -27,7 +27,7 @@ R
 system("git pull"); rmarkdown::render("Mathys_2023_Major_Cell_Type.Rmd");
 
 
-# https://hoffmg01.u.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/Mathys_2023_Major_Cell_Type.html
+# https://hoffmg01.dmz.hpc.mssm.edu/dreamlet_analysis/Mathys_2023/Mathys_2023_Major_Cell_Type.html
 
 
 --->
@@ -432,9 +432,72 @@ write_parquet(df_all, "Mathys_Cell_2023_Major_Cell_Type_dreamlet.parquet")
 
 
 
+# Limma
+
+```{r limma}
+library(limma)
+library(edgeR)
+form = ~ age + sex + Study + pmi + ADdiag2types 
+
+tab.limma = lapply(assayNames(pb), function(id){
+
+  # remove SubID with insufficient read count
+  lib.size = colSums(assay(pb, id))
+  pb_tmp = pb[,lib.size > 1000]
+  pb_tmp = pb_tmp[,pb_tmp$sex != "NA"]
+  pb_tmp$sex = factor(pb_tmp$sex)
+  pb_tmp = pb_tmp[,!is.nan(pb_tmp$pmi)]
+
+  counts = assay(pb_tmp, id)
+  isexpr = filterByExpr(counts)
+  design = model.matrix(form, colData(pb_tmp))
+  dge = DGEList(counts[isexpr,])
+  dge = calcNormFactors(dge)
+  vobj = voom(dge, design)
+  fit = lmFit(vobj, design)
+  fit = eBayes(fit)
+  tab = topTable(fit, coef="ADdiag2typesAD", number=Inf)
+  data.frame(assay = id, ID = rownames(tab), tab)
+  })
+tab.limma = do.call(rbind, tab.limma)
+
+write_parquet(tab.limma, "Mathys_Cell_2023_Major_Cell_Type_limma.parquet")
+```
 
 
+# DESeq2
+```{r DESeq2}
+library(DESeq2)
+library(parallel)
+form = ~ age + sex + Study + pmi + ADdiag2types 
 
+tab.deseq2 = lapply(assayNames(pb), function(id){
+ 
+  # remove SubID with insufficient read count
+  lib.size = colSums(assay(pb, id))
+  pb_tmp = pb[,lib.size > 1000]
+  pb_tmp = pb_tmp[,pb_tmp$sex != "NA"]
+  pb_tmp$sex = factor(pb_tmp$sex)
+  pb_tmp = pb_tmp[,!is.nan(pb_tmp$pmi)]
+
+  pb_tmp$age = scale(pb_tmp$age)
+  pb_tmp$pmi = scale(pb_tmp$pmi)
+
+  counts = assay(pb_tmp, id)
+
+  # for cell type Vas, use poscounts 
+  # otherwise DESeq crashes
+  sfType = ifelse(id == "Vas", "poscounts", "ratio")
+
+  dds <- DESeqDataSetFromMatrix(counts, colData(pb_tmp), form)
+  dds <- DESeq(dds, sfType=sfType)
+  res <- results(dds)
+  data.frame(assay = id, ID = rownames(res), res)
+  })
+tab.deseq2 = do.call(rbind, tab.deseq2) 
+
+write_parquet(tab.deseq2, "Mathys_Cell_2023_Major_Cell_Type_DESeq2.parquet")
+```
 
 
 

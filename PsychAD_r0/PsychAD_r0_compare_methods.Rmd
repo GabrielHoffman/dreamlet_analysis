@@ -1,0 +1,615 @@
+---
+title: "Analysis of Alzheimer's Disease in [PsychAD](https://adknowledgeportal.synapse.org/Explore/Projects/DetailsPage?Grant%20Number=R01AG067025)"
+subtitle: 'Compare with other methods'
+author: "Developed by [Gabriel Hoffman](http://gabrielhoffman.github.io/)"
+date: "Run on `r Sys.time()`"
+output: 
+  html_document:
+    toc: true
+    smart: true
+---
+
+
+<---
+
+
+cd /hpc/users/hoffmg01/www/dreamlet_analysis/PsychAD_r0
+
+export OPENBLAS_NUM_THREADS=1
+
+/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/bin/R --vanilla 
+.libPaths("/sc/arion/projects/CommonMind/leed62/conda/envs/dreamlet430/lib/R/library")
+
+system("git pull"); rmarkdown::render("PsychAD_r0_compare_methods.Rmd")
+
+--->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning=FALSE,
+  message=FALSE,
+  error = FALSE,
+  tidy = FALSE,
+  dev = c("png", "pdf"),
+  package.startup.message = FALSE,
+  cache = TRUE,
+  cache.lazy = FALSE)
+```
+
+# Load libraries
+```{r load.packages, cache=FALSE}
+suppressPackageStartupMessages({
+library(SingleCellExperiment)
+library(zellkonverter)
+library(dreamlet)
+# library(zenith)
+# library(DelayedArray)
+# library(GSEABase)
+# library(muscat)
+# library(cowplot)
+# library(scater)
+library(tidyverse)
+# library(kableExtra)
+# library(qvalue)
+library(scattermore)
+library(RColorBrewer)
+# library(corrplot)
+# library(viridis)
+# library(dplyr)
+# library(org.Hs.eg.db)
+# library(EnrichmentBrowser)
+library(ggrepel)
+library(rstatix)
+})
+```
+
+
+```{r load.data}
+folder = "/sc/arion/projects/psychAD/NPS-AD/public_release_0/" 
+file = paste0(folder, "PsychAD_r0_Dec_28_2022.h5ad")
+sce = readH5AD(file, use_hdf5=TRUE, verbose=TRUE, version="0.8.0")
+assayNames(sce)[1] = "counts"
+sce$Dx = factor(sce$Dx_AD, c('Control','AD'))
+
+# cell type order
+ctorder = c('EN_L2_3_IT', 'EN_L3_5_IT_1', 'EN_L3_5_IT_2', 'EN_L3_5_IT_3', 'EN_L5_6_NP', 'EN_L6_CT', 'EN_L6_IT', 'EN_NF', 'IN_ADARB2', 'IN_LAMP5', 'IN_PVALB', 'IN_PVALB_CHC', 'IN_SST', 'IN_VIP', 'Oligo', 'OPC', 'Astro', 'Micro_PVM', 'CD8_T', 'PC', 'VLMC','Endo')
+
+# harmony covariates
+df = reducedDim(sce, "X_pca_regressed_harmony")
+colnames(df) = paste0("hcomp_", seq(ncol(df)), sep="")
+colData(sce) = cbind(colData(sce), df[,1:5])
+```
+
+
+```{r combineData, message=TRUE} 
+# Create pseudo-bulk SingleCellExperiment
+pb = aggregateToPseudoBulk(sce,
+    assay = "counts", 
+    cluster_id = "subclass",
+    sample_id = "Channel")
+```
+
+```{r combineData2, message=TRUE} 
+# Create pseudo-bulk SingleCellExperiment
+pb2 = aggregateToPseudoBulk(sce,
+    assay = "counts", 
+    cluster_id = "subclass",
+    sample_id = "SubID")
+```
+
+# Batch correction with Harmony
+
+## Process data: log2 CPM + voom precision weights
+```{r voom}
+# poolID:
+# Normalize and apply voom
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx) 
+ 
+res.proc = processAssays( pb, form,
+                          min.cells = 5,
+                          min.counts = 10,
+                          BPPARAM = SnowParam(6))
+
+# Harmony:
+# Normalize and apply voom
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+ 
+res.proch = processAssays( pb, form,
+                          min.cells = 5,
+                          min.counts = 10,
+                          BPPARAM = SnowParam(6))
+```
+
+```{r voom.plot, fig.height=15, fig.width=10, cache=TRUE} 
+plotVoom( res.proc, ncol=4, assays=ctorder ) + theme_classic()  
+plotVoom( res.proch, ncol=4, assays=ctorder ) + theme_classic() 
+```
+
+
+## Variance Partitioning Analysis
+```{r varPart}
+# poolID
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + (1|Dx) 
+ res.vp = fitVarPart(res.proc, form, BPPARAM = SnowParam(6))
+ 
+# Harmony
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + (1|Dx) + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+res.vph = fitVarPart(res.proch, form, BPPARAM = SnowParam(6))
+```
+
+
+```{r vp.plot, fig.height=15, fig.width=10}
+# poolID
+colnames(res.vp)[colnames(res.vp) == "scale.Age."] = 'Age'
+colnames(res.vp)[colnames(res.vp) == "poolID"] = 'poolID'
+colnames(res.vp)[colnames(res.vp) == "SubID"] = 'Subject'
+col.vp = c(brewer.pal(ncol(res.vp)-3, "Set1"), "grey85")
+names(col.vp) = colnames(sortCols(res.vp))[-seq(2)]
+
+plotVarPart( sortCols(res.vp), label.angle=45, ncol=4, assays=ctorder, col=col.vp )
+
+# Harmony
+colnames(res.vph)[colnames(res.vph) == "scale.Age."] = 'Age'
+colnames(res.vph)[colnames(res.vph) == "SubID"] = 'Subject'
+
+res.vph2 = res.vph
+ids = c("hcomp_1", "hcomp_2","hcomp_3","hcomp_4","hcomp_5")
+res.vph2$Harmony = rowSums(data.frame(res.vph2[,ids]))
+res.vph2 = res.vph2[,!(colnames(res.vph2) %in% ids)]
+col.vp = c(col.vp, Harmony="pink")
+
+plotVarPart( sortCols(res.vph2), label.angle=45, ncol=4, assays=ctorder, col=col.vp )
+```
+
+### How well does Harmony capture Pool effect?
+
+```{r vp.compare, fig.height=15, fig.width=10}
+ids = c("assay", "gene")
+df = merge(res.vp[,c(ids, "poolID")] %>% data.frame, 
+          res.vph2[,c(ids, "Harmony")] %>% data.frame, 
+          by=ids)
+
+df_sort = df %>%
+  as.data.frame %>%
+  as_tibble %>%
+  arrange(assay, -poolID) %>%
+  group_by(assay) %>%
+  slice_head(n=3)
+
+ggplot(df, aes(poolID, Harmony)) +
+        geom_scattermore(pointsize=3) +
+        geom_text_repel(aes(label=gene), data=df_sort, size=3, box.padding =.5, min.segment.length=1, max.overlaps = 15) + guides(color = "none") +
+        geom_smooth(method='lm') +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        facet_wrap(~assay, ncol=4) +
+        xlab("Variance explained by PoolID (%)") +
+        ylab("Variance explained by Harmony (%)") +
+        xlim(0,1) +
+        ylim(0,1)
+```
+
+```{r harmony.vp, fig.width=10}
+library(cowplot)
+
+thm <- theme(
+  axis.line = element_line(colour = "transparent"),
+  axis.line.x = element_line(colour = "black"),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  axis.ticks.y = element_blank(),
+  legend.key = element_blank(),
+  plot.margin = unit(c(0, .3, 0, .8), "cm"),
+  text = element_text(colour = "black"),
+  axis.text = element_text(colour = "black"),
+  plot.title = element_text(hjust = 0.5),
+  legend.text = element_text(colour = "black"),
+  aspect.ratio=2
+) + xlab("") 
+
+col = c(RColorBrewer::brewer.pal(5, "Set1"), "grey85")
+names(col) = c("Subject", "10X pool", "Age", "Dx", "Sex", "Residuals")
+
+fig1 = res.vp %>%
+    data.frame %>%
+    filter(gene == "NXPE1") %>%
+    rename("10X pool" = "poolID") %>%
+    pivot_longer(!assay&!gene) %>%
+    mutate(name = factor(name, names(col))) %>%
+    ggplot(aes(assay, 100*value, fill = name)) +
+    geom_bar(stat = "identity") +
+    thm +
+    coord_flip() + 
+    scale_fill_manual(values = col) + 
+    guides(fill = guide_legend(title = NULL)) +
+    scale_y_reverse(breaks = seq(0, 100, by = 20), label = seq(100, 0, by = -20), expand = c(0, 0.03)) +
+    ylab("Variance explained (%)") +
+    ggtitle("Account for 10X pool")
+ 
+col = c(col[1:2], Harmony  = "pink", col[-c(1:2)])
+fig2 = res.vph2 %>%
+    data.frame %>%
+    filter(gene == "NXPE1") %>%
+    pivot_longer(!assay&!gene) %>%
+    mutate(name = factor(name, names(col))) %>%
+    ggplot(aes(assay, 100*value, fill = name)) +
+    geom_bar(stat = "identity") +
+    thm +
+    coord_flip() + 
+    scale_fill_manual(values = col) + 
+    guides(fill = guide_legend(title = NULL)) +
+    scale_y_reverse(breaks = seq(0, 100, by = 20), label = seq(100, 0, by = -20), expand = c(0, 0.03)) +
+    ylab("Variance explained (%)") +
+    ggtitle("Account for Harmony factors")
+ 
+plot_grid(fig1, fig2, labels=LETTERS[1:2])
+```
+
+
+
+
+
+
+## Differential expression: dreamlet analysis
+```{r dreamlet}
+# poolID 
+form = ~ (1|SubID) + (1|poolID) + (1|Sex) + scale(Age) + Dx
+fit = dreamlet( res.proc, form, BPPARAM = SnowParam(6))
+
+# Harmony
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx + hcomp_1 + hcomp_2 + hcomp_3 + hcomp_4 + hcomp_5
+fith = dreamlet( res.proch, form, BPPARAM = SnowParam(6))
+ 
+# No Batch correction
+form = ~ (1|SubID) + (1|Sex) + scale(Age) + Dx 
+fit0 = dreamlet( res.proch, form, BPPARAM = SnowParam(6))
+```
+
+```{r compare.dreamlet, fig.height=12, fig.width=8}
+
+tab = topTable(fit, coef="DxAD", number=Inf) %>%
+        data.frame %>% as_tibble
+tab$Method = "poolID"
+
+tabh = topTable(fith, coef="DxAD", number=Inf) %>%
+        data.frame %>% as_tibble
+tabh$Method = "Harmony"
+
+tab0 = topTable(fit0, coef="DxAD", number=Inf) %>%
+        data.frame %>% as_tibble
+tab0$Method = "none"
+
+inner_join(tab, tabh, by=c("assay", "ID")) %>%
+    ggplot(aes(t.x, t.y))  +
+        geom_hline(yintercept=0, color="grey80") +
+        geom_vline(xintercept=0, color="grey80") +
+        geom_abline( color="red") +
+        geom_scattermore(pointsize=3) +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        xlab("Log FC (poolID)") +
+        ylab("Log FC (Harmony)") +
+        facet_wrap(~assay)
+
+inner_join(tab, tab0, by=c("assay", "ID")) %>%
+    ggplot(aes(t.x, t.y))  +
+        geom_hline(yintercept=0, color="grey80") +
+        geom_vline(xintercept=0, color="grey80") +
+        geom_abline( color="red") +
+        geom_scattermore(pointsize=3) +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        xlab("Log FC (poolID)") +
+        ylab("Log FC (none)") +
+        facet_wrap(~assay)
+```
+
+
+# Limma
+
+```{r limma}
+library(limma)
+library(edgeR)
+form = ~ Sex + Age + Dx 
+ 
+tab.limma = lapply(assayNames(pb2), function(id){
+
+  # remove SubID with insufficient read count
+  lib.size = colSums(assay(pb2, id))
+  pb_tmp = pb2[,lib.size > 1000]
+
+  counts = assay(pb_tmp, id)
+  isexpr = filterByExpr(counts)
+  design = model.matrix(form, colData(pb_tmp))
+  dge = DGEList(counts[isexpr,])
+  dge = calcNormFactors(dge)
+  vobj = voom(dge, design)
+  fit = lmFit(vobj, design)
+  fit = eBayes(fit)
+  tab = topTable(fit, coef="DxAD", number=Inf)
+  data.frame(assay = id, ID = rownames(tab), tab)
+  })
+tab.limma = do.call(rbind, tab.limma)
+```
+
+
+## Volcano
+```{r limma.volcano, fig.height=15, fig.width=10}
+plot_volcano = function(x, nGenes = 5, size = 12, minp = 1.0e-310, cutoff = 0.05, ncol = 4, ...) {
+
+  x = x %>%
+    filter(!is.na(adj.P.Val))
+
+  library(data.table)
+  x = as.data.table(x)
+  x$isSignif <- c("no", "yes")[(x$adj.P.Val < cutoff) + 1]
+  x$P.Value <- pmax(minp, x$P.Value)
+
+  # sort facets by original sorting of assays
+  x$assay <- factor(x$assay)
+  # order by assay, then p-value
+  ord <- order(x$assay, x$P.Value)
+  x <- x[ord, , drop = FALSE]
+
+  # top significant genes in each cell type
+  df2 <- x[, head(.SD, nGenes), by = "assay", drop = FALSE]
+
+  ggplot(x, aes(logFC, -log10(P.Value), color = isSignif)) +
+    geom_point() +
+    theme_classic(size) +
+    theme(aspect.ratio = 1, legend.position = "none", plot.title = element_text(hjust = 0.5)) +
+    xlab(bquote(log[2] ~ fold ~ change)) +
+    ylab(bquote(-log[10] ~ P)) +
+    scale_color_manual(values = c("grey", "darkred")) +
+    geom_text_repel(data = df2, aes(logFC, -log10(P.Value), label = ID), segment.size = .5, segment.color = "black", color = "black", force = 1, nudge_x = .005, nudge_y = .5) +
+    facet_wrap(~assay, ncol = ncol, ...)
+}
+
+plot_volcano(tab.limma)
+```
+
+
+
+```{r compare2.limma, fig.height=10, fig.width=8, cache=FALSE}
+# Limma
+tab2 = inner_join(tab, tab.limma, 
+                  by=c("assay", "ID"))
+
+tab2 %>%
+    ggplot(aes(logFC.x, logFC.y))  +
+        geom_hline(yintercept=0, color="grey80") +
+        geom_vline(xintercept=0, color="grey80") +
+        geom_abline( color="red") +
+        geom_scattermore(pointsize=4) +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        xlab("logFC (dreamlet)") +
+        ylab("logFC (limma)") +
+        # geom_smooth(se=FALSE) +
+        facet_wrap(~assay) +
+        xlim(-1, 1) +
+        ylim(-1, 1)
+
+by = c("assay", "ID")
+df = tab2 %>%
+  inner_join(res.vp %>% 
+    data.frame %>% 
+    rename(ID = "gene") %>%
+    dplyr::select(assay, ID, poolID), 
+    by = by) %>%
+  mutate(diff = t.x-t.y) %>%
+  arrange(-diff) 
+
+df %>%
+  group_by(assay) %>%
+  summarize(rho = cor(diff, poolID, method="sp")) %>%
+  data.frame
+
+df %>% 
+  ggplot(aes(abs(diff), 100*poolID)) +
+    geom_scattermore(pointsize=4) +
+    geom_smooth() + 
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    facet_wrap(~assay) +
+    xlab("Absolute difference in t-statistics between dreamlet and limma") +
+    ylab("Variance explained by PoolID (%)") +
+    ylim(0,100)
+```
+
+```{r fisher, eval=FALSE}
+df %>%
+  mutate( pool5 = 100*poolID > 5) %>%
+  mutate(absDiff = abs(diff)) %>%  
+  group_by(assay) %>%  
+  wilcox_test(absDiff ~ pool5) 
+
+sort(df_wx$p)[1:4]
+
+
+df %>%
+  mutate( pool5 = 100*poolID > 5) %>%
+  mutate(isSignif = adj.P.Val.y < 0.05) %>%  
+  filter(assay == "Astro") %>%
+  group_by(assay) %>%  
+  group_modify(~tidy(fisher.test(.$pool5, .$isSignif)))
+
+cts = unique(df$assay)
+cts = setdiff(cts, c("Endo", "EN_NF", "CD8_T", "PC"))
+res_fsh = lapply(cts, function(CT){
+
+  print(CT)
+  a = df %>%
+    filter(assay == CT) %>%
+    with(fisher.test(100*poolID >0, adj.P.Val.y < 0.05, alternative="greater"))
+
+  data.frame(CellType = CT, 
+    p = a$p, 
+    OR = a$estimate, 
+    CI1 = a$conf.int[1], 
+    CT2 = a$conf.int[2])
+})
+res_fsh = bind_rows(res_fsh)
+
+sort(res_fsh$p)
+
+fig = res_fsh %>%
+  ggplot(aes(OR, CellType)) +
+    geom_bar(stat="identity") +
+    theme_classic() +
+    theme(aspect.ratio=1) 
+
+ggsave(fig, file="~/www/test.pdf")
+
+ print(CT)
+  a = df %>%
+    filter(assay == CT) %>%
+    with(table(100*poolID > 0, adj.P.Val.y < 0.05))
+```
+
+
+
+
+```{r limma.wilcox}
+df_wx = df %>%
+  mutate( pool5 = 100*poolID > 5) %>%
+  mutate(absDiff = abs(diff)) %>%  
+  group_by(assay) %>%  
+  wilcox_test(absDiff ~ pool5) 
+
+ymax = -log10(min(df_wx$p))*1.03
+
+df_wx %>% 
+  ggplot(aes(assay, -log10(p), fill=assay)) +
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") + 
+    geom_hline(yintercept=-log10(1/22), color="grey35", linetype="dashed") +
+    scale_y_continuous(limits=c(0, ymax), expand=c(0,0)) +
+    coord_flip() +
+    ggtitle("limma")
+```
+
+
+
+
+
+
+
+
+# DESeq2
+```{r DESeq2}
+library(DESeq2)
+form = ~ Sex + Age + Dx 
+
+tab.deseq2 = lapply(assayNames(pb2), function(id){
+ 
+  # remove SubID with insufficient read count
+  lib.size = colSums(assay(pb2, id))
+  pb_tmp = pb2[,lib.size > 1000]
+
+  counts = assay(pb_tmp, id)
+  dds <- DESeqDataSetFromMatrix(counts, colData(pb_tmp), form)
+  dds <- DESeq(dds)
+  res <- results(dds)
+  data.frame(assay = id, ID = rownames(res), res)
+  })
+tab.deseq2 = do.call(rbind, tab.deseq2) 
+```
+
+## Volcano
+```{r limma.deseq2, fig.height=15, fig.width=10, cache=FALSE}
+tab.deseq2 %>% 
+  rename(logFC = "log2FoldChange", P.Value = "pvalue", adj.P.Val = "padj") %>%
+  plot_volcano
+```    
+
+```{r compare2.DESeq2, fig.height=10, fig.width=8, cache=FALSE}
+# DESeq2
+tab2 = inner_join(tab, 
+                  tab.deseq2 %>%
+                    mutate(t = log2FoldChange / lfcSE) %>%
+                    mutate(logFC = log2FoldChange) %>%
+                    filter(!is.na(padj)),
+                  by=c("assay", "ID"))
+
+tab2 %>%
+    ggplot(aes(logFC.x, logFC.y))  +
+        geom_hline(yintercept=0, color="grey80") +
+        geom_vline(xintercept=0, color="grey80") +
+        geom_abline( color="red") +
+        geom_scattermore(pointsize=3) +
+        theme_classic() +
+        theme(aspect.ratio=1) +
+        xlab("logFC (dreamlet)") +
+        ylab("logFC (DESeq2)") +
+        facet_wrap(~assay) +
+        # geom_smooth(se=FALSE) +
+        xlim(-1, 1) +
+        ylim(-1, 1)
+
+by = c("assay", "ID")
+df = tab2 %>%
+  inner_join(res.vp %>% 
+    data.frame %>% 
+    rename(ID = "gene") %>%
+    dplyr::select(assay, ID, poolID), 
+    by = by) %>%
+  mutate(diff = t.x-t.y) %>%
+  arrange(-diff) %>%
+  dplyr::select(-B, -z.std, -Method, -P.Value, -adj.P.Val) 
+
+df %>%
+  group_by(assay) %>%
+  summarize(rho = cor(diff, poolID, method="sp")) %>%
+  data.frame
+
+df %>% 
+  ggplot(aes(abs(diff), 100*poolID)) +
+    geom_scattermore(pointsize=4) +
+    geom_smooth() + 
+    theme_classic() +
+    theme(aspect.ratio=1) +
+    facet_wrap(~assay) +
+    xlab("Absolute difference in t-statistics between dreamlet and DESeq2") +
+    ylab("Variance explained by PoolID (%)") +
+    ylim(0,100)
+```
+
+```{r deseq.wilcox}
+df_wx = df %>%
+  mutate( pool5 = 100*poolID > 5) %>%
+  mutate(absDiff = abs(diff)) %>%  
+  group_by(assay) %>%  
+  wilcox_test(absDiff ~ pool5) 
+
+ymax = -log10(min(df_wx$p))*1.03
+
+df_wx %>% 
+  ggplot(aes(assay, -log10(p), fill=assay)) +
+    geom_bar(stat="identity") + 
+    theme_classic() +
+    theme(aspect.ratio=1, legend.position="none") + 
+    geom_hline(yintercept=-log10(1/22), color="grey35", linetype="dashed") +
+    scale_y_continuous(limits=c(0, ymax), expand=c(0,0)) +
+    coord_flip() +
+    ggtitle("DESeq2")
+```
+
+
+
+```{r write}
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_limma.tsv.gz"
+write.table(tab.limma, file, quote=FALSE, sep='\t', row.names=FALSE)
+
+file = "/sc/arion/projects/CommonMind/hoffman/dreamlet_analysis/PsychAD_r0/topTable_PsychAD_r0_deseq2.tsv.gz"
+write.table(tab.deseq2, file, quote=FALSE, sep='\t', row.names=FALSE)
+```
+
+
+
+
+
